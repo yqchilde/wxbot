@@ -1,0 +1,10 @@
+# Goland
+.idea
+
+# Other files
+imgs
+wxbot.log
+info-*.json
+config_example.yaml
+storage.json
+docker/wxbot.tar
