@@ -1,4 +1,4 @@
-package service
+package plmm
 
 import (
 	"encoding/json"
@@ -9,31 +9,36 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/eatmoreapple/openwechat"
 	"github.com/yqchilde/pkgs/log"
-
-	"wxBot/internal/config"
-	"wxBot/internal/model"
-	"wxBot/internal/pkg/download"
+	"github.com/yqchilde/wxbot/internal/model"
+	"github.com/yqchilde/wxbot/internal/pkg/download"
 )
 
-// GetPlmmPhoto 获取Plmm图片
-func GetPlmmPhoto(msg *openwechat.Message) {
+func getPlmmPhoto(msg *openwechat.Message) {
 	// 保证出图速度
 	var isSend bool
-	plmmConf := config.GetPlmmConf()
+	var plmmConf Plmm
+	plugin.RawConfig.Unmarshal(&plmmConf)
 	filepath.Walk(plmmConf.Dir, func(path string, info fs.FileInfo, err error) error {
 		if filepath.Ext(path) == ".jpg" {
 			img, err := os.Open(path)
 			if err != nil {
-				log.Errorf("GetPlmmPhoto open file error: %v", err)
+				log.Errorf("getPlmmPhoto open file error: %v", err)
 				return err
 			}
 			defer img.Close()
 
-			msg.ReplyImage(img)
+			if _, err := msg.ReplyImage(img); err != nil {
+				if strings.Contains(err.Error(), "operate too often") {
+					msg.ReplyText("Warn: 被微信ban了，请稍后再试")
+				} else {
+					log.Errorf("msg.ReplyImage reply image error: %v", err)
+				}
+			}
 			isSend = true
 			_ = os.Remove(path)
 			return io.EOF
@@ -45,23 +50,23 @@ func GetPlmmPhoto(msg *openwechat.Message) {
 	apiUrl := fmt.Sprintf("%s?app_id=%s&app_secret=%s", plmmConf.Url, plmmConf.AppId, plmmConf.AppSecret)
 	res, err := http.Get(apiUrl)
 	if err != nil {
-		log.Errorf("GetPlmmPhoto http get error: %v", err)
+		log.Errorf("getPlmmPhoto http get error: %v", err)
 		return
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Errorf("GetPlmmPhoto read body error: %v", err)
+		log.Errorf("getPlmmPhoto read body error: %v", err)
 		return
 	}
 
 	var resp model.PlmmApiResponse
 	if err := json.Unmarshal(body, &resp); err != nil {
-		log.Errorf("GetPlmmPhoto unmarshal error: %v", err)
+		log.Errorf("getPlmmPhoto unmarshal error: %v", err)
 		return
 	}
 	if resp.Code != 1 {
-		log.Errorf("GetPlmmPhoto api error: %v", resp.Msg)
+		log.Errorf("getPlmmPhoto api error: %v", resp.Msg)
 		return
 	}
 
@@ -73,7 +78,7 @@ func GetPlmmPhoto(msg *openwechat.Message) {
 		})
 	}
 	if err := download.BatchDownload(imgInfo); err != nil {
-		log.Errorf("GetPlmmPhoto batch download error: %v", err)
+		log.Errorf("getPlmmPhoto batch download error: %v", err)
 		return
 	}
 
@@ -82,12 +87,18 @@ func GetPlmmPhoto(msg *openwechat.Message) {
 			if filepath.Ext(path) == ".jpg" {
 				file, err := os.Open(path)
 				if err != nil {
-					log.Errorf("GetPlmmPhoto open file error: %v", err)
+					log.Errorf("getPlmmPhoto open file error: %v", err)
 					return err
 				}
 				defer file.Close()
 
-				msg.ReplyImage(file)
+				if _, err := msg.ReplyImage(file); err != nil {
+					if strings.Contains(err.Error(), "operate too often") {
+						msg.ReplyText("Warn: 被微信ban了，请稍后再试")
+					} else {
+						log.Errorf("msg.ReplyImage reply image error: %v", err)
+					}
+				}
 				_ = os.Remove(path)
 				return io.EOF
 			}
