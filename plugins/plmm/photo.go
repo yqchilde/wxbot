@@ -14,8 +14,8 @@ import (
 
 	"github.com/eatmoreapple/openwechat"
 	"github.com/yqchilde/pkgs/log"
-	"github.com/yqchilde/wxbot/internal/model"
-	"github.com/yqchilde/wxbot/internal/pkg/download"
+
+	"github.com/yqchilde/wxbot/engine/util"
 )
 
 func getPlmmPhoto(msg *openwechat.Message) {
@@ -60,7 +60,7 @@ func getPlmmPhoto(msg *openwechat.Message) {
 		return
 	}
 
-	var resp model.PlmmApiResponse
+	var resp PlmmApiResponse
 	if err := json.Unmarshal(body, &resp); err != nil {
 		log.Errorf("getPlmmPhoto unmarshal error: %v", err)
 		return
@@ -70,14 +70,14 @@ func getPlmmPhoto(msg *openwechat.Message) {
 		return
 	}
 
-	var imgInfo []model.ImgInfo
+	var imgInfo []util.ImgInfo
 	for i, v := range resp.Data {
-		imgInfo = append(imgInfo, model.ImgInfo{
+		imgInfo = append(imgInfo, util.ImgInfo{
 			Url:  v.ImageUrl,
 			Name: fmt.Sprintf("%s/%s.jpg", plmmConf.Dir, time.Now().Add(time.Duration(i)*time.Second).Format("20060102150405")),
 		})
 	}
-	if err := download.BatchDownload(imgInfo); err != nil {
+	if err := util.BatchDownload(imgInfo); err != nil {
 		log.Errorf("getPlmmPhoto batch download error: %v", err)
 		return
 	}

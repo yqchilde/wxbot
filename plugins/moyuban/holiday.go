@@ -1,10 +1,12 @@
-package holiday
+package moyuban
 
 import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/tidwall/gjson"
@@ -27,8 +29,12 @@ func PathExists(path string) (bool, error) {
 	return false, err
 }
 
-func DailyLifeNotes(date ...string) (string, error) {
-	dayFile, err := ioutil.ReadFile("holiday.json")
+func DailyLifeNotes(date string, caller ...int) (string, error) {
+	if len(caller) == 0 {
+		caller = append(caller, 1)
+	}
+	_, callerFile, _, _ := runtime.Caller(caller[0])
+	dayFile, err := ioutil.ReadFile(filepath.Dir(callerFile) + "/holiday.json")
 	if err != nil {
 		panic(err)
 	}
@@ -46,7 +52,7 @@ func DailyLifeNotes(date ...string) (string, error) {
 	)
 
 	if len(date) > 0 {
-		parse, err := time.Parse("2006-01-02 15:04:05", date[0])
+		parse, err := time.Parse("2006-01-02 15:04:05", date)
 		if err != nil {
 			return "", err
 		}

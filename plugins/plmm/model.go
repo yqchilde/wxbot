@@ -1,4 +1,4 @@
-package model
+package plmm
 
 type PlmmApiResponse struct {
 	Code int    `json:"code"`
