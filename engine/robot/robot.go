@@ -1,4 +1,4 @@
-package config
+package robot
 
 import "github.com/eatmoreapple/openwechat"
 
