@@ -5,3 +5,4 @@ mv ./wxbot ./docker/wxbot && cd ./docker || exit 0
 docker buildx build --platform=linux/amd64 -t yqchilde/wxbot .
 docker tag yqchilde/wxbot yqchilde/wxbot:latest
 docker push yqchilde/wxbot
+rm -f ./wxbot
