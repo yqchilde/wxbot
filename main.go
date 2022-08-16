@@ -1,27 +1,18 @@
 package main
 
 import (
-	"github.com/yqchilde/pkgs/config"
-	"github.com/yqchilde/pkgs/log"
+	"context"
 
-	model "wxBot/internal/config"
-	"wxBot/internal/robot"
-	"wxBot/internal/service"
+	"github.com/yqchilde/wxbot/engine"
+	_ "github.com/yqchilde/wxbot/plugins/cronjob"      // 漂亮妹妹
+	_ "github.com/yqchilde/wxbot/plugins/emoticon"     // 表情包原图
+	_ "github.com/yqchilde/wxbot/plugins/menu"         // 菜单
+	_ "github.com/yqchilde/wxbot/plugins/moyuban"      // 摸鱼办
+	_ "github.com/yqchilde/wxbot/plugins/pinyinsuoxie" // 拼音缩写翻译
+	_ "github.com/yqchilde/wxbot/plugins/plmm"         // 漂亮妹妹
 )
 
 func main() {
-	// 初始化日志
-	config.New(".")
-	var conf model.Config
-	if err := config.Load("config", &conf); err != nil {
-		panic(err)
-	}
-	model.Conf = &conf
-	log.Init(&conf.Log, 2)
-
-	// 初始化service
-	service.Init()
-
-	// 初始化机器人
-	robot.Init()
+	ctx := context.Background()
+	engine.Run(ctx, "config.yaml")
 }

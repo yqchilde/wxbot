@@ -1,27 +1,16 @@
 emoticon:
+  enable: true
   dir: "./imgs/emoticon"
 
 plmm:
+  enable: true
   dir: "./imgs/plmm"
   url: "https://www.mxnzp.com/api/image/girl/list/random"
   appId: ""
   appSecret: ""
 
-shaoji:
-  dir: "./imgs/shaoji"
-  url: "https://api.vvhan.com/api/mobil.girl?type=json"
-
-log:
-  encoding: "console"
-  level: "info"
-  writers: "file"
-  logName: "wxbot"
-  logRollingPolicy: "volume"
-  logRollingTimePattern: "0 0 */1 * * *"
-  logRollingVolumeSize: "10mb"
-  logBackupCount: 5
-
-scheduled:
-  - name: "myb"
-    cron: "0 23 9 * * *"
-    groups: [ "卤蛋群", "Test" ]
+cronjob:
+  enable: true
+  myb:
+    cron: "0 30 9 * * *"
+    groups: [ "卤蛋群","Test" ]
