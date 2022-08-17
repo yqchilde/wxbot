@@ -25,11 +25,15 @@ func (p *PinYinSuoXie) OnEvent(event any) {
 	if event != nil {
 		msg := event.(*openwechat.Message)
 		if msg.IsText() && strings.HasPrefix(msg.Content, "/??") {
-			var re = regexp.MustCompile(`(?m)^/[?？]{1,2} ?([a-z0-9]+)$`)
+			var re = regexp.MustCompile(`(?m)^/[?？]{1,2} ?([a-zA-Z0-9]+)$`)
 			match := re.FindAllStringSubmatch(msg.Content, -1)
 			if len(match) > 0 && len(match[0]) > 1 {
 				if data, err := transPinYinSuoXie(match[0][1]); err == nil {
-					msg.ReplyText(match[0][1] + ": " + data)
+					if len(data) == 0 {
+						msg.ReplyText("没查到该缩写含义")
+					} else {
+						msg.ReplyText(match[0][1] + ": " + data)
+					}
 				} else {
 					msg.ReplyText("查询失败，这一定不是bug🤔")
 				}
