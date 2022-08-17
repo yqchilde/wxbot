@@ -18,7 +18,8 @@ import (
 )
 
 type Emoticon struct {
-	Dir string `yaml:"dir"`
+	Enable bool   `yaml:"enable"`
+	Dir    string `yaml:"dir"`
 }
 
 var (

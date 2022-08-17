@@ -10,7 +10,8 @@ import (
 )
 
 type CronJob struct {
-	MoYuBan Job `yaml:"myb"`
+	Enable  bool `yaml:"enable"`
+	MoYuBan Job  `yaml:"myb"`
 }
 
 type Job struct {

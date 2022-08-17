@@ -51,7 +51,7 @@ func (c Config) Unmarshal(s any) {
 	for k, v := range c {
 		name, ok := nameMap[k]
 		if !ok {
-			log.Error("no config named:", k)
+			log.Warnf("%v plugin not found %v config:", t.Name(), k)
 			continue
 		}
 		// 需要被写入的字段
