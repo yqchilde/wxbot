@@ -1,6 +1,8 @@
 package moyuban
 
 import (
+	"embed"
+
 	"github.com/eatmoreapple/openwechat"
 
 	"github.com/yqchilde/wxbot/engine"
@@ -9,6 +11,9 @@ import (
 type MoYuBan struct{}
 
 var _ = engine.InstallPlugin(&MoYuBan{})
+
+//go:embed holiday.json
+var f embed.FS
 
 func (m *MoYuBan) OnRegister(event any) {}
 

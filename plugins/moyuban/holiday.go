@@ -33,10 +33,13 @@ func DailyLifeNotes(date string, caller ...int) (string, error) {
 	if len(caller) == 0 {
 		caller = append(caller, 1)
 	}
-	_, callerFile, _, _ := runtime.Caller(caller[0])
-	dayFile, err := ioutil.ReadFile(filepath.Dir(callerFile) + "/holiday.json")
+	dayFile, err := f.ReadFile("holiday.json")
 	if err != nil {
-		panic(err)
+		_, callerFile, _, _ := runtime.Caller(caller[0])
+		dayFile, err = f.ReadFile(filepath.Dir(callerFile) + "/holiday.json")
+		if err != nil {
+			return "", err
+		}
 	}
 
 	var (
