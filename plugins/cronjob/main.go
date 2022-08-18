@@ -10,6 +10,7 @@ import (
 )
 
 type CronJob struct {
+	engine.PluginMagic
 	Enable  bool `yaml:"enable"`
 	MoYuBan Job  `yaml:"myb"`
 }
@@ -19,7 +20,15 @@ type Job struct {
 	Groups []string `yaml:"groups"`
 }
 
-var plugin = engine.InstallPlugin(&CronJob{})
+var (
+	pluginInfo = &CronJob{
+		PluginMagic: engine.PluginMagic{
+			Desc:     "🚀 输入 /?? 拼音缩写 => 获取拼音缩写翻译",
+			Commands: []string{"/??"},
+		},
+	}
+	plugin = engine.InstallPlugin(pluginInfo)
+)
 
 func (c *CronJob) OnRegister(event any) {
 	// 摸鱼办

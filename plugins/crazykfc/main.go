@@ -12,11 +12,18 @@ import (
 	"github.com/yqchilde/wxbot/engine"
 )
 
-type CrazyKFC struct{}
+type CrazyKFC struct{ engine.PluginMagic }
 
-var _ = engine.InstallPlugin(&CrazyKFC{})
-
-var sentence []string
+var (
+	pluginInfo = &CrazyKFC{
+		engine.PluginMagic{
+			Desc:     "🚀 输入 /kfc => 获取肯德基疯狂星期四骚话",
+			Commands: []string{"/kfc"},
+		},
+	}
+	_        = engine.InstallPlugin(pluginInfo)
+	sentence []string
+)
 
 func (p *CrazyKFC) OnRegister(event any) {
 	resp, err := getCrazyKFCSentence()
@@ -31,7 +38,7 @@ func (p *CrazyKFC) OnRegister(event any) {
 func (p *CrazyKFC) OnEvent(event any) {
 	if event != nil {
 		msg := event.(*openwechat.Message)
-		if msg.IsText() && strings.HasPrefix(msg.Content, "/kfc") {
+		if msg.IsText() && strings.HasPrefix(msg.Content, pluginInfo.Commands[0]) {
 			if len(sentence) > 0 {
 				rand.Seed(time.Now().UnixNano())
 				msg.ReplyText(sentence[rand.Intn(len(sentence))])

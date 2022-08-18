@@ -18,12 +18,19 @@ import (
 )
 
 type Emoticon struct {
+	engine.PluginMagic
 	Enable bool   `yaml:"enable"`
 	Dir    string `yaml:"dir"`
 }
 
 var (
-	plugin      = engine.InstallPlugin(&Emoticon{})
+	pluginInfo = &Emoticon{
+		PluginMagic: engine.PluginMagic{
+			Desc:     "🚀 输入 /img => 10s内发送表情获取表情原图",
+			Commands: []string{"/img"},
+		},
+	}
+	plugin      = engine.InstallPlugin(pluginInfo)
 	users       = make(map[string]string) // 用户指令 key:username val:command
 	waitCommand = make(chan *openwechat.Message)
 	mutex       sync.Mutex
@@ -39,7 +46,7 @@ func (e *Emoticon) OnRegister(event any) {
 func (e *Emoticon) OnEvent(event any) {
 	if event != nil {
 		msg := event.(*openwechat.Message)
-		if msg.IsText() && msg.Content == "/img" {
+		if msg.IsText() && msg.Content == pluginInfo.Commands[0] {
 			if msg.IsSendByFriend() {
 				sender, err := msg.Sender()
 				if err != nil {

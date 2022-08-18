@@ -2,7 +2,7 @@ package pinyinsuoxie
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -15,16 +15,24 @@ import (
 	"github.com/yqchilde/wxbot/engine"
 )
 
-type PinYinSuoXie struct{}
+type PinYinSuoXie struct{ engine.PluginMagic }
 
-var _ = engine.InstallPlugin(&PinYinSuoXie{})
+var (
+	pluginInfo = &PinYinSuoXie{
+		engine.PluginMagic{
+			Desc:     "🚀 输入 /?? 拼音缩写 => 获取拼音缩写翻译",
+			Commands: []string{"/??"},
+		},
+	}
+	_ = engine.InstallPlugin(pluginInfo)
+)
 
 func (p *PinYinSuoXie) OnRegister(event any) {}
 
 func (p *PinYinSuoXie) OnEvent(event any) {
 	if event != nil {
 		msg := event.(*openwechat.Message)
-		if msg.IsText() && strings.HasPrefix(msg.Content, "/??") {
+		if msg.IsText() && strings.HasPrefix(msg.Content, pluginInfo.Commands[0]) {
 			var re = regexp.MustCompile(`(?m)^/[?？]{1,2} ?([a-zA-Z0-9]+)$`)
 			match := re.FindAllStringSubmatch(msg.Content, -1)
 			if len(match) > 0 && len(match[0]) > 1 {
@@ -70,7 +78,7 @@ func transPinYinSuoXie(text string) (string, error) {
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Println(err)
 		return "", err
