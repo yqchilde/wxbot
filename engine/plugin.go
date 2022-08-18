@@ -3,10 +3,7 @@ package engine
 import (
 	"bytes"
 	"context"
-	"path/filepath"
 	"reflect"
-	"runtime"
-	"strings"
 
 	"github.com/yqchilde/pkgs/log"
 	"gopkg.in/yaml.v3"
@@ -14,37 +11,54 @@ import (
 	"github.com/yqchilde/wxbot/engine/config"
 )
 
-type FirstConfig config.Config
+type PluginMagic struct {
+	Name     string   // 插件名字
+	Desc     string   // 插件描述
+	Commands []string // 插件命令
+}
 
 type Plugin struct {
 	context.Context
 	context.CancelFunc
+	PluginMagic
 
-	Name      string        // 插件名字
-	Version   string        // 插件版本
 	Config    config.Plugin // 插件配置
 	RawConfig config.Config // 插件原配置
 }
 
 func InstallPlugin(conf config.Plugin) *Plugin {
 	t := reflect.TypeOf(conf).Elem()
-	name := strings.TrimSuffix(t.Name(), "Config")
-	plugin := &Plugin{
-		Name:   name,
-		Config: conf,
+	v := reflect.ValueOf(conf).Elem()
+
+	var p PluginMagic
+	for i := 0; i < t.NumField(); i++ {
+		if t.Field(i).Anonymous && t.Field(i).Type.Kind() == reflect.Struct {
+			p = v.Field(i).Interface().(PluginMagic)
+		}
 	}
 
-	_, pluginFilePath, _, _ := runtime.Caller(1)
-	configDir := filepath.Dir(pluginFilePath)
-	if parts := strings.Split(configDir, "@"); len(parts) > 1 {
-		plugin.Version = parts[len(parts)-1]
+	plugin := &Plugin{
+		PluginMagic: PluginMagic{
+			Name:     p.Name,
+			Desc:     p.Desc,
+			Commands: p.Commands,
+		},
+		Config: conf,
 	}
-	if _, ok := Plugins[name]; ok {
+	if len(plugin.Name) == 0 {
+		plugin.Name = t.Name()
+	}
+	if _, ok := Plugins[plugin.Name]; ok {
 		return nil
 	}
 	if conf != config.Global {
-		Plugins[name] = plugin
-		log.Printf("install plugin %v", name)
+		if len(plugin.Commands) == 0 {
+			log.Errorf("failed to install plugin %s: no commands", plugin.Name)
+			return nil
+		} else {
+			Plugins[plugin.Name] = plugin
+			log.Printf("success to install plugin %s", plugin.Name)
+		}
 	}
 
 	return plugin

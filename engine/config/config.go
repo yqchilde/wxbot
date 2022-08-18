@@ -51,7 +51,9 @@ func (c Config) Unmarshal(s any) {
 	for k, v := range c {
 		name, ok := nameMap[k]
 		if !ok {
-			log.Warnf("%v plugin not found %v config:", t.Name(), k)
+			if k != "pluginmagic" {
+				log.Warnf("%v plugin not found config: %v", t.Name(), k)
+			}
 			continue
 		}
 		// 需要被写入的字段
@@ -167,7 +169,7 @@ func Struct2Config(s any) (config Config) {
 		if !ft.IsExported() {
 			continue
 		}
-		name := strings.ToLower(ft.Name)
+		name := ft.Name
 		switch ft.Type.Kind() {
 		case reflect.Struct:
 			config[name] = Struct2Config(v.Field(i))

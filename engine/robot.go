@@ -32,12 +32,17 @@ func InitRobot() {
 			return
 		}
 
+		reply := "YY Bot🤖\n"
 		for _, plugin := range Plugins {
 			if plugin.RawConfig["enable"] != false {
 				plugin.Config.OnEvent(msg)
 			}
+			reply += plugin.Desc + "\n"
 		}
 
+		if msg.IsText() && msg.Content == "/menu" {
+			msg.ReplyText(reply)
+		}
 		if msg.IsSendByFriend() {
 			sender, err := msg.Sender()
 			if err != nil {
