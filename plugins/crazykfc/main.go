@@ -16,15 +16,25 @@ type CrazyKFC struct{}
 
 var _ = engine.InstallPlugin(&CrazyKFC{})
 
-func (p *CrazyKFC) OnRegister(event any) {}
+var sentence []string
+
+func (p *CrazyKFC) OnRegister(event any) {
+	resp, err := getCrazyKFCSentence()
+	if err != nil {
+		return
+	}
+	for i := range resp {
+		sentence = append(sentence, resp[i].Text)
+	}
+}
 
 func (p *CrazyKFC) OnEvent(event any) {
 	if event != nil {
 		msg := event.(*openwechat.Message)
 		if msg.IsText() && strings.HasPrefix(msg.Content, "/kfc") {
-			if resp, err := getCrazyKFCSentence(); err == nil {
+			if len(sentence) > 0 {
 				rand.Seed(time.Now().UnixNano())
-				msg.ReplyText(resp[rand.Intn(len(resp))].Text)
+				msg.ReplyText(sentence[rand.Intn(len(sentence))])
 			} else {
 				msg.ReplyText("查询失败，这一定不是bug🤔")
 			}
