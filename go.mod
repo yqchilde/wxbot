@@ -5,7 +5,6 @@ go 1.19
 replace github.com/yqchilde/wxbot/engine v0.0.1 => ./engine
 
 require (
-	github.com/eatmoreapple/openwechat v1.1.14
 	github.com/tidwall/gjson v1.14.2
 	github.com/yqchilde/pkgs v0.0.2
 	github.com/yqchilde/wxbot/engine v0.0.1
@@ -13,6 +12,7 @@ require (
 
 require (
 	github.com/arthurkiller/rollingwriter v1.1.3 // indirect
+	github.com/eatmoreapple/openwechat v1.1.14 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/robfig/cron v1.1.0 // indirect
