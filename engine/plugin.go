@@ -12,9 +12,10 @@ import (
 )
 
 type PluginMagic struct {
-	Name     string   // 插件名字
-	Desc     string   // 插件描述
-	Commands []string // 插件命令
+	Name       string   // 插件名字
+	Desc       string   // 插件描述
+	Commands   []string // 插件命令
+	HiddenMenu bool     // 是否隐藏菜单
 }
 
 type Plugin struct {
@@ -39,9 +40,10 @@ func InstallPlugin(conf config.Plugin) *Plugin {
 
 	plugin := &Plugin{
 		PluginMagic: PluginMagic{
-			Name:     p.Name,
-			Desc:     p.Desc,
-			Commands: p.Commands,
+			Name:       p.Name,
+			Desc:       p.Desc,
+			Commands:   p.Commands,
+			HiddenMenu: p.HiddenMenu,
 		},
 		Config: conf,
 	}
@@ -52,7 +54,7 @@ func InstallPlugin(conf config.Plugin) *Plugin {
 		return nil
 	}
 	if conf != config.Global {
-		if len(plugin.Commands) == 0 {
+		if !plugin.HiddenMenu && len(plugin.Commands) == 0 {
 			log.Errorf("failed to install plugin %s: no commands", plugin.Name)
 			return nil
 		} else {

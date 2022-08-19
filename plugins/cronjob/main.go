@@ -23,8 +23,7 @@ type Job struct {
 var (
 	pluginInfo = &CronJob{
 		PluginMagic: engine.PluginMagic{
-			Desc:     "🚀 输入 /?? 拼音缩写 => 获取拼音缩写翻译",
-			Commands: []string{"/??"},
+			HiddenMenu: true,
 		},
 	}
 	plugin = engine.InstallPlugin(pluginInfo)
