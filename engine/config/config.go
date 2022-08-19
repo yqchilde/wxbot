@@ -5,15 +5,17 @@ import (
 	"strings"
 
 	"github.com/yqchilde/pkgs/log"
+
+	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 type Config map[string]any
 
 type Plugin interface {
 	// OnRegister 注册后发生
-	OnRegister(any)
+	OnRegister()
 	// OnEvent 产生event发生
-	OnEvent(any)
+	OnEvent(msg *robot.Message)
 }
 
 func (c Config) Unmarshal(s any) {

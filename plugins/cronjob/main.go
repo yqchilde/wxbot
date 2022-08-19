@@ -29,7 +29,7 @@ var (
 	plugin = engine.InstallPlugin(pluginInfo)
 )
 
-func (c *CronJob) OnRegister(event any) {
+func (c *CronJob) OnRegister() {
 	// 摸鱼办
 	myb := plugin.RawConfig.GetChild("myb")
 	{
@@ -49,4 +49,4 @@ func (c *CronJob) OnRegister(event any) {
 	}
 }
 
-func (c *CronJob) OnEvent(event any) {}
+func (c *CronJob) OnEvent(msg *robot.Message) {}

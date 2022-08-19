@@ -10,8 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/eatmoreapple/openwechat"
-
 	"github.com/yqchilde/wxbot/engine"
 	"github.com/yqchilde/wxbot/engine/robot"
 	"github.com/yqchilde/wxbot/engine/util"
@@ -32,20 +30,19 @@ var (
 	}
 	plugin      = engine.InstallPlugin(pluginInfo)
 	users       = make(map[string]string) // 用户指令 key:username val:command
-	waitCommand = make(chan *openwechat.Message)
+	waitCommand = make(chan *robot.Message)
 	mutex       sync.Mutex
 )
 
-func (e *Emoticon) OnRegister(event any) {
+func (e *Emoticon) OnRegister() {
 	err := os.MkdirAll(plugin.RawConfig.Get("dir").(string), os.ModePerm)
 	if err != nil {
 		panic("init img dir error: " + err.Error())
 	}
 }
 
-func (e *Emoticon) OnEvent(event any) {
-	if event != nil {
-		msg := event.(*openwechat.Message)
+func (e *Emoticon) OnEvent(msg *robot.Message) {
+	if msg != nil {
 		if msg.IsText() && msg.Content == pluginInfo.Commands[0] {
 			if msg.IsSendByFriend() {
 				sender, err := msg.Sender()
@@ -110,7 +107,7 @@ func getAtMessage(nickName, content string) string {
 	return fmt.Sprintf("@%s\u2005%s", nickName, content)
 }
 
-func waitEmoticon(ctx context.Context, cancel context.CancelFunc, msg *openwechat.Message, sender *openwechat.User) {
+func waitEmoticon(ctx context.Context, cancel context.CancelFunc, msg *robot.Message, sender *robot.User) {
 	defer func() {
 		cancel()
 		removeCommand(sender.UserName)

@@ -9,10 +9,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/eatmoreapple/openwechat"
 	"github.com/tidwall/gjson"
 
 	"github.com/yqchilde/wxbot/engine"
+	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 type PinYinSuoXie struct{ engine.PluginMagic }
@@ -27,11 +27,10 @@ var (
 	_ = engine.InstallPlugin(pluginInfo)
 )
 
-func (p *PinYinSuoXie) OnRegister(event any) {}
+func (p *PinYinSuoXie) OnRegister() {}
 
-func (p *PinYinSuoXie) OnEvent(event any) {
-	if event != nil {
-		msg := event.(*openwechat.Message)
+func (p *PinYinSuoXie) OnEvent(msg *robot.Message) {
+	if msg != nil {
 		if msg.IsText() && strings.HasPrefix(msg.Content, pluginInfo.Commands[0]) {
 			var re = regexp.MustCompile(`(?m)^/[?？]{1,2} ?([a-zA-Z0-9]+)$`)
 			match := re.FindAllStringSubmatch(msg.Content, -1)

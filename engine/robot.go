@@ -35,7 +35,7 @@ func InitRobot() {
 		reply := "YY Bot🤖\n"
 		for _, plugin := range Plugins {
 			if plugin.RawConfig["enable"] != false {
-				plugin.Config.OnEvent(msg)
+				plugin.Config.OnEvent(&robot.Message{Message: msg})
 			}
 			if !plugin.HiddenMenu {
 				reply += plugin.Desc + "\n"

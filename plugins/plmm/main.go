@@ -3,9 +3,8 @@ package plmm
 import (
 	"os"
 
-	"github.com/eatmoreapple/openwechat"
-
 	"github.com/yqchilde/wxbot/engine"
+	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 type Plmm struct {
@@ -27,16 +26,15 @@ var (
 	plugin = engine.InstallPlugin(pluginInfo)
 )
 
-func (p *Plmm) OnRegister(event any) {
+func (p *Plmm) OnRegister() {
 	err := os.MkdirAll(plugin.RawConfig.Get("dir").(string), os.ModePerm)
 	if err != nil {
 		panic("init plmm img dir error: " + err.Error())
 	}
 }
 
-func (p *Plmm) OnEvent(event any) {
-	if event != nil {
-		msg := event.(*openwechat.Message)
+func (p *Plmm) OnEvent(msg *robot.Message) {
+	if msg != nil {
 		if msg.IsText() && msg.Content == pluginInfo.Commands[0] {
 			getPlmmPhoto(msg)
 		}

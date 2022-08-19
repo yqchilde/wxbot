@@ -11,13 +11,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eatmoreapple/openwechat"
 	"github.com/yqchilde/pkgs/log"
 
+	"github.com/yqchilde/wxbot/engine/robot"
 	"github.com/yqchilde/wxbot/engine/util"
 )
 
-func getPlmmPhoto(msg *openwechat.Message) {
+func getPlmmPhoto(msg *robot.Message) {
 	// 保证出图速度
 	var isSend bool
 	var plmmConf Plmm

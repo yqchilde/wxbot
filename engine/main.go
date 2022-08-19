@@ -49,7 +49,7 @@ func Run(ctx context.Context, configPath string) (err error) {
 		plugin.Assign()
 
 		if plugin.RawConfig["enable"] != false {
-			plugin.Config.OnRegister(nil)
+			plugin.Config.OnRegister()
 		}
 	}
 

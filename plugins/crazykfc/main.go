@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eatmoreapple/openwechat"
 	"github.com/yqchilde/wxbot/engine"
+	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 type CrazyKFC struct{ engine.PluginMagic }
@@ -25,7 +25,7 @@ var (
 	sentence []string
 )
 
-func (p *CrazyKFC) OnRegister(event any) {
+func (p *CrazyKFC) OnRegister() {
 	resp, err := getCrazyKFCSentence()
 	if err != nil {
 		return
@@ -35,9 +35,8 @@ func (p *CrazyKFC) OnRegister(event any) {
 	}
 }
 
-func (p *CrazyKFC) OnEvent(event any) {
-	if event != nil {
-		msg := event.(*openwechat.Message)
+func (p *CrazyKFC) OnEvent(msg *robot.Message) {
+	if msg != nil {
 		if msg.IsText() && strings.HasPrefix(msg.Content, pluginInfo.Commands[0]) {
 			if len(sentence) > 0 {
 				rand.Seed(time.Now().UnixNano())

@@ -3,9 +3,8 @@ package moyuban
 import (
 	"embed"
 
-	"github.com/eatmoreapple/openwechat"
-
 	"github.com/yqchilde/wxbot/engine"
+	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 type MoYuBan struct{ engine.PluginMagic }
@@ -23,11 +22,10 @@ var (
 //go:embed holiday.json
 var f embed.FS
 
-func (m *MoYuBan) OnRegister(event any) {}
+func (m *MoYuBan) OnRegister() {}
 
-func (m *MoYuBan) OnEvent(event any) {
-	if event != nil {
-		msg := event.(*openwechat.Message)
+func (m *MoYuBan) OnEvent(msg *robot.Message) {
+	if msg != nil {
 		if msg.IsText() && msg.Content == pluginInfo.Commands[0] {
 			if notes, err := DailyLifeNotes(""); err == nil {
 				msg.ReplyText(notes)
