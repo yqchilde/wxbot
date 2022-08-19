@@ -2,7 +2,7 @@ package engine
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 
 	"github.com/yqchilde/pkgs/log"
 	"gopkg.in/yaml.v3"
@@ -28,7 +28,7 @@ func Run(ctx context.Context, configPath string) (err error) {
 	Engine.Context = ctx
 
 	// configuration config file
-	configRaw, err := ioutil.ReadFile(configPath)
+	configRaw, err := os.ReadFile(configPath)
 	if err != nil {
 		log.Panic("read config file error:", err.Error())
 	}

@@ -1,6 +1,6 @@
 module github.com/yqchilde/wxbot
 
-go 1.18
+go 1.19
 
 replace github.com/yqchilde/wxbot/engine v0.0.1 => ./engine
 

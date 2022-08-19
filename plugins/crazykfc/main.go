@@ -2,7 +2,7 @@ package crazykfc
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -61,7 +61,7 @@ func getCrazyKFCSentence() ([]apiResponse, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	readAll, err := ioutil.ReadAll(resp.Body)
+	readAll, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

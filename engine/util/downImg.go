@@ -1,8 +1,9 @@
 package util
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gabriel-vasile/mimetype"
@@ -22,14 +23,14 @@ func SingleDownload(imgInfo ImgInfo) (fileName string, err error) {
 		return "", errors.Wrap(err, "SingleDownload http get error")
 	}
 	defer resp.Body.Close()
-	readBytes, err := ioutil.ReadAll(resp.Body)
+	readBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", errors.Wrap(err, "SingleDownload read body error")
 	}
 
 	mimeType := mimetype.Detect(readBytes[:1024])
 	fileName = imgInfo.Name + mimeType.Extension()
-	ioutil.WriteFile(fileName, readBytes, 0666)
+	os.WriteFile(fileName, readBytes, 0666)
 	return fileName, nil
 }
 
@@ -46,13 +47,13 @@ func BatchDownload(imgInfoList []ImgInfo) error {
 				return
 			}
 			defer res.Body.Close()
-			readBytes, err := ioutil.ReadAll(res.Body)
+			readBytes, err := io.ReadAll(res.Body)
 			if err != nil {
 				log.Errorf("BatchDownload read body error: %v", err)
 				return
 			}
 
-			ioutil.WriteFile(img.Name, readBytes, 0666)
+			os.WriteFile(img.Name, readBytes, 0666)
 		}(img)
 	}
 	wg.Wait()

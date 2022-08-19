@@ -2,7 +2,7 @@ package moyuban
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -117,7 +117,7 @@ func DailyLifeNotes(date string, caller ...int) (string, error) {
 		return "", err
 	}
 	if exists {
-		readFile, err := ioutil.ReadFile(fmt.Sprintf("info-%s.json", currentTime.Format("20060102")))
+		readFile, err := os.ReadFile(fmt.Sprintf("info-%s.json", currentTime.Format("20060102")))
 		if err != nil {
 			return "", err
 		}
@@ -128,12 +128,12 @@ func DailyLifeNotes(date string, caller ...int) (string, error) {
 			return "", err
 		}
 		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return "", err
 		}
 		infoBytes = body
-		ioutil.WriteFile(fmt.Sprintf("info-%s.json", currentTime.Format("20060102")), body, 0644)
+		os.WriteFile(fmt.Sprintf("info-%s.json", currentTime.Format("20060102")), body, 0644)
 	}
 
 	result := gjson.Get(string(infoBytes), "type.type")
