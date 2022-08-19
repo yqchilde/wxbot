@@ -37,7 +37,9 @@ func InitRobot() {
 			if plugin.RawConfig["enable"] != false {
 				plugin.Config.OnEvent(msg)
 			}
-			reply += plugin.Desc + "\n"
+			if !plugin.HiddenMenu {
+				reply += plugin.Desc + "\n"
+			}
 		}
 
 		if msg.IsText() && msg.Content == "/menu" {
