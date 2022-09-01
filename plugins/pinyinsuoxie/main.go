@@ -20,8 +20,8 @@ type PinYinSuoXie struct{ engine.PluginMagic }
 var (
 	pluginInfo = &PinYinSuoXie{
 		engine.PluginMagic{
-			Desc:     "🚀 输入 /?? 拼音缩写 => 获取拼音缩写翻译",
-			Commands: []string{"/??"},
+			Desc:     "🚀 输入 {/?? 拼音缩写} => 获取拼音缩写翻译，比如 /?? yyds",
+			Commands: []string{"^/[?？]{1,2} ?([a-zA-Z0-9]+)$"},
 		},
 	}
 	_ = engine.InstallPlugin(pluginInfo)
@@ -31,7 +31,7 @@ func (p *PinYinSuoXie) OnRegister() {}
 
 func (p *PinYinSuoXie) OnEvent(msg *robot.Message) {
 	if msg != nil {
-		if msg.IsText() && strings.HasPrefix(msg.Content, pluginInfo.Commands[0]) {
+		if msg.MatchRegexCommand(pluginInfo.Commands) {
 			var re = regexp.MustCompile(`(?m)^/[?？]{1,2} ?([a-zA-Z0-9]+)$`)
 			match := re.FindAllStringSubmatch(msg.Content, -1)
 			if len(match) > 0 && len(match[0]) > 1 {

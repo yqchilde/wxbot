@@ -19,7 +19,7 @@ type Plmm struct {
 var (
 	pluginInfo = &Plmm{
 		PluginMagic: engine.PluginMagic{
-			Desc:     "🚀 输入 /plmm => 获取漂亮妹妹",
+			Desc:     "🚀 输入 {/plmm} => 获取漂亮妹妹",
 			Commands: []string{"/plmm"},
 		},
 	}
@@ -35,7 +35,7 @@ func (p *Plmm) OnRegister() {
 
 func (p *Plmm) OnEvent(msg *robot.Message) {
 	if msg != nil {
-		if msg.IsText() && msg.Content == pluginInfo.Commands[0] {
+		if msg.MatchTextCommand(plugin.Commands) {
 			getPlmmPhoto(msg)
 		}
 	}

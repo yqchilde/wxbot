@@ -24,7 +24,7 @@ type Emoticon struct {
 var (
 	pluginInfo = &Emoticon{
 		PluginMagic: engine.PluginMagic{
-			Desc:     "🚀 输入 /img => 10s内发送表情获取表情原图",
+			Desc:     "🚀 输入 {/img} => 10s内发送表情获取表情原图",
 			Commands: []string{"/img"},
 		},
 	}
@@ -43,7 +43,7 @@ func (e *Emoticon) OnRegister() {
 
 func (e *Emoticon) OnEvent(msg *robot.Message) {
 	if msg != nil {
-		if msg.IsText() && msg.Content == pluginInfo.Commands[0] {
+		if msg.MatchTextCommand(pluginInfo.Commands) {
 			if msg.IsSendByFriend() {
 				sender, err := msg.Sender()
 				if err != nil {

@@ -12,7 +12,7 @@ type MoYuBan struct{ engine.PluginMagic }
 var (
 	pluginInfo = &MoYuBan{
 		engine.PluginMagic{
-			Desc:     "🚀 输入 /myb => 获取摸鱼办日记",
+			Desc:     "🚀 输入 {/myb} => 获取摸鱼办日记",
 			Commands: []string{"/myb"},
 		},
 	}
@@ -26,7 +26,7 @@ func (m *MoYuBan) OnRegister() {}
 
 func (m *MoYuBan) OnEvent(msg *robot.Message) {
 	if msg != nil {
-		if msg.IsText() && msg.Content == pluginInfo.Commands[0] {
+		if msg.MatchTextCommand(pluginInfo.Commands) {
 			if notes, err := DailyLifeNotes(""); err == nil {
 				msg.ReplyText(notes)
 			} else {

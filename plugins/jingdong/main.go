@@ -15,7 +15,7 @@ type JingDong struct{ engine.PluginMagic }
 var (
 	pluginInfo = &JingDong{
 		engine.PluginMagic{
-			Desc:     "🚀 输入 /jd => 获取京东提交CK二维码",
+			Desc:     "🚀 输入 {/jd} => 获取京东提交CK二维码",
 			Commands: []string{"/jd"},
 		},
 	}
@@ -26,7 +26,7 @@ func (p *JingDong) OnRegister() {}
 
 func (p *JingDong) OnEvent(msg *robot.Message) {
 	if msg != nil {
-		if msg.IsText() && msg.Content == "/jd" {
+		if msg.MatchTextCommand(pluginInfo.Commands) {
 			img, err := os.Open("./imgs/jingdong/qrcode.png")
 			if err != nil {
 				msg.ReplyText("Err: " + err.Error())

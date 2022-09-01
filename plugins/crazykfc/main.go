@@ -3,10 +3,7 @@ package crazykfc
 import (
 	"encoding/json"
 	"io"
-	"math/rand"
 	"net/http"
-	"strings"
-	"time"
 
 	"github.com/yqchilde/wxbot/engine"
 	"github.com/yqchilde/wxbot/engine/robot"
@@ -17,7 +14,7 @@ type CrazyKFC struct{ engine.PluginMagic }
 var (
 	pluginInfo = &CrazyKFC{
 		engine.PluginMagic{
-			Desc:     "🚀 输入 /kfc => 获取肯德基疯狂星期四骚话",
+			Desc:     "🚀 输入 {/kfc} => 获取肯德基疯狂星期四骚话",
 			Commands: []string{"/kfc"},
 		},
 	}
@@ -37,12 +34,13 @@ func (p *CrazyKFC) OnRegister() {
 
 func (p *CrazyKFC) OnEvent(msg *robot.Message) {
 	if msg != nil {
-		if msg.IsText() && strings.HasPrefix(msg.Content, pluginInfo.Commands[0]) {
+		if msg.MatchTextCommand(pluginInfo.Commands) {
 			if len(sentence) > 0 {
-				rand.Seed(time.Now().UnixNano())
-				msg.ReplyText(sentence[rand.Intn(len(sentence))])
+				msg.ReplyText(sentence[0])
+				sentence = append(sentence[:0], sentence[1:]...)
 			} else {
 				msg.ReplyText("查询失败，这一定不是bug🤔")
+				p.OnRegister()
 			}
 		}
 	}

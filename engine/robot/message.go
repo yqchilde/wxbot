@@ -1,6 +1,8 @@
 package robot
 
 import (
+	"regexp"
+
 	"github.com/eatmoreapple/openwechat"
 )
 
@@ -25,4 +27,25 @@ func (m *Message) SenderInGroup() (*User, error) {
 func (m *Message) Receiver() (*User, error) {
 	receiver, err := m.Message.Receiver()
 	return &User{receiver}, err
+}
+
+func (m *Message) MatchTextCommand(commands []string) bool {
+	if m.IsText() {
+		for i := range commands {
+			if commands[i] == m.Content {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (m *Message) MatchRegexCommand(commands []string) bool {
+	if m.IsText() {
+		for i := range commands {
+			re := regexp.MustCompile(commands[i])
+			return re.MatchString(m.Content)
+		}
+	}
+	return false
 }
