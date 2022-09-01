@@ -122,12 +122,12 @@ func keepalive() {
 					log.Errorf("热登录续命失败, err: %v", err)
 					return
 				}
-				log.Println("热登录续命成功")
+				log.Debug("热登录续命成功")
 				if err := robot.Bot.DumpHotReloadStorage(); err != nil {
 					log.Errorf("热登录数据持久化失败, err: %v", err)
 					return
 				}
-				log.Println("热登录数据持久化成功")
+				log.Debug("热登录数据持久化成功")
 			}
 
 			helper, err := robot.Self.FileHelper()
@@ -172,7 +172,7 @@ func checkWhetherNeedToLogin() bool {
 				expiresGMTTime, _ := time.ParseInLocation("Mon, 02-Jan-2006 15:04:05 GMT", cookie.RawExpires, gmtLocal)
 				expiresLocalTime := expiresGMTTime.In(time.Local)
 				overHours := expiresLocalTime.Sub(time.Now().Local()).Hours()
-				log.Printf("距离登录失效还剩%v小时", overHours)
+				log.Debugf("距离登录失效还剩%v小时", overHours)
 				return overHours < 3
 			}
 		}
