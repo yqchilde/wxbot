@@ -1,11 +1,15 @@
 package engine
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"sync/atomic"
+	"time"
 
 	"github.com/eatmoreapple/openwechat"
 	"github.com/yqchilde/pkgs/log"
+	"github.com/yqchilde/pkgs/timer"
 
 	"github.com/yqchilde/wxbot/engine/robot"
 )
@@ -103,7 +107,77 @@ func InitRobot() {
 		robot.Groups = groups
 	}
 
+	robot.Bot = bot
+	go keepalive()
 	bot.Block()
+}
+
+func keepalive() {
+	task := timer.NewTimerTask()
+	_, err := task.AddTaskByFunc("keepalive", "0 0/30 * * * *", func() {
+		if robot.Bot.Alive() {
+			if checkWhetherNeedToLogin() {
+				reloadStorage := &robot.JsonLocalStorage{FileName: "storage.json"}
+				if err := robot.Bot.HotLogin(reloadStorage, false); err != nil {
+					log.Errorf("热登录续命失败, err: %v", err)
+					return
+				}
+				log.Println("热登录续命成功")
+				if err := robot.Bot.DumpHotReloadStorage(); err != nil {
+					log.Errorf("热登录数据持久化失败, err: %v", err)
+					return
+				}
+				log.Println("热登录数据持久化成功")
+			}
+
+			helper, err := robot.Self.FileHelper()
+			if err != nil {
+				log.Errorf("获取文件助手失败, err: %v", err)
+				return
+			}
+			if _, err := helper.SendText(openwechat.ZombieText); err != nil {
+				log.Errorf("Robot保活失败, err: %v", err)
+				return
+			}
+			log.Println("Robot保活成功")
+		}
+	})
+	if err != nil {
+		log.Errorf("NewScheduled add task error: %v", err)
+	}
+}
+
+func checkWhetherNeedToLogin() bool {
+	storage, err := os.ReadFile("storage.json")
+	if err != nil {
+		log.Errorf("获取热登录配置失败, err: %v", err)
+		return false
+	}
+
+	var hotLoginData openwechat.HotReloadStorageItem
+	err = json.Unmarshal(storage, &hotLoginData)
+	if err != nil {
+		log.Errorf("unmarshal hot login storage err: %v", err)
+		return false
+	}
+
+	for _, cookies := range hotLoginData.Cookies {
+		if len(cookies) <= 0 {
+			continue
+		}
+
+		for _, cookie := range cookies {
+			if cookie.Name == "wxsid" {
+				gmtLocal, _ := time.LoadLocation("GMT")
+				expiresGMTTime, _ := time.ParseInLocation("Mon, 02-Jan-2006 15:04:05 GMT", cookie.RawExpires, gmtLocal)
+				expiresLocalTime := expiresGMTTime.In(time.Local)
+				overHours := expiresLocalTime.Sub(time.Now().Local()).Hours()
+				log.Printf("距离登录失效还剩%v小时", overHours)
+				return overHours < 3
+			}
+		}
+	}
+	return false
 }
 
 func getGroupNicknameByGroupUsername(username string) string {
