@@ -64,5 +64,8 @@ func getBaiKe(keyword string) (*ApiResponse, error) {
 		log.Errorf("failed to unmarshal api response, err: %v", err)
 		return nil, err
 	}
+	if len(data.Abstract) == 0 {
+		return nil, nil
+	}
 	return &data, nil
 }
