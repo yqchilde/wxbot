@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/yqchilde/wxbot/engine"
+	_ "github.com/yqchilde/wxbot/plugins/baidubaike"   // 百度百科
 	_ "github.com/yqchilde/wxbot/plugins/covid19"      // 城市新冠疫情查询
 	_ "github.com/yqchilde/wxbot/plugins/crazykfc"     // 肯德基疯狂星期四骚话
 	_ "github.com/yqchilde/wxbot/plugins/cronjob"      // 漂亮妹妹

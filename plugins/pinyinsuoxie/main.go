@@ -20,7 +20,7 @@ type PinYinSuoXie struct{ engine.PluginMagic }
 var (
 	pluginInfo = &PinYinSuoXie{
 		engine.PluginMagic{
-			Desc:     "🚀 输入 {查缩写 XX} => 获取拼音缩写翻译，比如:查缩写 yyds",
+			Desc:     "🚀 输入 {查缩写 XX} => 获取拼音缩写翻译，Ps:查缩写 yyds",
 			Commands: []string{"^查缩写 ?([a-zA-Z0-9]+)$"},
 		},
 	}
