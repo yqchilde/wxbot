@@ -47,6 +47,10 @@ func InitRobot() {
 		}
 
 		if msg.IsText() {
+			// isAt存在bug，需要跟内容才会触发，后续更新
+			if msg.IsAt() {
+				msg.ReplyText("您可以发送menu | 菜单获取更多姿势😎")
+			}
 			if msg.Content == "menu" || msg.Content == "菜单" {
 				msg.ReplyText(menuItems)
 			}
