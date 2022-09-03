@@ -24,8 +24,8 @@ type Emoticon struct {
 var (
 	pluginInfo = &Emoticon{
 		PluginMagic: engine.PluginMagic{
-			Desc:     "🚀 输入 {/img} => 10s内发送表情获取表情原图",
-			Commands: []string{"/img"},
+			Desc:     "🚀 输入 {表情原图} => 10s内发送表情获取表情原图",
+			Commands: []string{"表情原图"},
 		},
 	}
 	plugin      = engine.InstallPlugin(pluginInfo)

@@ -12,8 +12,8 @@ type MoYuBan struct{ engine.PluginMagic }
 var (
 	pluginInfo = &MoYuBan{
 		engine.PluginMagic{
-			Desc:     "🚀 输入 {/myb} => 获取摸鱼办日记",
-			Commands: []string{"/myb"},
+			Desc:     "🚀 输入 {摸鱼日记} => 获取摸鱼办日记",
+			Commands: []string{"摸鱼日记"},
 		},
 	}
 	_ = engine.InstallPlugin(pluginInfo)

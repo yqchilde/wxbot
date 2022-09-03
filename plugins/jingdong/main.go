@@ -15,8 +15,8 @@ type JingDong struct{ engine.PluginMagic }
 var (
 	pluginInfo = &JingDong{
 		engine.PluginMagic{
-			Desc:     "🚀 输入 {/jd} => 获取京东提交CK二维码",
-			Commands: []string{"/jd"},
+			Desc:     "🚀 输入 {京东上车} => 快上车和我一起挂京豆",
+			Commands: []string{"京东上车"},
 		},
 	}
 	_ = engine.InstallPlugin(pluginInfo)

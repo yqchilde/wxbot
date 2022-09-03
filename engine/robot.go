@@ -36,18 +36,20 @@ func InitRobot() {
 			return
 		}
 
-		reply := "YY Bot🤖\n"
+		menuItems := "YY Bot🤖\n"
 		for _, plugin := range Plugins {
 			if plugin.RawConfig["enable"] != false {
 				plugin.Config.OnEvent(&robot.Message{Message: msg})
 			}
 			if !plugin.HiddenMenu {
-				reply += plugin.Desc + "\n"
+				menuItems += plugin.Desc + "\n"
 			}
 		}
 
-		if msg.IsText() && msg.Content == "/menu" {
-			msg.ReplyText(reply)
+		if msg.IsText() {
+			if msg.Content == "menu" || msg.Content == "菜单" {
+				msg.ReplyText(menuItems)
+			}
 		}
 		if msg.IsSendByFriend() {
 			sender, err := msg.Sender()

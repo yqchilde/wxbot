@@ -19,8 +19,8 @@ type Plmm struct {
 var (
 	pluginInfo = &Plmm{
 		PluginMagic: engine.PluginMagic{
-			Desc:     "🚀 输入 {/plmm} => 获取漂亮妹妹",
-			Commands: []string{"/plmm"},
+			Desc:     "🚀 输入 {漂亮妹妹} => 获取漂亮妹妹",
+			Commands: []string{"漂亮妹妹"},
 		},
 	}
 	plugin = engine.InstallPlugin(pluginInfo)

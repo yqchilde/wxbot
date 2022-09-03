@@ -14,8 +14,8 @@ type CrazyKFC struct{ engine.PluginMagic }
 var (
 	pluginInfo = &CrazyKFC{
 		engine.PluginMagic{
-			Desc:     "🚀 输入 {/kfc} => 获取肯德基疯狂星期四骚话",
-			Commands: []string{"/kfc"},
+			Desc:     "🚀 输入 {kfc骚话} => 获取肯德基疯狂星期四骚话",
+			Commands: []string{"kfc骚话"},
 		},
 	}
 	_        = engine.InstallPlugin(pluginInfo)
