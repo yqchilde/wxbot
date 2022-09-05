@@ -38,7 +38,7 @@ func (p *Covid19) OnEvent(msg *robot.Message) {
 
 				var str string
 				var ret string
-				if len(city) > 0 {
+				if len(city) > 0 && city != "全国" {
 					data, err := getCityCovid19Info(city)
 					if err != nil {
 						log.Println(err)

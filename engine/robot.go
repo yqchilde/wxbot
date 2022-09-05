@@ -51,7 +51,7 @@ func InitRobot() {
 			if msg.IsAt() {
 				msg.ReplyText("您可以发送menu | 菜单获取更多姿势😎")
 			}
-			if msg.Content == "menu" || msg.Content == "菜单" {
+			if msg.Content == "menu" || msg.Content == "菜单" || msg.Content == "/menu" {
 				msg.ReplyText(menuItems)
 			}
 		}
@@ -179,7 +179,7 @@ func checkWhetherNeedToLogin() bool {
 				expiresLocalTime := expiresGMTTime.In(time.Local)
 				overHours := expiresLocalTime.Sub(time.Now().Local()).Hours()
 				log.Debugf("距离登录失效还剩%v小时", overHours)
-				return overHours < 3
+				return overHours < 6
 			}
 		}
 	}
