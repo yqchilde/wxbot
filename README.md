@@ -10,6 +10,12 @@
 🚀 输入 {漂亮妹妹} => 获取漂亮妹妹  
 🚀 输入 {XX疫情查询} => 获取疫情数据，Ps:济南疫情查询  
 
+## Feature
+
+如果您感觉这个项目有意思，麻烦帮我点一下star  
+如果您有好玩的插件想要开发，可以提交pr
+
 ## Thanks
 
+机器人核心由 [openwechat](https://github.com/eatmoreapple/openwechat) SDK实现  
 插件式设计受 `monibuca` 项目启发，Thanks♪(･ω･)ﾉ
