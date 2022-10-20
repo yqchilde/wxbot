@@ -3,7 +3,7 @@ module github.com/yqchilde/wxbot
 go 1.19
 
 require (
-	github.com/eatmoreapple/openwechat v1.1.14
+	github.com/eatmoreapple/openwechat v1.1.15
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/pkg/errors v0.9.1
 	github.com/tidwall/gjson v1.14.2

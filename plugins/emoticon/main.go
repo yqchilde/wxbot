@@ -29,7 +29,7 @@ var (
 		},
 	}
 	plugin      = engine.InstallPlugin(pluginInfo)
-	users       = make(map[string]string) // 用户指令 key:username val:command
+	userCommand = make(map[string]string) // 用户指令 key:username val:command
 	waitCommand = make(chan *robot.Message)
 	mutex       sync.Mutex
 )
@@ -48,6 +48,9 @@ func (e *Emoticon) OnEvent(msg *robot.Message) {
 				sender, err := msg.Sender()
 				if err != nil {
 					log.Printf("handleMessage get sender error: %v", err)
+					return
+				}
+				if addCommand(sender.UserName, msg.Content) {
 					return
 				}
 
@@ -73,9 +76,12 @@ func (e *Emoticon) OnEvent(msg *robot.Message) {
 		}
 
 		if msg.IsEmoticon() {
-			for _, command := range users {
-				if command == "/img" {
-					waitCommand <- msg
+			for i := range userCommand {
+				for j := range pluginInfo.Commands {
+					if userCommand[i] == pluginInfo.Commands[j] {
+						waitCommand <- msg
+						break
+					}
 				}
 			}
 		}
@@ -87,10 +93,10 @@ func addCommand(sender, command string) bool {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if val, ok := users[sender]; ok && val == command {
+	if val, ok := userCommand[sender]; ok && val == command {
 		return true
 	} else {
-		users[sender] = command
+		userCommand[sender] = command
 		return false
 	}
 }
@@ -100,7 +106,7 @@ func removeCommand(sender string) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	delete(users, sender)
+	delete(userCommand, sender)
 }
 
 func getAtMessage(nickName, content string) string {
