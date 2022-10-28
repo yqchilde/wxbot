@@ -2,8 +2,6 @@ package plmm
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/imroc/req/v3"
 	"github.com/yqchilde/pkgs/log"
 
@@ -30,12 +28,7 @@ var (
 	plugin = engine.InstallPlugin(pluginInfo)
 )
 
-func (p *Plmm) OnRegister() {
-	err := os.MkdirAll(plugin.RawConfig.Get("dir").(string), os.ModePerm)
-	if err != nil {
-		panic("init plmm img dir error: " + err.Error())
-	}
-}
+func (p *Plmm) OnRegister() {}
 
 func (p *Plmm) OnEvent(msg *robot.Message) {
 	if msg != nil {

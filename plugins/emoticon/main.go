@@ -3,7 +3,6 @@ package emoticon
 import (
 	"context"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
@@ -30,12 +29,7 @@ var (
 	mutex       sync.Mutex
 )
 
-func (e *Emoticon) OnRegister() {
-	err := os.MkdirAll(plugin.RawConfig.Get("dir").(string), os.ModePerm)
-	if err != nil {
-		panic("init img dir error: " + err.Error())
-	}
-}
+func (e *Emoticon) OnRegister() {}
 
 func (e *Emoticon) OnEvent(msg *robot.Message) {
 	if msg != nil {
