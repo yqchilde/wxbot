@@ -32,7 +32,7 @@ func (p *PinYinSuoXie) OnRegister() {}
 func (p *PinYinSuoXie) OnEvent(msg *robot.Message) {
 	if msg != nil {
 		if msg.MatchRegexCommand(pluginInfo.Commands) {
-			var re = regexp.MustCompile(`(?m)^查缩写 ?([a-zA-Z0-9]+)$`)
+			var re = regexp.MustCompile(pluginInfo.Commands[0])
 			match := re.FindAllStringSubmatch(msg.Content.Msg, -1)
 			if len(match) > 0 && len(match[0]) > 1 {
 				if data, err := transPinYinSuoXie(match[0][1]); err == nil {

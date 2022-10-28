@@ -30,7 +30,7 @@ func (p *BaiDuBaiKe) OnRegister() {}
 func (p *BaiDuBaiKe) OnEvent(msg *robot.Message) {
 	if msg != nil {
 		if msg.MatchRegexCommand(pluginInfo.Commands) {
-			var re = regexp.MustCompile(`(?m)^百度百科 ?(.*?)$`)
+			var re = regexp.MustCompile(pluginInfo.Commands[0])
 			match := re.FindAllStringSubmatch(msg.Content.Msg, -1)
 			if len(match) > 0 && len(match[0]) > 1 {
 				if data, err := getBaiKe(match[0][1]); err == nil {
