@@ -3,16 +3,12 @@ package emoticon
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
-	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/yqchilde/wxbot/engine"
 	"github.com/yqchilde/wxbot/engine/robot"
-	"github.com/yqchilde/wxbot/engine/util"
 )
 
 type Emoticon struct {
@@ -44,35 +40,20 @@ func (e *Emoticon) OnRegister() {
 func (e *Emoticon) OnEvent(msg *robot.Message) {
 	if msg != nil {
 		if msg.MatchTextCommand(pluginInfo.Commands) {
-			if msg.IsSendByFriend() {
-				sender, err := msg.Sender()
-				if err != nil {
-					log.Printf("handleMessage get sender error: %v", err)
-					return
-				}
-				if addCommand(sender.UserName, msg.Content) {
-					return
-				}
-
-				msg.ReplyText(getAtMessage(sender.NickName, "请在10秒内发送表情图"))
-				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-				go waitEmoticon(ctx, cancel, msg, sender)
-
-			} else {
-				sender, err := msg.SenderInGroup()
-				if err != nil {
-					log.Printf("handleMessage get sender error: %v", err)
-					return
-				} else {
-					if addCommand(sender.UserName, msg.Content) {
-						return
-					}
-				}
-
-				msg.ReplyText(getAtMessage(sender.NickName, "请在10秒内发送表情图"))
-				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-				go waitEmoticon(ctx, cancel, msg, sender)
+			if addCommand(msg.Content.FromWxid, msg.Content.Msg) {
+				return
 			}
+
+			if msg.IsSendByPrivateChat() {
+				msg.ReplyText("请在10s内发送表情获取表情原图")
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				go waitEmoticon(ctx, cancel, msg)
+			} else if msg.IsSendByGroupChat() {
+				msg.ReplyTextAndAt("请在10s内发送表情获取表情原图")
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				go waitEmoticon(ctx, cancel, msg)
+			}
+
 		}
 
 		if msg.IsEmoticon() {
@@ -109,63 +90,27 @@ func removeCommand(sender string) {
 	delete(userCommand, sender)
 }
 
-func getAtMessage(nickName, content string) string {
-	return fmt.Sprintf("@%s\u2005%s", nickName, content)
-}
-
-func waitEmoticon(ctx context.Context, cancel context.CancelFunc, msg *robot.Message, sender *robot.User) {
+func waitEmoticon(ctx context.Context, cancel context.CancelFunc, msg *robot.Message) {
 	defer func() {
 		cancel()
-		removeCommand(sender.UserName)
+		removeCommand(msg.Content.FromWxid)
 	}()
 
 	for {
 		select {
 		case <-ctx.Done():
-			_, err := msg.ReplyText(getAtMessage(sender.NickName, "操作超时，请重新输入命令"))
-			if err != nil {
-				log.Printf("handleMessage reply error: %v", err)
+			fmt.Println("waitEmoticon timeout")
+			if msg.IsSendByPrivateChat() {
+				msg.ReplyText("10s内未发送表情，获取表情原图失败")
+			} else if msg.IsSendByGroupChat() {
+				msg.ReplyTextAndAt("10s内未发送表情，获取表情原图失败")
 			}
 			return
 		case msg := <-waitCommand:
-			emoticon, err := robot.UnMarshalForEmoticon(msg.Content)
-			if err != nil {
-				log.Printf("waitEmoticon UnMarshalForEmoticon error: %v", err)
-				return
+			emoticonUrl := msg.Content.Msg[5 : len(msg.Content.Msg)-1]
+			if err := msg.ReplyImage(emoticonUrl); err != nil {
+				msg.ReplyText(err.Error())
 			}
-			emoticonUrl := emoticon.Emoji.Cdnurl
-			msg.ReplyText(getAtMessage(sender.NickName, "表情包原图如下"))
-			fileName := fmt.Sprintf("%s/%s", plugin.RawConfig.Get("dir"), time.Now().Format("20060102150405"))
-			fileName, err = util.SingleDownload(util.ImgInfo{Url: emoticonUrl, Name: fileName})
-			if err != nil {
-				log.Printf("Failed to download emoticon, err: %v", err)
-				return
-			}
-
-			emoticonFile, err := os.Open(fileName)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			if filepath.Ext(fileName) == ".gif" {
-				if _, err := msg.ReplyFile(emoticonFile); err != nil {
-					if strings.Contains(err.Error(), "operate too often") {
-						msg.ReplyText("Warn: 被微信ban了，请稍后再试")
-					} else {
-						log.Printf("msg.ReplyImage reply image error: %v", err)
-					}
-				}
-			} else {
-				if _, err := msg.ReplyImage(emoticonFile); err != nil {
-					if strings.Contains(err.Error(), "operate too often") {
-						msg.ReplyText("Warn: 被微信ban了，请稍后再试")
-					} else {
-						log.Printf("msg.ReplyImage reply image error: %v", err)
-					}
-				}
-			}
-			emoticonFile.Close()
-			os.Remove(fileName)
 			return
 		}
 	}

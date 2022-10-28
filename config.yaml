@@ -1,16 +1,21 @@
-emoticon:
-  enable: true
-  dir: "./imgs/emoticon"
+robot:
+  server: "http://192.168.31.8:9527"
+  token: "yqchilde"
 
-plmm:
-  enable: true
-  dir: "./imgs/plmm"
-  url: "https://www.mxnzp.com/api/image/girl/list/random"
-  appId: ""
-  appSecret: ""
+plugins:
+  emoticon:
+    enable: true
+    dir: "./imgs/emoticon"
 
-cronjob:
-  enable: true
-  myb:
-    cron: "0 30 9 * * *"
-    groups: [ "卤蛋群","Test" ]
+  plmm:
+    enable: true
+    dir: "./imgs/plmm"
+    url: "https://www.mxnzp.com/api/image/girl/list/random"
+    appId: ""
+    appSecret: ""
+
+  cronjob:
+    enable: true
+    myb:
+      cron: "0 30 9 * * *"
+      groups: [ "卤蛋群","Test" ]

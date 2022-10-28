@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 
+	"github.com/yqchilde/pkgs/log"
+
 	"github.com/yqchilde/wxbot/engine"
 	_ "github.com/yqchilde/wxbot/plugins/baidubaike"   // 百度百科
 	_ "github.com/yqchilde/wxbot/plugins/covid19"      // 城市新冠疫情查询
@@ -17,5 +19,8 @@ import (
 
 func main() {
 	ctx := context.Background()
-	engine.Run(ctx, "config.yaml")
+	err := engine.Run(ctx, "config.yaml")
+	if err != nil {
+		log.Fatalf("failed to start robot: %v", err)
+	}
 }

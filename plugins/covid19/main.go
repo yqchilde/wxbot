@@ -32,7 +32,7 @@ func (p *Covid19) OnEvent(msg *robot.Message) {
 	if msg != nil {
 		if msg.MatchRegexCommand(pluginInfo.Commands) {
 			var re = regexp.MustCompile(`([^\x00-\xff]{0,6})疫情查询`)
-			match := re.FindAllStringSubmatch(msg.Content, -1)
+			match := re.FindAllStringSubmatch(msg.Content.Msg, -1)
 			if len(match) > 0 && len(match[0]) > 1 {
 				city := match[0][1]
 

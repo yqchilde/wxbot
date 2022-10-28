@@ -24,15 +24,13 @@ func init() {
 
 // Run 启动engine，注册plugin
 func Run(ctx context.Context, configPath string) (err error) {
-	// context bind engine
 	Engine.Context = ctx
-
-	// configuration config file
 	configRaw, err := os.ReadFile(configPath)
 	if err != nil {
 		log.Panic("read config file error:", err.Error())
 	}
-	//var conf config.Config
+
+	// 解析配置文件
 	conf := new(config.Config)
 	if configRaw != nil {
 		if err = yaml.Unmarshal(configRaw, conf); err == nil {
@@ -45,7 +43,7 @@ func Run(ctx context.Context, configPath string) (err error) {
 	// 合并插件配置
 	Engine.RawConfig = config.Struct2Config(config.Global)
 	for name, plugin := range Plugins {
-		plugin.RawConfig = conf.GetChild(name)
+		plugin.RawConfig = conf.GetChild("plugins").GetChild(name)
 		plugin.Assign()
 
 		if plugin.RawConfig["enable"] != false {
@@ -54,7 +52,9 @@ func Run(ctx context.Context, configPath string) (err error) {
 	}
 
 	// 初始化机器人
-	InitRobot()
+	if err := InitRobot(conf); err != nil {
+		return err
+	}
 
 	return
 }
