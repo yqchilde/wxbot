@@ -22,11 +22,6 @@ const (
 	EventGroupEstablish      = "EventGroupEstablish"      // 创建新的群聊事件
 )
 
-type Robot struct {
-	Server string `yaml:"server"`
-	Token  string `yaml:"token"`
-}
-
 type Message struct {
 	SdkVer  int    `json:"sdkVer"`
 	Event   string `json:"Event"`
@@ -43,7 +38,6 @@ type Message struct {
 		RobotType     int            `json:"robot_type"`
 		MsgId         string         `json:"msg_id"`
 	} `json:"content"`
-	Robot Robot
 }
 
 type MessageSource struct {
@@ -109,18 +103,18 @@ func (m *Message) MatchRegexCommand(commands []string) bool {
 
 func (m *Message) ReplyText(msg string) error {
 	payload := map[string]interface{}{
-		"token":      m.Robot.Token,
+		"api":        "SendTextMsg",
+		"token":      MyRobot.Token,
 		"msg":        formatTextMessage(msg),
 		"robot_wxid": m.Content.RobotWxid,
 		"to_wxid":    m.Content.FromWxid,
-		"api":        "SendTextMsg",
 	}
 	if m.IsSendByGroupChat() {
 		payload["to_wxid"] = m.Content.FromGroup
 	}
 
 	var resp MessageResp
-	err := req.C().SetBaseURL(m.Robot.Server).Post().SetBody(payload).Do().Into(&resp)
+	err := req.C().SetBaseURL(MyRobot.Server).Post().SetBody(payload).Do().Into(&resp)
 	if err != nil {
 		log.Errorf("reply text message error: %v", err)
 		return err
@@ -137,17 +131,17 @@ func (m *Message) ReplyTextAndAt(msg string) error {
 		return errors.New("only group chat can reply text and at")
 	}
 	payload := map[string]interface{}{
-		"token":       m.Robot.Token,
+		"api":         "SendGroupMsgAndAt",
+		"token":       MyRobot.Token,
 		"msg":         formatTextMessage(msg),
 		"robot_wxid":  m.Content.RobotWxid,
 		"group_wxid":  m.Content.FromGroup,
 		"member_wxid": m.Content.FromWxid,
 		"member_name": m.Content.FromName,
-		"api":         "SendGroupMsgAndAt",
 	}
 
 	var resp MessageResp
-	err := req.C().SetBaseURL(m.Robot.Server).Post().SetBody(payload).Do().Into(&resp)
+	err := req.C().SetBaseURL(MyRobot.Server).Post().SetBody(payload).Do().Into(&resp)
 	if err != nil {
 		log.Errorf("reply text message error: %v", err)
 		return err
@@ -161,18 +155,18 @@ func (m *Message) ReplyTextAndAt(msg string) error {
 
 func (m *Message) ReplyImage(path string) error {
 	payload := map[string]interface{}{
-		"token":      m.Robot.Token,
+		"api":        "SendImageMsg",
+		"token":      MyRobot.Token,
 		"path":       path,
 		"robot_wxid": m.Content.RobotWxid,
 		"to_wxid":    m.Content.FromWxid,
-		"api":        "SendImageMsg",
 	}
 	if m.IsSendByGroupChat() {
 		payload["to_wxid"] = m.Content.FromGroup
 	}
 
 	var resp MessageResp
-	err := req.C().SetBaseURL(m.Robot.Server).Post().SetBody(payload).Do().Into(&resp)
+	err := req.C().SetBaseURL(MyRobot.Server).Post().SetBody(payload).Do().Into(&resp)
 	if err != nil {
 		log.Errorf("reply image message error: %v", err)
 		return err

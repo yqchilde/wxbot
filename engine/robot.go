@@ -14,11 +14,13 @@ import (
 
 func InitRobot(conf *config.Config) error {
 	// 检查配置
-	var bot robot.Robot
+	var bot robot.BotConf
 	conf.GetChild("robot").Unmarshal(&bot)
 	if bot.Server == "" || bot.Token == "" {
 		return errors.New("robot config error")
 	}
+	robot.MyRobot = bot
+	bot.GetRobotInfo()
 	log.Println("success to start robot")
 
 	gin.SetMode(gin.ReleaseMode)
@@ -30,7 +32,6 @@ func InitRobot(conf *config.Config) error {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"Code": "0"})
-		msg.Robot = bot
 
 		// 菜单
 		menuItems := "YY Bot🤖\n"

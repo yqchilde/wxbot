@@ -39,7 +39,15 @@ func (c *CronJob) OnRegister() {
 		_, err := task.AddTaskByFunc("myb", cron.(string), func() {
 			if notes, err := moyuban.DailyLifeNotes("", 0); err == nil {
 				for _, val := range groups.([]interface{}) {
-					robot.Groups.SearchByNickName(1, val.(string)).SendText(notes)
+					groupList, err := robot.MyRobot.GetGroupList()
+					if err != nil {
+						panic(err)
+					}
+					for _, group := range groupList {
+						if group.Nickname == val.(string) {
+							robot.MyRobot.SendText(group.Wxid, notes)
+						}
+					}
 				}
 			}
 		})
