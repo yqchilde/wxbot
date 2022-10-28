@@ -20,7 +20,7 @@ var (
 	pluginInfo = &Covid19{
 		engine.PluginMagic{
 			Desc:     "🚀 输入 {XX疫情查询} => 获取疫情数据，Ps:济南疫情查询",
-			Commands: []string{`([^\x00-\xff]{0,6})疫情查询`},
+			Commands: []string{`([^\x00-\xff]{0,6})疫情(.*)`},
 		},
 	}
 	_ = engine.InstallPlugin(pluginInfo)
