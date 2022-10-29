@@ -20,7 +20,7 @@ func (b *BotConf) GetRobotInfo() error {
 	}
 
 	var resp BotList
-	err := req.C().SetBaseURL(MyRobot.Server).Post().SetBody(payload).Do().Into(&resp)
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
 	if err != nil {
 		log.Errorf("get robot info error: %v", err)
 		return err
@@ -42,12 +42,11 @@ func (b *BotConf) GetGroupList() ([]Group, error) {
 	}
 
 	var resp GroupList
-	err := req.C().SetBaseURL(MyRobot.Server).Post().SetBody(payload).Do().Into(&resp)
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
 	if err != nil {
 		log.Errorf("get robot info error: %v", err)
 		return nil, err
 	}
-	log.Printf("info: %#+v", resp)
 	if resp.Code != 0 {
 		log.Errorf("get robot info error: %s", resp.Result)
 		return nil, err
@@ -66,7 +65,30 @@ func (b *BotConf) SendText(toWxID string, msg string) error {
 	}
 
 	var resp MessageResp
-	err := req.C().SetBaseURL(MyRobot.Server).Post().SetBody(payload).Do().Into(&resp)
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("reply text message error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("reply text message error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+// SendImage 发送图片消息； to_wxid:好友ID/群ID
+func (b *BotConf) SendImage(toWxID string, path string) error {
+	payload := map[string]interface{}{
+		"api":        "SendImageMsg",
+		"token":      MyRobot.Token,
+		"path":       path,
+		"robot_wxid": MyRobot.Bot.Wxid,
+		"to_wxid":    toWxID,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
 	if err != nil {
 		log.Errorf("reply text message error: %v", err)
 		return err

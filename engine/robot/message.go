@@ -80,7 +80,7 @@ func (m *Message) IsSendByPrivateChat() bool {
 	return m.Event == EventPrivateChat
 }
 
-func (m *Message) MatchTextCommand(commands []string) bool {
+func (m *Message) MatchTextCommand(commands []string) (match bool) {
 	if m.IsText() {
 		for i := range commands {
 			if commands[i] == m.Content.Msg {
@@ -91,14 +91,16 @@ func (m *Message) MatchTextCommand(commands []string) bool {
 	return false
 }
 
-func (m *Message) MatchRegexCommand(commands []string) bool {
+func (m *Message) MatchRegexCommand(commands []string) (index int, match bool) {
 	if m.IsText() {
 		for i := range commands {
 			re := regexp.MustCompile(commands[i])
-			return re.MatchString(m.Content.Msg)
+			if re.MatchString(m.Content.Msg) {
+				return i, true
+			}
 		}
 	}
-	return false
+	return 0, false
 }
 
 func (m *Message) ReplyText(msg string) error {
@@ -114,7 +116,7 @@ func (m *Message) ReplyText(msg string) error {
 	}
 
 	var resp MessageResp
-	err := req.C().SetBaseURL(MyRobot.Server).Post().SetBody(payload).Do().Into(&resp)
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
 	if err != nil {
 		log.Errorf("reply text message error: %v", err)
 		return err
@@ -141,7 +143,7 @@ func (m *Message) ReplyTextAndAt(msg string) error {
 	}
 
 	var resp MessageResp
-	err := req.C().SetBaseURL(MyRobot.Server).Post().SetBody(payload).Do().Into(&resp)
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
 	if err != nil {
 		log.Errorf("reply text message error: %v", err)
 		return err
@@ -166,7 +168,7 @@ func (m *Message) ReplyImage(path string) error {
 	}
 
 	var resp MessageResp
-	err := req.C().SetBaseURL(MyRobot.Server).Post().SetBody(payload).Do().Into(&resp)
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
 	if err != nil {
 		log.Errorf("reply image message error: %v", err)
 		return err

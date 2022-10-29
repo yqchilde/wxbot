@@ -1,12 +1,15 @@
 package cronjob
 
 import (
+	"fmt"
+	"time"
+
+	"github.com/imroc/req/v3"
 	"github.com/yqchilde/pkgs/log"
 	"github.com/yqchilde/pkgs/timer"
 
 	"github.com/yqchilde/wxbot/engine"
 	"github.com/yqchilde/wxbot/engine/robot"
-	"github.com/yqchilde/wxbot/plugins/moyuban"
 )
 
 type CronJob struct {
@@ -37,15 +40,17 @@ func (c *CronJob) OnRegister() {
 		groups := myb.Get("groups")
 		task := timer.NewTimerTask()
 		_, err := task.AddTaskByFunc("myb", cron.(string), func() {
-			if notes, err := moyuban.DailyLifeNotes("", 0); err == nil {
-				for _, val := range groups.([]interface{}) {
-					groupList, err := robot.MyRobot.GetGroupList()
-					if err != nil {
-						panic(err)
-					}
-					for _, group := range groupList {
-						if group.Nickname == val.(string) {
-							robot.MyRobot.SendText(group.Wxid, notes)
+			if checkWorkingDay() {
+				if url := getMoYuData(); url != "" {
+					for _, val := range groups.([]interface{}) {
+						groupList, err := robot.MyRobot.GetGroupList()
+						if err != nil {
+							panic(err)
+						}
+						for _, group := range groupList {
+							if group.Nickname == val.(string) {
+								robot.MyRobot.SendImage(group.Wxid, url)
+							}
 						}
 					}
 				}
@@ -58,3 +63,41 @@ func (c *CronJob) OnRegister() {
 }
 
 func (c *CronJob) OnEvent(msg *robot.Message) {}
+
+func checkWorkingDay() bool {
+	type Resp struct {
+		Code int `json:"code"`
+		Type struct {
+			Type int `json:"type"`
+		} `json:"type"`
+	}
+	var resp Resp
+	if err := req.C().Get(fmt.Sprintf("http://timor.tech/api/holiday/info?t=%s", time.Now().Format("20060102150405"))).Do().Into(&resp); err != nil {
+		return false
+	}
+	if resp.Code != 0 {
+		return false
+	}
+	if resp.Type.Type == 1 || resp.Type.Type == 2 { // 周末与节假日
+		return false
+	}
+	return true
+}
+
+func getMoYuData() (url string) {
+	type Resp struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+		Data    struct {
+			MoyuUrl string `json:"moyu_url"`
+		} `json:"data"`
+	}
+	var resp Resp
+	if err := req.C().Get("https://api.j4u.ink/v1/store/other/proxy/remote/moyu.json").Do().Into(&resp); err != nil {
+		return ""
+	}
+	if resp.Code != 200 || resp.Message != "success" {
+		return ""
+	}
+	return resp.Data.MoyuUrl
+}

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/yqchilde/pkgs/log"
 
@@ -30,8 +31,8 @@ func (p *Covid19) OnRegister() {}
 
 func (p *Covid19) OnEvent(msg *robot.Message) {
 	if msg != nil {
-		if msg.MatchRegexCommand(pluginInfo.Commands) {
-			var re = regexp.MustCompile(pluginInfo.Commands[0])
+		if idx, ok := msg.MatchRegexCommand(pluginInfo.Commands); ok {
+			var re = regexp.MustCompile(pluginInfo.Commands[idx])
 			match := re.FindAllStringSubmatch(msg.Content.Msg, -1)
 			if len(match) > 0 && len(match[0]) > 1 {
 				city := match[0][1]
@@ -43,7 +44,7 @@ func (p *Covid19) OnEvent(msg *robot.Message) {
 					if err != nil {
 						log.Println(err)
 					}
-					str += "● %s疫情今日数据统计如下: \n"
+					str += "😦%s疫情今日数据统计如下: \n"
 					str += "* %s\n"
 					str += "* 新增本土: %s\n"
 					str += "* 新增本土无症状: %s\n"
@@ -57,7 +58,7 @@ func (p *Covid19) OnEvent(msg *robot.Message) {
 					if err != nil {
 						log.Println(err)
 					}
-					str += "● 全国疫情今日数据统计如下: \n"
+					str += "😦全国疫情今日数据统计如下: \n"
 					str += "* 病例%s\n"
 					str += "* 新增本土: %s\n"
 					str += "* 现有本土: %s\n"
@@ -73,7 +74,9 @@ func (p *Covid19) OnEvent(msg *robot.Message) {
 					str += "* 累计死亡: %s(%s)\n"
 					ret = fmt.Sprintf(str, data.LastUpdateTime, data.LocalAdd, data.LocalNow, data.LocalAddWzz, data.LocalNowWzz, data.ForeignAdd, data.ForeignNow, data.HkMacTwAdd, data.ConfirmNow, data.ConfirmTotal, data.ConfirmTotalAdd, data.ForeignTotal, data.ForeignTotalAdd, data.HealTotal, data.HealTotalAdd, data.DeadTotal, data.DeadTotalAdd)
 				}
-				msg.ReplyText(ret)
+				COVID19DaysCal := time.Now().Local().Sub(time.Date(2019, 12, 16, 0, 0, 0, 0, time.Local)).Hours() / 24
+				COVID19Duration := fmt.Sprintf("😷自新冠疫情爆发以来已经过了%d天了，外出记得做好自我防护\n", int(COVID19DaysCal))
+				msg.ReplyText(COVID19Duration + ret)
 			}
 		}
 	}

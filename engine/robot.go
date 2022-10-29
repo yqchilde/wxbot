@@ -59,9 +59,9 @@ func InitRobot(conf *config.Config) error {
 		}
 		if msg.IsSendByGroupChat() {
 			if msg.IsText() {
-				log.Println(fmt.Sprintf("收到群(%s[%s])消息 ==> %v", msg.Content.FromGroupName, msg.Content.FromName, msg.Content.Msg))
+				log.Println(fmt.Sprintf("收到群聊(%s[%s])消息 ==> %v", msg.Content.FromGroupName, msg.Content.FromName, msg.Content.Msg))
 			} else {
-				log.Println(fmt.Sprintf("收到群(%s[%s])消息 ==> %v", msg.Content.FromGroupName, msg.Content.FromName, msg.Content.Msg))
+				log.Println(fmt.Sprintf("收到群聊(%s[%s])消息 ==> %v", msg.Content.FromGroupName, msg.Content.FromName, msg.Content.Msg))
 			}
 		}
 	})
