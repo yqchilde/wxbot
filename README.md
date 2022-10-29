@@ -18,6 +18,6 @@
 ## Thanks
 
 非Hook版机器人核心由 [openwechat](https://github.com/eatmoreapple/openwechat) SDK实现，切换分支查看    
-Hook版机器人由xyohttp_api对接完成，为vlw分支
+Hook版机器人框架我使用的是《我的框架》，插件由xyohttp_api对接完成，为vlw分支
 
 插件式设计受 `monibuca` 项目启发，Thanks♪(･ω･)ﾉ
