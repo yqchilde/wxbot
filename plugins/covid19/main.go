@@ -9,8 +9,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/yqchilde/pkgs/log"
-
 	"github.com/yqchilde/wxbot/engine"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
@@ -24,7 +22,7 @@ var (
 			Commands: []string{`([^\x00-\xff]{0,6})疫情(.*)`},
 		},
 	}
-	_ = engine.InstallPlugin(pluginInfo)
+	plugin = engine.InstallPlugin(pluginInfo)
 )
 
 func (p *Covid19) OnRegister() {}
@@ -42,7 +40,7 @@ func (p *Covid19) OnEvent(msg *robot.Message) {
 				if len(city) > 0 && city != "全国" {
 					data, err := getCityCovid19Info(city)
 					if err != nil {
-						log.Println(err)
+						plugin.Errorf(err.Error())
 					}
 					str += "😦%s疫情今日数据统计如下: \n"
 					str += "* %s\n"
@@ -56,7 +54,7 @@ func (p *Covid19) OnEvent(msg *robot.Message) {
 				} else {
 					data, err := getDomesticCovid19Info()
 					if err != nil {
-						log.Println(err)
+						plugin.Errorf(err.Error())
 					}
 					str += "😦全国疫情今日数据统计如下: \n"
 					str += "* 病例%s\n"
@@ -86,18 +84,18 @@ func getDomesticCovid19Info() (*EpidemicData, error) {
 	api := "https://opendata.baidu.com/data/inner?resource_id=5653&query=国内新型肺炎最新动态&dsp=iphone&tn=wisexmlnew&alr=1&is_opendata=1"
 	resp, err := http.Get(api)
 	if err != nil {
-		log.Printf("failed to get covid19 info api, err: %v", err)
+		plugin.Errorf("failed to get covid19 info api, err: %v", err)
 		return nil, err
 	}
 	readAll, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("failed to read resp body, err: %v", err)
+		plugin.Errorf("failed to read resp body, err: %v", err)
 		return nil, err
 	}
 
 	var data ApiResponse
 	if err := json.Unmarshal(readAll, &data); err != nil {
-		log.Printf("failed to unmarshal data, err: %v", err)
+		plugin.Errorf("failed to unmarshal data, err: %v", err)
 		return nil, err
 	}
 
@@ -146,18 +144,18 @@ func getCityCovid19Info(city string) (*EpidemicData, error) {
 	api := "https://opendata.baidu.com/data/inner?resource_id=5653&query=" + city + "新型肺炎最新动态&dsp=iphone&tn=wisexmlnew&alr=1&is_opendata=1"
 	resp, err := http.Get(api)
 	if err != nil {
-		log.Printf("failed to get covid19 info api, err: %v", err)
+		plugin.Errorf("failed to get covid19 info api, err: %v", err)
 		return nil, err
 	}
 	readAll, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("failed to read resp body, err: %v", err)
+		plugin.Errorf("failed to read resp body, err: %v", err)
 		return nil, err
 	}
 
 	var data ApiResponse
 	if err := json.Unmarshal(readAll, &data); err != nil {
-		log.Printf("failed to unmarshal data, err: %v", err)
+		plugin.Errorf("failed to unmarshal data, err: %v", err)
 		return nil, err
 	}
 

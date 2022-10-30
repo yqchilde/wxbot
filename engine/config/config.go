@@ -54,7 +54,7 @@ func (c Config) Unmarshal(s any) {
 		name, ok := nameMap[k]
 		if !ok {
 			if k != "pluginmagic" {
-				log.Warnf("%v plugin not found config: %v", t.Name(), k)
+				log.Warnf("[Plugin-%v] not found config: %v", t.Name(), k)
 			}
 			continue
 		}

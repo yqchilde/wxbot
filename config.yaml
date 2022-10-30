@@ -6,10 +6,11 @@ plugins:
   emoticon:
     enable: true
     dir: "./imgs/emoticon"
+    bedUser: ""
+    bedPass: ""
 
   plmm:
     enable: true
-    dir: "./imgs/plmm"
     url: "https://www.mxnzp.com/api/image/girl/list/random"
     appId: ""
     appSecret: ""

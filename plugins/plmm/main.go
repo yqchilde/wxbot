@@ -3,8 +3,6 @@ package plmm
 import (
 	"fmt"
 	"github.com/imroc/req/v3"
-	"github.com/yqchilde/pkgs/log"
-
 	"github.com/yqchilde/wxbot/engine"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
@@ -54,11 +52,11 @@ func getPlmmPhoto(msg *robot.Message) {
 		api := fmt.Sprintf("%s?app_id=%s&app_secret=%s", plmmConf.Url, plmmConf.AppId, plmmConf.AppSecret)
 		err := req.C().SetBaseURL(api).Get().Do().Into(&resp)
 		if err != nil {
-			log.Errorf("get plmm photo error: %s", err.Error())
+			plugin.Errorf("get plmm photo error: %s", err.Error())
 			return
 		}
 		if resp.Code != 1 {
-			log.Errorf("getPlmmPhoto api error: %v", resp.Msg)
+			plugin.Errorf("getPlmmPhoto api error: %v", resp.Msg)
 			return
 		}
 		for _, val := range resp.Data {

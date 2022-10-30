@@ -90,12 +90,32 @@ func (b *BotConf) SendImage(toWxID string, path string) error {
 	var resp MessageResp
 	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
 	if err != nil {
-		log.Errorf("reply text message error: %v", err)
+		log.Errorf("reply image message error: %v", err)
 		return err
 	}
 	if resp.Code != 0 {
-		log.Errorf("reply text message error: %s", resp.Result)
+		log.Errorf("reply image message error: %s", resp.Result)
 		return err
 	}
 	return nil
+}
+
+func (b *BotConf) GetFileFoBase64(path string) (string, error) {
+	payload := map[string]interface{}{
+		"api":   "GetFileFoBase64",
+		"token": MyRobot.Token,
+		"path":  path,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("get file for base64 error: %v", err)
+		return "", err
+	}
+	if resp.Code != 0 {
+		log.Errorf("get file for base64 error: %s", resp.Result)
+		return "", err
+	}
+	return resp.ReturnStr, nil
 }

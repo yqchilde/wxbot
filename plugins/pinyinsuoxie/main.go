@@ -3,7 +3,6 @@ package pinyinsuoxie
 import (
 	"bytes"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"regexp"
@@ -24,7 +23,7 @@ var (
 			Commands: []string{"^查缩写 ?([a-zA-Z0-9]+)$", "^缩写 ?([a-zA-Z0-9]+)$"},
 		},
 	}
-	_ = engine.InstallPlugin(pluginInfo)
+	plugin = engine.InstallPlugin(pluginInfo)
 )
 
 func (p *PinYinSuoXie) OnRegister() {}
@@ -58,7 +57,7 @@ func transPinYinSuoXie(text string) (string, error) {
 	_ = writer.WriteField("text", text)
 	err := writer.Close()
 	if err != nil {
-		log.Println(err)
+		plugin.Errorf(err.Error())
 		return "", err
 	}
 
@@ -66,20 +65,20 @@ func transPinYinSuoXie(text string) (string, error) {
 	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {
-		log.Println(err)
+		plugin.Errorf(err.Error())
 		return "", err
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
+		plugin.Errorf(err.Error())
 		return "", err
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		log.Println(err)
+		plugin.Errorf(err.Error())
 		return "", err
 	}
 

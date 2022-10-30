@@ -3,6 +3,7 @@ package engine
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"reflect"
 
 	"github.com/yqchilde/pkgs/log"
@@ -79,4 +80,16 @@ func (p *Plugin) Assign() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (p *Plugin) Printf(format string, args ...interface{}) {
+	log.Printf(fmt.Sprintf("[Plugin-%s] %s", p.Name, format), args...)
+}
+
+func (p *Plugin) Errorf(format string, args ...interface{}) {
+	log.Errorf(fmt.Sprintf("[Plugin-%s] %s", p.Name, format), args...)
+}
+
+func (p *Plugin) Fatalf(format string, args ...interface{}) {
+	log.Fatalf(fmt.Sprintf("[Plugin-%s] %s", p.Name, format), args...)
 }

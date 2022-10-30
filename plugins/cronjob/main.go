@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/imroc/req/v3"
-	"github.com/yqchilde/pkgs/log"
 	"github.com/yqchilde/pkgs/timer"
 
 	"github.com/yqchilde/wxbot/engine"
@@ -57,7 +56,7 @@ func (c *CronJob) OnRegister() {
 			}
 		})
 		if err != nil {
-			log.Errorf("NewScheduled add task error: %v", err)
+			plugin.Errorf("NewScheduled add task error: %v", err)
 		}
 	}
 }

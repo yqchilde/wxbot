@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/yqchilde/pkgs/log"
-
 	"github.com/yqchilde/wxbot/engine"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
@@ -22,7 +20,7 @@ var (
 			Commands: []string{"^百度百科 ?(.*?)$"},
 		},
 	}
-	_ = engine.InstallPlugin(pluginInfo)
+	plugin = engine.InstallPlugin(pluginInfo)
 )
 
 func (p *BaiDuBaiKe) OnRegister() {}
@@ -51,17 +49,17 @@ func getBaiKe(keyword string) (*ApiResponse, error) {
 	api := "https://baike.baidu.com/api/openapi/BaikeLemmaCardApi?appid=379020&bk_length=600&bk_key=" + keyword
 	resp, err := http.Get(api)
 	if err != nil {
-		log.Errorf("failed to get baike api, err: %v", err)
+		plugin.Errorf("failed to get baike api, err: %v", err)
 		return nil, err
 	}
 	readAll, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Errorf("failed to read resp body, err: %v", err)
+		plugin.Errorf("failed to read resp body, err: %v", err)
 		return nil, err
 	}
 	var data ApiResponse
 	if err := json.Unmarshal(readAll, &data); err != nil {
-		log.Errorf("failed to unmarshal api response, err: %v", err)
+		plugin.Errorf("failed to unmarshal api response, err: %v", err)
 		return nil, err
 	}
 	if len(data.Abstract) == 0 {
