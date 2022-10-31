@@ -30,6 +30,9 @@ func (p *Covid19) OnRegister() {}
 
 func (p *Covid19) OnEvent(msg *robot.Message) {
 	if msg != nil {
+		if len(msg.Content.Msg) > 3*6 {
+			return
+		}
 		if idx, ok := msg.MatchRegexCommand(pluginInfo.Commands); ok {
 			var re = regexp.MustCompile(pluginInfo.Commands[idx])
 			match := re.FindAllStringSubmatch(msg.Content.Msg, -1)
