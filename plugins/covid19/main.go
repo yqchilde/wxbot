@@ -42,6 +42,8 @@ func (p *Covid19) OnEvent(msg *robot.Message) {
 					data, err := getCityCovid19Info(city)
 					if err != nil {
 						plugin.Errorf(err.Error())
+						msg.ReplyText(fmt.Sprintf("获取%s疫情数据失败", city))
+						return
 					}
 					str += "😦%s疫情今日数据统计如下: \n"
 					str += "* %s\n"
@@ -56,6 +58,8 @@ func (p *Covid19) OnEvent(msg *robot.Message) {
 					data, err := getDomesticCovid19Info()
 					if err != nil {
 						plugin.Errorf(err.Error())
+						msg.ReplyText(fmt.Sprintf("获取%s疫情数据失败", city))
+						return
 					}
 					str += "😦全国疫情今日数据统计如下: \n"
 					str += "* 病例%s\n"
