@@ -78,7 +78,7 @@ func (m *Weather) OnEvent(msg *robot.Message) {
 			console += "明天: %s\n"
 			console += "白天: %s(%s°-%s°)，夜间: %s\n"
 			console += "日出时间: %s，日落时间: %s\n"
-			console = fmt.Sprintf(console, locationList[0].Name, weather2d[0].FxDate, weatherNow.Temp, weatherNow.FeelsLike, weather2d[0].TextDay, weather2d[0].TempMin, weather2d[0].TempMax, weather2d[0].TextNight, weather2d[0].Sunrise, weather2d[0].Sunset, weatherNow.Precip, weatherNow.Vis, weatherNow.Cloud, weatherIndices, weather2d[1].FxDate, weather2d[1].TextDay, weather2d[1].TempMin, weather2d[1].TempMax, weather2d[1].TextNight, weather2d[1].Sunrise, weather2d[1].Sunset)
+			console = fmt.Sprintf(console, locationList[0].Adm1+"/"+locationList[0].Adm2+"/"+locationList[0].Name, weather2d[0].FxDate, weatherNow.Temp, weatherNow.FeelsLike, weather2d[0].TextDay, weather2d[0].TempMin, weather2d[0].TempMax, weather2d[0].TextNight, weather2d[0].Sunrise, weather2d[0].Sunset, weatherNow.Precip, weatherNow.Vis, weatherNow.Cloud, weatherIndices, weather2d[1].FxDate, weather2d[1].TextDay, weather2d[1].TempMin, weather2d[1].TempMax, weather2d[1].TextNight, weather2d[1].Sunrise, weather2d[1].Sunset)
 			msg.ReplyText(console)
 		}
 	}

@@ -55,46 +55,143 @@ func (b *BotConf) GetGroupList() ([]Group, error) {
 }
 
 // SendText 发送文本消息； to_wxid:好友ID/群ID
-func (b *BotConf) SendText(toWxID string, msg string) error {
+func (b *BotConf) SendText(toWxId, msg string) error {
 	payload := map[string]interface{}{
 		"api":        "SendTextMsg",
 		"token":      MyRobot.Token,
 		"msg":        formatTextMessage(msg),
 		"robot_wxid": MyRobot.Bot.Wxid,
-		"to_wxid":    toWxID,
+		"to_wxid":    toWxId,
 	}
 
 	var resp MessageResp
 	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
 	if err != nil {
-		log.Errorf("reply text message error: %v", err)
+		log.Errorf("send text message error: %v", err)
 		return err
 	}
 	if resp.Code != 0 {
-		log.Errorf("reply text message error: %s", resp.Result)
+		log.Errorf("send text message error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+// SendTextAndAt 发送文本消息并@； to_wxid:好友ID/群ID
+func (b *BotConf) SendTextAndAt(msg, groupWxId, toWxId, toWxName string) error {
+	payload := map[string]interface{}{
+		"api":         "SendGroupMsgAndAt",
+		"token":       MyRobot.Token,
+		"msg":         formatTextMessage(msg),
+		"robot_wxid":  MyRobot.Bot.Wxid,
+		"group_wxid":  groupWxId,
+		"member_wxid": toWxId,
+		"member_name": toWxName,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("send text message and at error: %s", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("send text message and at error: %s", resp.Result)
 		return err
 	}
 	return nil
 }
 
 // SendImage 发送图片消息； to_wxid:好友ID/群ID
-func (b *BotConf) SendImage(toWxID string, path string) error {
+func (b *BotConf) SendImage(toWxId, path string) error {
 	payload := map[string]interface{}{
 		"api":        "SendImageMsg",
 		"token":      MyRobot.Token,
 		"path":       path,
 		"robot_wxid": MyRobot.Bot.Wxid,
-		"to_wxid":    toWxID,
+		"to_wxid":    toWxId,
 	}
 
 	var resp MessageResp
 	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
 	if err != nil {
-		log.Errorf("reply image message error: %v", err)
+		log.Errorf("send image message error: %v", err)
 		return err
 	}
 	if resp.Code != 0 {
-		log.Errorf("reply image message error: %s", resp.Result)
+		log.Errorf("send image message error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+// SendFile 发送文件消息； to_wxid:好友ID/群ID
+func (b *BotConf) SendFile(toWxId, path string) error {
+	payload := map[string]interface{}{
+		"api":        "SendFileMsg",
+		"token":      MyRobot.Token,
+		"path":       path,
+		"robot_wxid": MyRobot.Bot.Wxid,
+		"to_wxid":    toWxId,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("send file message error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("send file message error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+// SendShareLink 发送分享链接消息； to_wxid:好友ID/群ID
+func (b *BotConf) SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string) error {
+	payload := map[string]interface{}{
+		"api":        "SendShareLinkMsg",
+		"token":      MyRobot.Token,
+		"robot_wxid": MyRobot.Bot.Wxid,
+		"to_wxid":    toWxId,
+		"title":      title,
+		"desc":       desc,
+		"image_url":  imageUrl,
+		"url":        jumpUrl,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("send share link message error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("send share link message error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+// WithdrawOwnMessage 撤回自己的消息； to_wxid:好友ID/群ID
+func (b *BotConf) WithdrawOwnMessage(toWxId, msgId string) error {
+	payload := map[string]interface{}{
+		"api":        "WithdrawOwnMessage",
+		"token":      MyRobot.Token,
+		"robot_wxid": MyRobot.Bot.Wxid,
+		"to_wxid":    toWxId,
+		"msgid":      msgId,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("withdraw own message error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("withdraw own message error: %s", resp.Result)
 		return err
 	}
 	return nil

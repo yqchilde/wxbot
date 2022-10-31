@@ -3,9 +3,6 @@ package robot
 import (
 	"errors"
 	"regexp"
-
-	"github.com/imroc/req/v3"
-	"github.com/yqchilde/pkgs/log"
 )
 
 const (
@@ -118,28 +115,11 @@ func (m *Message) MatchRegexCommand(commands []string) (index int, match bool) {
 
 // ReplyText 回复文本消息
 func (m *Message) ReplyText(msg string) error {
-	payload := map[string]interface{}{
-		"api":        "SendTextMsg",
-		"token":      MyRobot.Token,
-		"msg":        formatTextMessage(msg),
-		"robot_wxid": m.Content.RobotWxid,
-		"to_wxid":    m.Content.FromWxid,
-	}
 	if m.IsSendByGroupChat() {
-		payload["to_wxid"] = m.Content.FromGroup
+		return MyRobot.SendText(m.Content.FromGroup, msg)
+	} else {
+		return MyRobot.SendText(m.Content.FromWxid, msg)
 	}
-
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("reply text message error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("reply text message error: %s", resp.Result)
-		return err
-	}
-	return nil
 }
 
 // ReplyTextAndAt 回复文本消息并@发送者
@@ -147,132 +127,41 @@ func (m *Message) ReplyTextAndAt(msg string) error {
 	if !m.IsSendByGroupChat() {
 		return errors.New("only group chat can reply text and at")
 	}
-	payload := map[string]interface{}{
-		"api":         "SendGroupMsgAndAt",
-		"token":       MyRobot.Token,
-		"msg":         formatTextMessage(msg),
-		"robot_wxid":  m.Content.RobotWxid,
-		"group_wxid":  m.Content.FromGroup,
-		"member_wxid": m.Content.FromWxid,
-		"member_name": m.Content.FromName,
-	}
-
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("reply text message error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("reply text message error: %s", resp.Result)
-		return err
-	}
-	return nil
+	return MyRobot.SendTextAndAt(msg, m.Content.FromGroup, m.Content.FromWxid, m.Content.FromGroupName)
 }
 
 // ReplyImage 回复图片消息
 func (m *Message) ReplyImage(path string) error {
-	payload := map[string]interface{}{
-		"api":        "SendImageMsg",
-		"token":      MyRobot.Token,
-		"path":       path,
-		"robot_wxid": m.Content.RobotWxid,
-		"to_wxid":    m.Content.FromWxid,
-	}
 	if m.IsSendByGroupChat() {
-		payload["to_wxid"] = m.Content.FromGroup
+		return MyRobot.SendImage(m.Content.FromGroup, path)
+	} else {
+		return MyRobot.SendImage(m.Content.FromWxid, path)
 	}
-
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("reply image message error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("reply image message error: %s", resp.Result)
-		return err
-	}
-	return nil
 }
 
 // ReplyFile 回复文件消息
 func (m *Message) ReplyFile(path string) error {
-	payload := map[string]interface{}{
-		"api":        "SendFileMsg",
-		"token":      MyRobot.Token,
-		"path":       path,
-		"robot_wxid": m.Content.RobotWxid,
-		"to_wxid":    m.Content.FromWxid,
-	}
 	if m.IsSendByGroupChat() {
-		payload["to_wxid"] = m.Content.FromGroup
+		return MyRobot.SendFile(m.Content.FromGroup, path)
+	} else {
+		return MyRobot.SendFile(m.Content.FromWxid, path)
 	}
-
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("reply file message error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("reply file message error: %s", resp.Result)
-		return err
-	}
-	return nil
 }
 
 // ReplyShareLink 回复分享链接消息
 func (m *Message) ReplyShareLink(title, desc, imageUrl, jumpUrl string) error {
-	payload := map[string]interface{}{
-		"api":        "SendShareLinkMsg",
-		"token":      MyRobot.Token,
-		"robot_wxid": m.Content.RobotWxid,
-		"to_wxid":    m.Content.FromWxid,
-		"title":      title,
-		"desc":       desc,
-		"image_url":  imageUrl,
-		"url":        jumpUrl,
-	}
 	if m.IsSendByGroupChat() {
-		payload["to_wxid"] = m.Content.FromGroup
+		return MyRobot.SendShareLink(m.Content.FromGroup, title, desc, imageUrl, jumpUrl)
+	} else {
+		return MyRobot.SendShareLink(m.Content.FromWxid, title, desc, imageUrl, jumpUrl)
 	}
-
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("reply share link message error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("reply share link message error: %s", resp.Result)
-		return err
-	}
-	return nil
 }
 
 // WithdrawOwnMessage 撤回自己的消息
 func (m *Message) WithdrawOwnMessage() error {
-	payload := map[string]interface{}{
-		"api":        "WithdrawOwnMessage",
-		"token":      MyRobot.Token,
-		"robot_wxid": m.Content.RobotWxid,
-		"to_wxid":    m.Content.FromWxid,
-		"msgid":      m.Content.MsgId,
-	}
 	if m.IsSendByGroupChat() {
-		payload["to_wxid"] = m.Content.FromGroup
+		return MyRobot.WithdrawOwnMessage(m.Content.FromGroup, m.Content.MsgId)
+	} else {
+		return MyRobot.WithdrawOwnMessage(m.Content.FromWxid, m.Content.MsgId)
 	}
-
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("withdraw own message error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("withdraw own message error: %s", resp.Result)
-		return err
-	}
-	return nil
 }
