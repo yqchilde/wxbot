@@ -15,6 +15,7 @@ import (
 	_ "github.com/yqchilde/wxbot/plugins/moyuban"      // 摸鱼办
 	_ "github.com/yqchilde/wxbot/plugins/pinyinsuoxie" // 拼音缩写翻译
 	_ "github.com/yqchilde/wxbot/plugins/plmm"         // 漂亮妹妹
+	_ "github.com/yqchilde/wxbot/plugins/weather"      // 天气查询
 )
 
 func main() {

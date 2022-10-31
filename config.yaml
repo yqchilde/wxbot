@@ -15,6 +15,10 @@ plugins:
     appId: ""
     appSecret: ""
 
+  weather:
+    enable: true
+    key: ""
+
   cronjob:
     enable: true
     myb:
