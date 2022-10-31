@@ -15,6 +15,7 @@ import (
 type PluginMagic struct {
 	Name       string   // 插件名字
 	Desc       string   // 插件描述
+	Weight     int      // 插件权重
 	Commands   []string // 插件命令
 	HiddenMenu bool     // 是否隐藏菜单
 }
@@ -43,6 +44,7 @@ func InstallPlugin(conf config.Plugin) *Plugin {
 		PluginMagic: PluginMagic{
 			Name:       p.Name,
 			Desc:       p.Desc,
+			Weight:     p.Weight,
 			Commands:   p.Commands,
 			HiddenMenu: p.HiddenMenu,
 		},

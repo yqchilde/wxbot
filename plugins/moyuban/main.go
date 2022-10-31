@@ -14,6 +14,7 @@ var (
 		engine.PluginMagic{
 			Desc:     "🚀 输入 {摸鱼日记} => 获取摸鱼办日记",
 			Commands: []string{"摸鱼日记", "摸鱼"},
+			Weight:   97,
 		},
 	}
 	_ = engine.InstallPlugin(pluginInfo)

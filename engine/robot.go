@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 	"github.com/yqchilde/pkgs/log"
@@ -23,6 +24,21 @@ func InitRobot(conf *config.Config) error {
 	bot.GetRobotInfo()
 	log.Println("success to start robot")
 
+	// 菜单
+	menuItems := "YY Bot🤖\n"
+	var plugins []*Plugin
+	for i := range Plugins {
+		plugins = append(plugins, Plugins[i])
+	}
+	sort.Slice(plugins, func(i, j int) bool {
+		return plugins[i].Weight > plugins[j].Weight
+	})
+	for i := range plugins {
+		if !plugins[i].HiddenMenu {
+			menuItems += plugins[i].Desc + "\n"
+		}
+	}
+
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	r.POST("/wxbot/callback", func(c *gin.Context) {
@@ -33,14 +49,10 @@ func InitRobot(conf *config.Config) error {
 		}
 		c.JSON(http.StatusOK, gin.H{"Code": "0"})
 
-		// 菜单
-		menuItems := "YY Bot🤖\n"
+		// 响应事件
 		for _, plugin := range Plugins {
 			if plugin.RawConfig["enable"] != false {
 				plugin.Config.OnEvent(&msg)
-			}
-			if !plugin.HiddenMenu {
-				menuItems += plugin.Desc + "\n"
 			}
 		}
 

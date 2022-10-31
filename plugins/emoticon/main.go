@@ -31,6 +31,7 @@ var (
 		PluginMagic: engine.PluginMagic{
 			Desc:     "🚀 输入 {表情原图} => 30s内发送表情获取表情原图",
 			Commands: []string{"表情原图"},
+			Weight:   100,
 		},
 	}
 	plugin      = engine.InstallPlugin(pluginInfo)

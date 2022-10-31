@@ -20,6 +20,7 @@ var (
 		engine.PluginMagic{
 			Desc:     "🚀 输入 {XX疫情} => 获取疫情数据，Ps:济南疫情",
 			Commands: []string{`([^\x00-\xff]{0,6})疫情(.*)`},
+			Weight:   99,
 		},
 	}
 	plugin = engine.InstallPlugin(pluginInfo)

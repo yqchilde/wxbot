@@ -23,6 +23,7 @@ var (
 		PluginMagic: engine.PluginMagic{
 			Desc:     "🚀 输入 {XX天气} => 获取天气数据，Ps:济南天气、北京-朝阳天气",
 			Commands: []string{`([^\x00-\xff]{0,6}-?[^\x00-\xff]{0,6})天气`},
+			Weight:   98,
 		},
 	}
 	plugin = engine.InstallPlugin(pluginInfo)
