@@ -197,6 +197,29 @@ func (b *BotConf) WithdrawOwnMessage(toWxId, msgId string) error {
 	return nil
 }
 
+// SendVideo 发送视频消息； to_wxid:好友ID/群ID
+func (b *BotConf) SendVideo(toWxId, path string) error {
+	payload := map[string]interface{}{
+		"api":        "SendVideoMsg",
+		"token":      MyRobot.Token,
+		"path":       path,
+		"robot_wxid": MyRobot.Bot.Wxid,
+		"to_wxid":    toWxId,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("send video message error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("send video message error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
 func (b *BotConf) GetFileFoBase64(path string) (string, error) {
 	payload := map[string]interface{}{
 		"api":   "GetFileFoBase64",

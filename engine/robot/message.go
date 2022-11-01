@@ -165,3 +165,12 @@ func (m *Message) WithdrawOwnMessage() error {
 		return MyRobot.WithdrawOwnMessage(m.Content.FromWxid, m.Content.MsgId)
 	}
 }
+
+// ReplyVideo 回复视频消息
+func (m *Message) ReplyVideo(path string) error {
+	if m.IsSendByGroupChat() {
+		return MyRobot.SendVideo(m.Content.FromGroup, path)
+	} else {
+		return MyRobot.SendVideo(m.Content.FromWxid, path)
+	}
+}
