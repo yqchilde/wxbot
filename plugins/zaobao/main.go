@@ -22,11 +22,9 @@ var (
 func (p *ZaoBao) OnRegister() {}
 
 func (p *ZaoBao) OnEvent(msg *robot.Message) {
-	if msg != nil {
-		if msg.MatchTextCommand(pluginInfo.Commands) {
-			if zaoBao, err := getZaoBao(); err == nil {
-				msg.ReplyImage(zaoBao)
-			}
+	if msg.MatchTextCommand(pluginInfo.Commands) {
+		if zaoBao, err := getZaoBao(); err == nil {
+			msg.ReplyImage(zaoBao)
 		}
 	}
 }

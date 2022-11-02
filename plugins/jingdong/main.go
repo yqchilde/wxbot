@@ -20,11 +20,9 @@ var (
 func (p *JingDong) OnRegister() {}
 
 func (p *JingDong) OnEvent(msg *robot.Message) {
-	if msg != nil {
-		if msg.MatchTextCommand(pluginInfo.Commands) {
-			if err := msg.ReplyImage("C:\\Users\\Administrator\\Pictures\\jd\\qrcode.png"); err != nil {
-				msg.ReplyText(err.Error())
-			}
+	if msg.MatchTextCommand(pluginInfo.Commands) {
+		if err := msg.ReplyImage("C:\\Users\\Administrator\\Pictures\\jd\\qrcode.png"); err != nil {
+			msg.ReplyText(err.Error())
 		}
 	}
 }

@@ -29,10 +29,8 @@ var (
 func (p *Plmm) OnRegister() {}
 
 func (p *Plmm) OnEvent(msg *robot.Message) {
-	if msg != nil {
-		if msg.MatchTextCommand(plugin.Commands) {
-			getPlmmPhoto(msg)
-		}
+	if msg.MatchTextCommand(plugin.Commands) {
+		getPlmmPhoto(msg)
 	}
 }
 

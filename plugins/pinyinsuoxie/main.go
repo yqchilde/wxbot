@@ -29,20 +29,18 @@ var (
 func (p *PinYinSuoXie) OnRegister() {}
 
 func (p *PinYinSuoXie) OnEvent(msg *robot.Message) {
-	if msg != nil {
-		if idx, ok := msg.MatchRegexCommand(pluginInfo.Commands); ok {
-			var re = regexp.MustCompile(pluginInfo.Commands[idx])
-			match := re.FindAllStringSubmatch(msg.Content.Msg, -1)
-			if len(match) > 0 && len(match[0]) > 1 {
-				if data, err := transPinYinSuoXie(match[0][1]); err == nil {
-					if len(data) == 0 {
-						msg.ReplyText("没查到该缩写含义")
-					} else {
-						msg.ReplyText(match[0][1] + ": " + data)
-					}
+	if idx, ok := msg.MatchRegexCommand(pluginInfo.Commands); ok {
+		var re = regexp.MustCompile(pluginInfo.Commands[idx])
+		match := re.FindAllStringSubmatch(msg.Content.Msg, -1)
+		if len(match) > 0 && len(match[0]) > 1 {
+			if data, err := transPinYinSuoXie(match[0][1]); err == nil {
+				if len(data) == 0 {
+					msg.ReplyText("没查到该缩写含义")
 				} else {
-					msg.ReplyText("查询失败，这一定不是bug🤔")
+					msg.ReplyText(match[0][1] + ": " + data)
 				}
+			} else {
+				msg.ReplyText("查询失败，这一定不是bug🤔")
 			}
 		}
 	}

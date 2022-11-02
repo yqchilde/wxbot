@@ -33,15 +33,13 @@ func (p *CrazyKFC) OnRegister() {
 }
 
 func (p *CrazyKFC) OnEvent(msg *robot.Message) {
-	if msg != nil {
-		if msg.MatchTextCommand(pluginInfo.Commands) {
-			if len(sentence) > 0 {
-				msg.ReplyText(sentence[0])
-				sentence = append(sentence[:0], sentence[1:]...)
-			} else {
-				msg.ReplyText("查询失败，这一定不是bug🤔")
-				p.OnRegister()
-			}
+	if msg.MatchTextCommand(pluginInfo.Commands) {
+		if len(sentence) > 0 {
+			msg.ReplyText(sentence[0])
+			sentence = append(sentence[:0], sentence[1:]...)
+		} else {
+			msg.ReplyText("查询失败，这一定不是bug🤔")
+			p.OnRegister()
 		}
 	}
 }

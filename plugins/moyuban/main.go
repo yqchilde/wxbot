@@ -23,13 +23,11 @@ var (
 func (m *MoYuBan) OnRegister() {}
 
 func (m *MoYuBan) OnEvent(msg *robot.Message) {
-	if msg != nil {
-		if msg.MatchTextCommand(pluginInfo.Commands) {
-			if url := getMoYuData(); url != "" {
-				msg.ReplyImage(url)
-			} else {
-				msg.ReplyText("获取摸鱼办日记失败")
-			}
+	if msg.MatchTextCommand(pluginInfo.Commands) {
+		if url := getMoYuData(); url != "" {
+			msg.ReplyImage(url)
+		} else {
+			msg.ReplyText("获取摸鱼办日记失败")
 		}
 	}
 }

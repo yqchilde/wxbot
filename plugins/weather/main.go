@@ -32,55 +32,53 @@ var (
 func (m *Weather) OnRegister() {}
 
 func (m *Weather) OnEvent(msg *robot.Message) {
-	if msg != nil {
-		if idx, ok := msg.MatchRegexCommand(pluginInfo.Commands); ok {
-			var re = regexp.MustCompile(pluginInfo.Commands[idx])
-			match := re.FindAllStringSubmatch(msg.Content.Msg, -1)
-			city := match[0][1]
-			apiKey := plugin.RawConfig.Get("key").(string)
-			locationSplit := strings.Split(city, "-")
-			var locationList []Location
-			if len(locationSplit) == 1 {
-				locationList = getCityLocation(apiKey, "", locationSplit[0])
+	if idx, ok := msg.MatchRegexCommand(pluginInfo.Commands); ok {
+		var re = regexp.MustCompile(pluginInfo.Commands[idx])
+		match := re.FindAllStringSubmatch(msg.Content.Msg, -1)
+		city := match[0][1]
+		apiKey := plugin.RawConfig.Get("key").(string)
+		locationSplit := strings.Split(city, "-")
+		var locationList []Location
+		if len(locationSplit) == 1 {
+			locationList = getCityLocation(apiKey, "", locationSplit[0])
+		}
+		if len(locationSplit) == 2 {
+			locationList = getCityLocation(apiKey, locationSplit[0], locationSplit[1])
+		}
+		if len(locationList) == 0 {
+			msg.ReplyTextAndAt("未找到城市")
+			return
+		} else if len(locationList) == 1 {
+			location = locationList[0].Id
+		} else {
+			adm := map[string]struct{}{}
+			for _, v := range locationList {
+				adm[v.Adm2] = struct{}{}
 			}
-			if len(locationSplit) == 2 {
-				locationList = getCityLocation(apiKey, locationSplit[0], locationSplit[1])
-			}
-			if len(locationList) == 0 {
-				msg.ReplyTextAndAt("未找到城市")
-				return
-			} else if len(locationList) == 1 {
+			if len(adm) == 1 {
 				location = locationList[0].Id
 			} else {
-				adm := map[string]struct{}{}
-				for _, v := range locationList {
-					adm[v.Adm2] = struct{}{}
-				}
-				if len(adm) == 1 {
-					location = locationList[0].Id
-				} else {
-					msg.ReplyTextAndAt("查询到多个地区地址，请输入更详细的地区，比如：北京-朝阳天气")
-					return
-				}
+				msg.ReplyTextAndAt("查询到多个地区地址，请输入更详细的地区，比如：北京-朝阳天气")
+				return
 			}
-
-			weatherNow := getWeatherNow(apiKey, location)
-			weather2d := getWeather2d(apiKey, location)
-			weatherIndices := getWeatherIndices(apiKey, location)
-			console := "城市: %s\n"
-			console += "今天: %s\n"
-			console += "当前温度: %s°，体感温度: %s°\n"
-			console += "白天: %s(%s°-%s°)，夜间: %s\n"
-			console += "日出时间: %s，日落时间: %s\n"
-			console += "当前降水量: %s，能见度: %s，云量: %s\n"
-			console += "天气舒适指数: %s\n"
-			console += "\n"
-			console += "明天: %s\n"
-			console += "白天: %s(%s°-%s°)，夜间: %s\n"
-			console += "日出时间: %s，日落时间: %s\n"
-			console = fmt.Sprintf(console, locationList[0].Adm1+"/"+locationList[0].Adm2+"/"+locationList[0].Name, weather2d[0].FxDate, weatherNow.Temp, weatherNow.FeelsLike, weather2d[0].TextDay, weather2d[0].TempMin, weather2d[0].TempMax, weather2d[0].TextNight, weather2d[0].Sunrise, weather2d[0].Sunset, weatherNow.Precip, weatherNow.Vis, weatherNow.Cloud, weatherIndices, weather2d[1].FxDate, weather2d[1].TextDay, weather2d[1].TempMin, weather2d[1].TempMax, weather2d[1].TextNight, weather2d[1].Sunrise, weather2d[1].Sunset)
-			msg.ReplyText(console)
 		}
+
+		weatherNow := getWeatherNow(apiKey, location)
+		weather2d := getWeather2d(apiKey, location)
+		weatherIndices := getWeatherIndices(apiKey, location)
+		console := "城市: %s\n"
+		console += "今天: %s\n"
+		console += "当前温度: %s°，体感温度: %s°\n"
+		console += "白天: %s(%s°-%s°)，夜间: %s\n"
+		console += "日出时间: %s，日落时间: %s\n"
+		console += "当前降水量: %s，能见度: %s，云量: %s\n"
+		console += "天气舒适指数: %s\n"
+		console += "\n"
+		console += "明天: %s\n"
+		console += "白天: %s(%s°-%s°)，夜间: %s\n"
+		console += "日出时间: %s，日落时间: %s\n"
+		console = fmt.Sprintf(console, locationList[0].Adm1+"/"+locationList[0].Adm2+"/"+locationList[0].Name, weather2d[0].FxDate, weatherNow.Temp, weatherNow.FeelsLike, weather2d[0].TextDay, weather2d[0].TempMin, weather2d[0].TempMax, weather2d[0].TextNight, weather2d[0].Sunrise, weather2d[0].Sunset, weatherNow.Precip, weatherNow.Vis, weatherNow.Cloud, weatherIndices, weather2d[1].FxDate, weather2d[1].TextDay, weather2d[1].TempMin, weather2d[1].TempMax, weather2d[1].TextNight, weather2d[1].Sunrise, weather2d[1].Sunset)
+		msg.ReplyText(console)
 	}
 }
 

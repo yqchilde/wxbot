@@ -20,9 +20,7 @@ var (
 func (p *DouYinGirl) OnRegister() {}
 
 func (p *DouYinGirl) OnEvent(msg *robot.Message) {
-	if msg != nil {
-		if msg.MatchTextCommand(pluginInfo.Commands) {
-			msg.ReplyShareLink("抖音小姐姐", "每次点进来都不一样呦", "https://www.haofang365.com/uploads/20211114/zip_16368195136np7EF.jpg", "http://nvz.bcyle.com/999.php")
-		}
+	if msg.MatchTextCommand(pluginInfo.Commands) {
+		msg.ReplyShareLink("抖音小姐姐", "每次点进来都不一样呦", "https://www.haofang365.com/uploads/20211114/zip_16368195136np7EF.jpg", "http://nvz.bcyle.com/999.php")
 	}
 }

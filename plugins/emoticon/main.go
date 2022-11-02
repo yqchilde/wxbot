@@ -53,31 +53,29 @@ func (e *Emoticon) OnRegister() {
 }
 
 func (e *Emoticon) OnEvent(msg *robot.Message) {
-	if msg != nil {
-		if msg.MatchTextCommand(pluginInfo.Commands) {
-			if addCommand(msg.Content.FromWxid, msg.Content.Msg) {
-				return
-			}
-
-			if msg.IsSendByPrivateChat() {
-				msg.ReplyText("请在30s内发送表情获取表情原图")
-				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-				go waitEmoticon(ctx, cancel, msg)
-			} else if msg.IsSendByGroupChat() {
-				msg.ReplyTextAndAt("请在30s内发送表情获取表情原图")
-				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-				go waitEmoticon(ctx, cancel, msg)
-			}
-
+	if msg.MatchTextCommand(pluginInfo.Commands) {
+		if addCommand(msg.Content.FromWxid, msg.Content.Msg) {
+			return
 		}
 
-		if msg.IsEmoticon() {
-			for i := range userCommand {
-				for j := range pluginInfo.Commands {
-					if userCommand[i] == pluginInfo.Commands[j] {
-						waitCommand <- msg
-						break
-					}
+		if msg.IsSendByPrivateChat() {
+			msg.ReplyText("请在30s内发送表情获取表情原图")
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			go waitEmoticon(ctx, cancel, msg)
+		} else if msg.IsSendByGroupChat() {
+			msg.ReplyTextAndAt("请在30s内发送表情获取表情原图")
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			go waitEmoticon(ctx, cancel, msg)
+		}
+
+	}
+
+	if msg.IsEmoticon() {
+		for i := range userCommand {
+			for j := range pluginInfo.Commands {
+				if userCommand[i] == pluginInfo.Commands[j] {
+					waitCommand <- msg
+					break
 				}
 			}
 		}
