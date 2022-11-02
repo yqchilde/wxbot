@@ -33,12 +33,15 @@ func (b *BotConf) GetRobotInfo() error {
 	return nil
 }
 
-func (b *BotConf) GetGroupList() ([]Group, error) {
+func (b *BotConf) GetGroupList(refresh ...bool) ([]Group, error) {
 	payload := map[string]interface{}{
 		"api":        "GetGrouplist",
 		"token":      MyRobot.Token,
 		"robot_wxid": MyRobot.Bot.Wxid,
 		"is_refresh": "0",
+	}
+	if len(refresh) == 1 {
+		payload["is_refresh"] = refresh[0]
 	}
 
 	var resp GroupList
@@ -78,7 +81,7 @@ func (b *BotConf) SendText(toWxId, msg string) error {
 }
 
 // SendTextAndAt 发送文本消息并@； to_wxid:好友ID/群ID
-func (b *BotConf) SendTextAndAt(msg, groupWxId, toWxId, toWxName string) error {
+func (b *BotConf) SendTextAndAt(groupWxId, toWxId, toWxName, msg string) error {
 	payload := map[string]interface{}{
 		"api":         "SendGroupMsgAndAt",
 		"token":       MyRobot.Token,

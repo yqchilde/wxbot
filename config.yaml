@@ -1,6 +1,7 @@
 robot:
   server: "http://192.168.31.8:9527"
   token: "yqchilde"
+  manager: "wxid_5cvtxuwufytd21"
 
 plugins:
   emoticon:
