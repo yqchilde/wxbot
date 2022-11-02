@@ -126,7 +126,7 @@ func (m *Message) ReplyTextAndAt(msg string) error {
 	if m.IsSendByPrivateChat() {
 		return MyRobot.SendText(m.Content.FromWxid, msg)
 	} else {
-		return MyRobot.SendTextAndAt(m.Content.FromGroup, m.Content.FromWxid, m.Content.FromGroupName, msg)
+		return MyRobot.SendTextAndAt(m.Content.FromGroup, m.Content.FromWxid, m.Content.FromName, msg)
 	}
 }
 
