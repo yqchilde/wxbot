@@ -13,21 +13,24 @@ var (
 			HiddenMenu: true,
 		},
 	}
-	plugin = engine.InstallPlugin(pluginInfo)
+	_ = engine.InstallPlugin(pluginInfo)
 )
 
 func (m *RobotManage) OnRegister() {}
 
 func (m *RobotManage) OnEvent(msg *robot.Message) {
 	if msg != nil {
-		if msg.Content.FromWxid != plugin.RawConfig.Get("manager") {
+		if msg.Content.FromWxid != robot.MyRobot.Manager {
 			msg.ReplyTextAndAt("抱歉，你没有权限")
+			return
 		}
 		if msg.Content.Msg == "刷新群数据" {
 			if _, err := robot.MyRobot.GetGroupList(true); err != nil {
 				msg.ReplyTextAndAt("刷新群数据失败，err: " + err.Error())
+				return
 			} else {
 				msg.ReplyTextAndAt("刷新群数据成功")
+				return
 			}
 		}
 	}

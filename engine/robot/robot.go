@@ -8,9 +8,10 @@ import (
 var MyRobot BotConf
 
 type BotConf struct {
-	Server string `yaml:"server"`
-	Token  string `yaml:"token"`
-	Bot    Bot    `yaml:"-"`
+	Server  string `yaml:"server"`
+	Token   string `yaml:"token"`
+	Manager string `yaml:"manager"`
+	Bot     Bot    `yaml:"-"`
 }
 
 func (b *BotConf) GetRobotInfo() error {
