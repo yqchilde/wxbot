@@ -21,6 +21,10 @@ plugins:
 
   cronjob:
     enable: true
-    myb:
-      cron: "0 30 9 * * *"
-      groups: [ "卤蛋群","Test" ]
+    task:
+      - name: "myb"
+        cron: "0 30 9 * * *"
+        groups: [ "卤蛋群","Test" ]
+      - name: "zaoBao"
+        cron: "40 38 23 * * *"
+        groups: [ "Test" ]

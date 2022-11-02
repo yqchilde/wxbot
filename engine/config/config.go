@@ -18,6 +18,18 @@ type Plugin interface {
 	OnEvent(msg *robot.Message)
 }
 
+func (c Config) CreateElem(eleType reflect.Type) reflect.Value {
+	if eleType.Kind() == reflect.Pointer {
+		newv := reflect.New(eleType.Elem())
+		c.Unmarshal(newv)
+		return newv
+	} else {
+		newv := reflect.New(eleType)
+		c.Unmarshal(newv)
+		return newv.Elem()
+	}
+}
+
 func (c Config) Unmarshal(s any) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -38,8 +50,13 @@ func (c Config) Unmarshal(s any) {
 	}
 	t := el.Type()
 	if t.Kind() == reflect.Map {
+		tt := t.Elem()
 		for k, v := range c {
-			el.SetMapIndex(reflect.ValueOf(k), reflect.ValueOf(v).Convert(t.Elem()))
+			if child, ok := v.(Config); ok {
+				el.SetMapIndex(reflect.ValueOf(k), child.CreateElem(tt))
+			} else {
+				el.SetMapIndex(reflect.ValueOf(k), reflect.ValueOf(v).Convert(t.Elem()))
+			}
 		}
 		return
 	}
@@ -60,43 +77,45 @@ func (c Config) Unmarshal(s any) {
 		}
 		// 需要被写入的字段
 		fv := el.FieldByName(name)
+		fvKind := fv.Kind()
 		ft := fv.Type()
-		// 先处理值是数组的情况
-		if value := reflect.ValueOf(v); value.Kind() == reflect.Slice {
-			l := value.Len()
-			s := reflect.MakeSlice(ft, l, value.Cap())
-			for i := 0; i < l; i++ {
-				fv := value.Index(i)
-				if ft == reflect.TypeOf(c) {
-					fv.FieldByName("Unmarshal").Call([]reflect.Value{fv})
-				} else {
-					item := s.Index(i)
-					if fv.Kind() == reflect.Interface {
-						item.Set(reflect.ValueOf(fv.Interface()).Convert(item.Type()))
-					} else {
-						item.Set(fv)
-					}
-				}
-			}
-			fv.Set(s)
-		} else if child, ok := v.(Config); ok { //然后处理值是递归情况（map)
-			if fv.Kind() == reflect.Map {
+		value := reflect.ValueOf(v)
+		if child, ok := v.(Config); ok {
+			if fvKind == reflect.Map {
 				if fv.IsNil() {
 					fv.Set(reflect.MakeMap(ft))
 				}
 			}
 			child.Unmarshal(fv)
 		} else {
-			switch fv.Kind() {
+			switch fvKind {
 			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 				fv.SetUint(uint64(value.Int()))
 			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 				fv.SetInt(value.Int())
 			case reflect.Float32, reflect.Float64:
 				fv.SetFloat(value.Float())
-			case reflect.Slice: //值是单值，但类型是数组，默认解析为一个元素的数组
-				s := reflect.MakeSlice(ft, 1, 1)
-				s.Index(0).Set(value)
+			case reflect.Slice:
+				var s reflect.Value
+				if value.Kind() == reflect.Slice {
+					l := value.Len()
+					s = reflect.MakeSlice(ft, l, value.Cap())
+					for i := 0; i < l; i++ {
+						fv := value.Index(i)
+						item := s.Index(i)
+						if child, ok := fv.Interface().(Config); ok {
+							item.Set(child.CreateElem(ft.Elem()))
+						} else if fv.Kind() == reflect.Interface {
+							item.Set(reflect.ValueOf(fv.Interface()).Convert(item.Type()))
+						} else {
+							item.Set(fv)
+						}
+					}
+				} else {
+					//值是单值，但类型是数组，默认解析为一个元素的数组
+					s = reflect.MakeSlice(ft, 1, 1)
+					s.Index(0).Set(value)
+				}
 				fv.Set(s)
 			default:
 				fv.Set(value)

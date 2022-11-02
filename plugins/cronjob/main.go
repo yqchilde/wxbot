@@ -8,16 +8,18 @@ import (
 	"github.com/yqchilde/pkgs/timer"
 
 	"github.com/yqchilde/wxbot/engine"
+	"github.com/yqchilde/wxbot/engine/config"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 type CronJob struct {
 	engine.PluginMagic
-	Enable  bool `yaml:"enable"`
-	MoYuBan Job  `yaml:"myb"`
+	Enable bool   `yaml:"enable"`
+	Task   []Task `yaml:"task"`
 }
 
-type Job struct {
+type Task struct {
+	Name   string   `yaml:"name"`
 	Cron   string   `yaml:"cron"`
 	Groups []string `yaml:"groups"`
 }
@@ -32,31 +34,56 @@ var (
 )
 
 func (c *CronJob) OnRegister() {
-	// 摸鱼办
-	myb := plugin.RawConfig.GetChild("myb")
-	{
-		cron := myb.Get("cron")
-		groups := myb.Get("groups")
-		task := timer.NewTimerTask()
-		_, err := task.AddTaskByFunc("myb", cron.(string), func() {
-			if checkWorkingDay() {
-				if url := getMoYuData(); url != "" {
-					for _, val := range groups.([]interface{}) {
-						groupList, err := robot.MyRobot.GetGroupList()
-						if err != nil {
-							panic(err)
-						}
-						for _, group := range groupList {
-							if group.Nickname == val.(string) {
-								robot.MyRobot.SendImage(group.Wxid, url)
+	task := timer.NewTimerTask()
+
+	tasks := plugin.RawConfig.Get("task").([]interface{})
+	for i := range tasks {
+		taskConf := tasks[i].(config.Config)
+		switch taskConf["name"] {
+		case "myb":
+			cron := taskConf["cron"].(string)
+			groups := taskConf["groups"].([]interface{})
+			_, err := task.AddTaskByFunc(taskConf["name"].(string), cron, func() {
+				if checkWorkingDay() {
+					if url := getMoYuData(); url != "" {
+						for i := range groups {
+							groupList, err := robot.MyRobot.GetGroupList()
+							if err != nil {
+								return
+							}
+							for _, group := range groupList {
+								if group.Nickname == groups[i].(string) {
+									robot.MyRobot.SendImage(group.Wxid, url)
+								}
 							}
 						}
 					}
 				}
+			})
+			if err != nil {
+				plugin.Errorf("%s add task error: %v", taskConf["name"].(string), err)
 			}
-		})
-		if err != nil {
-			plugin.Errorf("NewScheduled add task error: %v", err)
+		case "zaoBao":
+			cron := taskConf["cron"].(string)
+			groups := taskConf["groups"].([]interface{})
+			_, err := task.AddTaskByFunc(taskConf["name"].(string), cron, func() {
+				if zaoBao, err := getZaoBao(); err == nil {
+					for i := range groups {
+						groupList, err := robot.MyRobot.GetGroupList()
+						if err != nil {
+							return
+						}
+						for _, group := range groupList {
+							if group.Nickname == groups[i].(string) {
+								robot.MyRobot.SendImage(group.Wxid, zaoBao)
+							}
+						}
+					}
+				}
+			})
+			if err != nil {
+				plugin.Errorf("%s add task error: %v", taskConf["name"].(string), err)
+			}
 		}
 	}
 }
@@ -99,4 +126,18 @@ func getMoYuData() (url string) {
 		return ""
 	}
 	return resp.Data.MoyuUrl
+}
+
+func getZaoBao() (string, error) {
+	type Resp struct {
+		Code     int    `json:"code"`
+		Msg      string `json:"msg"`
+		ImageUrl string `json:"imageUrl"`
+		Datatime string `json:"datatime"`
+	}
+	var resp Resp
+	if err := req.C().Get("http://dwz.2xb.cn/zaob").Do().Into(&resp); err != nil {
+		return "", err
+	}
+	return resp.ImageUrl, nil
 }
