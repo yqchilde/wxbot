@@ -12,8 +12,8 @@ type MoYuBan struct{ engine.PluginMagic }
 var (
 	pluginInfo = &MoYuBan{
 		engine.PluginMagic{
-			Desc:     "🚀 输入 {摸鱼日记} => 获取摸鱼办日记",
-			Commands: []string{"摸鱼日记", "摸鱼"},
+			Desc:     "🚀 输入 {摸鱼日历|摸鱼} => 获取摸鱼办日历",
+			Commands: []string{"摸鱼日历", "摸鱼"},
 			Weight:   97,
 		},
 	}
