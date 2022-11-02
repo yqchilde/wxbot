@@ -17,4 +17,5 @@ const (
 	MsgTypeMicroVideo     = 62    // 小视频消息
 	MsgTypeSys            = 10000 // 系统消息
 	MsgTypeRecalled       = 10002 // 消息撤回
+	MsgTypeReference      = 10003 // 消息引用
 )

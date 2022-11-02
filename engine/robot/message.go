@@ -72,6 +72,11 @@ func (m *Message) IsAt() bool {
 	return false
 }
 
+// IsReference 判断消息是否为引用消息
+func (m *Message) IsReference() bool {
+	return m.Content.Type == MsgTypeReference
+}
+
 // IsSendByGroupChat 判断消息是否为群聊消息
 func (m *Message) IsSendByGroupChat() bool {
 	return m.Event == EventGroupChat
