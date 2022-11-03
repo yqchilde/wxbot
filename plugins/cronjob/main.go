@@ -45,16 +45,14 @@ func (c *CronJob) OnRegister() {
 			groups := taskConf["groups"].([]interface{})
 			_, err := task.AddTaskByFunc(taskConf["name"].(string), cron, func() {
 				if checkWorkingDay() {
-					if url := getMoYuData(); url != "" {
-						for i := range groups {
-							groupList, err := robot.MyRobot.GetGroupList()
-							if err != nil {
-								return
-							}
-							for _, group := range groupList {
-								if group.Nickname == groups[i].(string) {
-									robot.MyRobot.SendImage(group.Wxid, url)
-								}
+					for i := range groups {
+						groupList, err := robot.MyRobot.GetGroupList()
+						if err != nil {
+							return
+						}
+						for _, group := range groupList {
+							if group.Nickname == groups[i].(string) {
+								robot.MyRobot.SendImage(group.Wxid, "https://api.vvhan.com/api/moyu")
 							}
 						}
 					}
@@ -108,24 +106,6 @@ func checkWorkingDay() bool {
 		return false
 	}
 	return true
-}
-
-func getMoYuData() (url string) {
-	type Resp struct {
-		Code    int    `json:"code"`
-		Message string `json:"message"`
-		Data    struct {
-			MoyuUrl string `json:"moyu_url"`
-		} `json:"data"`
-	}
-	var resp Resp
-	if err := req.C().Get("https://api.j4u.ink/v1/store/other/proxy/remote/moyu.json").Do().Into(&resp); err != nil {
-		return ""
-	}
-	if resp.Code != 200 || resp.Message != "success" {
-		return ""
-	}
-	return resp.Data.MoyuUrl
 }
 
 func getZaoBao() (string, error) {
