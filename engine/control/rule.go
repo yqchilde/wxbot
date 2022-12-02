@@ -15,7 +15,7 @@ func newControl(service string, o *Options[*robot.Ctx]) robot.Rule {
 	c := managers.NewControl(service, o)
 	return func(ctx *robot.Ctx) bool {
 		ctx.State["manager"] = c
-		return c.Handler(ctx.Event.Message.FromGroup, ctx.Event.Message.FromWxid)
+		return c.Handler(ctx.Event.Message.FromGroup, ctx.Event.Message.FromWxId)
 	}
 }
 
@@ -35,7 +35,7 @@ func init() {
 			grp := ctx.Event.Message.FromGroup
 			if grp == "" {
 				// 个人用户
-				grp = ctx.Event.Message.FromWxid
+				grp = ctx.Event.Message.FromWxId
 			}
 			switch ctx.State["command"].(string) {
 			case "启用":
