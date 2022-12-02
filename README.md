@@ -1,25 +1,22 @@
 ## What's this?
 
-无聊在聊天群做的一个wechat robot，插件式框架设计，每个功能可扩展为插件，目前提供了一些功能，比如：
+一个还算有意思的wechat robot项目，诞生于摸鱼 😈
 
-🚀 输入 {kfc骚话} => 获取肯德基疯狂星期四骚话  
-🚀 输入 {百度百科 XX} => 获取百度百科解释，Ps:百度百科 okr  
-🚀 输入 {摸鱼日记} => 获取摸鱼办日记  
-🚀 输入 {表情原图} => 10s内发送表情获取表情原图  
-🚀 输入 {查缩写 XX} => 获取拼音缩写翻译，Ps:查缩写 yyds  
-🚀 输入 {漂亮妹妹} => 获取漂亮妹妹  
-🚀 输入 {XX疫情查询} => 获取疫情数据，Ps:济南疫情查询  
+* 框架可无侵入扩展，现已集成千寻框架和vlw框架，请参考`framework`
+* 功能可无侵入扩展，现已集成`plugins`目录下的功能，请参考`plugins`
 
-![img](https://github.com/yqchilde/wxbot/blob/vlw/docs/screenshots.jpg)
+**功能示例：**
+
+![img](https://github.com/yqchilde/wxbot/blob/hook/docs/screenshots.jpg)
 
 ## Feature
 
 如果您感觉这个项目有意思，麻烦帮我点一下star  
-如果您有好玩的插件想要开发，可以提交pr
+如果您有好玩的插件想要开发，可以一起搞
 
 ## Thanks
 
-非Hook版机器人核心由 [openwechat](https://github.com/eatmoreapple/openwechat) SDK实现，切换分支查看    
-Hook版机器人框架我使用的是《我的框架》，插件由xyohttp_api对接完成，为vlw分支
+* 非Hook版机器人核心由 [openwechat](https://github.com/eatmoreapple/openwechat) SDK实现，在`main`分支，暂停维护    
+* Hook版机器人框架我使用的是 ~~《我的框架》已跑路~~，现在用的是千寻，为hook分支
 
-插件式设计受 `monibuca` 项目启发，Thanks♪(･ω･)ﾉ
+hook分支大量借鉴了一个十分优秀的项目 `ZeroBot-Plugin` 的设计方案 👍🏻，非常感谢，Thanks♪(･ω･)ﾉ
