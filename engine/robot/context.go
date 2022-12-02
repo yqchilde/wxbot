@@ -33,7 +33,7 @@ func (ctx *Ctx) MessageString() string {
 // CheckSession 判断会话连续性
 func (ctx *Ctx) CheckSession() Rule {
 	return func(ctx2 *Ctx) bool {
-		return ctx.Event.Message.FromWxid == ctx2.Event.Message.FromWxid &&
+		return ctx.Event.Message.FromWxId == ctx2.Event.Message.FromWxId &&
 			ctx.Event.Message.FromGroup == ctx2.Event.Message.FromGroup
 	}
 }

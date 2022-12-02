@@ -1,245 +1,274 @@
 package robot
 
 import (
-	"github.com/imroc/req/v3"
+	"encoding/json"
+	"fmt"
+	"math/rand"
+	"runtime/debug"
+	"time"
+
 	"github.com/yqchilde/pkgs/log"
 )
 
-var MyRobot BotConf
-
-type BotConf struct {
-	Server  string `yaml:"server"`
-	Token   string `yaml:"token"`
-	Manager string `yaml:"manager"`
-	Bot     Bot    `yaml:"-"`
+func init() {
+	log.Default(2)
 }
 
-func (b *BotConf) GetRobotInfo() error {
-	payload := map[string]interface{}{
-		"api":   "GetRobotList",
-		"token": MyRobot.Token,
-	}
+var BotConfig Config
 
-	var resp BotList
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("get robot info error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("get robot info error: %s", resp.Result)
-		return err
-	}
-	MyRobot.Bot = resp.ReturnJson.Data[0]
-	return nil
+// Config 关于机器人的相关参数配置
+type Config struct {
+	Nickname       []string      // 机器人名称
+	SuperUsers     []string      // 超级用户
+	CommandPrefix  string        // 触发命令
+	RingLen        uint          // 事件环长度 (默认4096)
+	Latency        time.Duration // 事件处理延迟 (延迟 latency + (0~100ms) 再处理事件) (默认1min)
+	MaxProcessTime time.Duration // 事件最大处理时间 (默认3min)
+	Framework      Framework     // 接入框架
 }
 
-func (b *BotConf) GetGroupList(refresh ...bool) ([]Group, error) {
-	payload := map[string]interface{}{
-		"api":        "GetGrouplist",
-		"token":      MyRobot.Token,
-		"robot_wxid": MyRobot.Bot.Wxid,
-		"is_refresh": "0",
-	}
-	if len(refresh) == 1 {
-		payload["is_refresh"] = refresh[0]
-	}
-
-	var resp GroupList
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("get robot info error: %v", err)
-		return nil, err
-	}
-	if resp.Code != 0 {
-		log.Errorf("get robot info error: %s", resp.Result)
-		return nil, err
-	}
-	return resp.ReturnJson, nil
+// Framework 机器人通信驱动，暂时只支持HTTP
+type Framework interface {
+	Callback(func([]byte, APICaller))
 }
 
-// SendText 发送文本消息； to_wxid:好友ID/群ID
-func (b *BotConf) SendText(toWxId, msg string) error {
-	payload := map[string]interface{}{
-		"api":        "SendTextMsg",
-		"token":      MyRobot.Token,
-		"msg":        formatTextMessage(msg),
-		"robot_wxid": MyRobot.Bot.Wxid,
-		"to_wxid":    toWxId,
-	}
+// APICaller 定义了机器人的API调用接口，接入的框架需要实现这个接口
+type APICaller interface {
+	// SendText 发送文本消息
+	// toWxId: 好友ID/群ID
+	// text: 文本内容
+	SendText(toWxId, text string) error
 
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("send text message error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("send text message error: %s", resp.Result)
-		return err
-	}
-	return nil
+	// SendTextAndAt 发送文本消息并@，只有群聊有效
+	// toGroupWxId: 群ID
+	// toWxId: 好友ID/群ID/all
+	// toWxName: 好友昵称/群昵称，留空为自动获取
+	// text: 文本内容
+	SendTextAndAt(toGroupWxId, toWxId, toWxName, text string) error
+
+	// SendImage 发送图片消息
+	// toWxId: 好友ID/群ID
+	// path: 图片路径
+	SendImage(toWxId, path string) error
+
+	// SendShareLink 发送分享链接消息
+	// toWxId: 好友ID/群ID
+	// title: 标题
+	// desc: 描述
+	// imageUrl: 图片链接
+	// jumpUrl: 跳转链接
+	SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string) error
 }
 
-// SendTextAndAt 发送文本消息并@； to_wxid:好友ID/群ID
-func (b *BotConf) SendTextAndAt(groupWxId, toWxId, toWxName, msg string) error {
-	payload := map[string]interface{}{
-		"api":         "SendGroupMsgAndAt",
-		"token":       MyRobot.Token,
-		"msg":         formatTextMessage(msg),
-		"robot_wxid":  MyRobot.Bot.Wxid,
-		"group_wxid":  groupWxId,
-		"member_wxid": toWxId,
-		"member_name": toWxName,
-	}
+// 事件环
+var eveRing eventRing
 
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("send text message and at error: %s", err)
-		return err
+// Run 主函数，启动机器人
+func Run(c *Config) {
+	if c.RingLen == 0 {
+		c.RingLen = 4096
 	}
-	if resp.Code != 0 {
-		log.Errorf("send text message and at error: %s", resp.Result)
-		return err
+	if c.Latency == 0 {
+		c.Latency = time.Second
 	}
-	return nil
+	if c.MaxProcessTime == 0 {
+		c.MaxProcessTime = time.Minute * 3
+	}
+	BotConfig = *c
+	eveRing = newRing(c.RingLen)
+	eveRing.loop(c.Latency, c.MaxProcessTime, processEventAsync)
+	c.Framework.Callback(eveRing.processEvent)
 }
 
-// SendImage 发送图片消息； to_wxid:好友ID/群ID
-func (b *BotConf) SendImage(toWxId, path string) error {
-	payload := map[string]interface{}{
-		"api":        "SendImageMsg",
-		"token":      MyRobot.Token,
-		"path":       path,
-		"robot_wxid": MyRobot.Bot.Wxid,
-		"to_wxid":    toWxId,
+func processEventAsync(response []byte, caller APICaller, maxWait time.Duration) {
+	var event Event
+	if err := json.Unmarshal(response, &event); err != nil {
+		log.Warnf("[robot]无法解析事件: %v", err)
+		return
 	}
 
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("send image message error: %v", err)
-		return err
+	ctx := &Ctx{
+		Event:  &event,
+		State:  State{},
+		caller: caller,
 	}
-	if resp.Code != 0 {
-		log.Errorf("send image message error: %s", resp.Result)
-		return err
+	matcherLock.Lock()
+	if hasMatcherListChanged {
+		matcherListForRanging = make([]*Matcher, len(matcherList))
+		copy(matcherListForRanging, matcherList)
+		hasMatcherListChanged = false
 	}
-	return nil
+	matcherLock.Unlock()
+	preProcessMessageEvent(ctx, &event)
+	go match(ctx, matcherListForRanging, maxWait)
 }
 
-// SendFile 发送文件消息； to_wxid:好友ID/群ID
-func (b *BotConf) SendFile(toWxId, path string) error {
-	payload := map[string]interface{}{
-		"api":        "SendFileMsg",
-		"token":      MyRobot.Token,
-		"path":       path,
-		"robot_wxid": MyRobot.Bot.Wxid,
-		"to_wxid":    toWxId,
+// match 延迟 (1~100ms) 再处理事件
+func match(ctx *Ctx, matchers []*Matcher, maxWait time.Duration) {
+	goRule := func(rule Rule) <-chan bool {
+		ch := make(chan bool, 1)
+		go func() {
+			defer func() {
+				close(ch)
+				if err := recover(); err != nil {
+					log.Errorf("[robot]执行Rule时运行时发生错误: %v\n%v", err, string(debug.Stack()))
+				}
+			}()
+			ch <- rule(ctx)
+		}()
+		return ch
 	}
+	goHandler := func(h Handler) <-chan struct{} {
+		ch := make(chan struct{}, 1)
+		go func() {
+			defer func() {
+				close(ch)
+				if err := recover(); err != nil {
+					log.Errorf("[robot]执行Handler时运行时发生错误: %v\n%v", err, string(debug.Stack()))
+				}
+			}()
+			h(ctx)
+			ch <- struct{}{}
+		}()
+		return ch
+	}
+	time.Sleep(time.Duration(rand.Intn(100)+1) * time.Millisecond)
+	t := time.NewTimer(maxWait)
+	defer t.Stop()
+loop:
+	for _, matcher := range matchers {
+		for k := range ctx.State {
+			// clear state
+			delete(ctx.State, k)
+		}
+		m := matcher.copy()
+		ctx.matcher = m
 
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("send file message error: %v", err)
-		return err
+		// pre handler
+		if m.Engine != nil {
+			for _, handler := range m.Engine.preHandler {
+				c := goRule(handler)
+				for {
+					select {
+					case ok := <-c:
+						if !ok {
+							if m.Break {
+								break loop
+							}
+							continue loop
+						}
+					case <-t.C:
+						if m.NoTimeout {
+							t.Reset(maxWait)
+							continue
+						}
+						log.Warn("[robot] preHandler处理达到最大时延, 退出")
+						break loop
+					}
+					break
+				}
+			}
+		}
+
+		for _, rule := range m.Rules {
+			c := goRule(rule)
+			for {
+				select {
+				case ok := <-c:
+					if !ok {
+						if m.Break {
+							break loop
+						}
+						continue loop
+					}
+				case <-t.C:
+					if m.NoTimeout {
+						t.Reset(maxWait)
+						continue
+					}
+					log.Warn("[robot] rule处理达到最大时延, 退出")
+					break loop
+				}
+				break
+			}
+		}
+
+		// mid handler
+		if m.Engine != nil {
+			for _, handler := range m.Engine.midHandler {
+				c := goRule(handler)
+				for {
+					select {
+					case ok := <-c:
+						if !ok {
+							if m.Break {
+								break loop
+							}
+							continue loop
+						}
+					case <-t.C:
+						if m.NoTimeout {
+							t.Reset(maxWait)
+							continue
+						}
+						log.Warn("[robot] midHandler处理达到最大时延, 退出")
+						break loop
+					}
+					break
+				}
+			}
+		}
+
+		if m.Handler != nil {
+			c := goHandler(m.Handler)
+			for {
+				select {
+				case <-c:
+				case <-t.C:
+					if m.NoTimeout {
+						t.Reset(maxWait)
+						continue
+					}
+					log.Warn("[robot] Handler处理达到最大时延, 退出")
+					break loop
+				}
+				break
+			}
+		}
+		if matcher.Temp {
+			matcher.Delete()
+		}
+
+		if m.Engine != nil {
+			// post handler
+			for _, handler := range m.Engine.postHandler {
+				c := goHandler(handler)
+				for {
+					select {
+					case <-c:
+					case <-t.C:
+						if m.NoTimeout {
+							t.Reset(maxWait)
+							continue
+						}
+						log.Warn("[robot] postHandler处理达到最大时延, 退出")
+						break loop
+					}
+					break
+				}
+			}
+		}
+		if m.Block {
+			break loop
+		}
 	}
-	if resp.Code != 0 {
-		log.Errorf("send file message error: %s", resp.Result)
-		return err
-	}
-	return nil
 }
 
-// SendShareLink 发送分享链接消息； to_wxid:好友ID/群ID
-func (b *BotConf) SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string) error {
-	payload := map[string]interface{}{
-		"api":        "SendShareLinkMsg",
-		"token":      MyRobot.Token,
-		"robot_wxid": MyRobot.Bot.Wxid,
-		"to_wxid":    toWxId,
-		"title":      title,
-		"desc":       desc,
-		"image_url":  imageUrl,
-		"url":        jumpUrl,
+// preProcessMessageEvent 预处理消息事件
+func preProcessMessageEvent(ctx *Ctx, e *Event) {
+	if ctx.IsSendByPrivateChat() {
+		log.Println(fmt.Sprintf("收到私聊(%s)消息 ==> %v", e.Message.FromWxId, e.Message.Msg))
+	} else if ctx.IsSendByGroupChat() {
+		log.Println(fmt.Sprintf("收到群聊(%s[%s])消息 ==> %v", e.Message.FromGroup, e.Message.FromWxId, e.Message.Msg))
 	}
-
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("send share link message error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("send share link message error: %s", resp.Result)
-		return err
-	}
-	return nil
-}
-
-// WithdrawOwnMessage 撤回自己的消息； to_wxid:好友ID/群ID
-func (b *BotConf) WithdrawOwnMessage(toWxId, msgId string) error {
-	payload := map[string]interface{}{
-		"api":        "WithdrawOwnMessage",
-		"token":      MyRobot.Token,
-		"robot_wxid": MyRobot.Bot.Wxid,
-		"to_wxid":    toWxId,
-		"msgid":      msgId,
-	}
-
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("withdraw own message error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("withdraw own message error: %s", resp.Result)
-		return err
-	}
-	return nil
-}
-
-// SendVideo 发送视频消息； to_wxid:好友ID/群ID
-func (b *BotConf) SendVideo(toWxId, path string) error {
-	payload := map[string]interface{}{
-		"api":        "SendVideoMsg",
-		"token":      MyRobot.Token,
-		"path":       path,
-		"robot_wxid": MyRobot.Bot.Wxid,
-		"to_wxid":    toWxId,
-	}
-
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("send video message error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("send video message error: %s", resp.Result)
-		return err
-	}
-	return nil
-}
-
-func (b *BotConf) GetFileFoBase64(path string) (string, error) {
-	payload := map[string]interface{}{
-		"api":   "GetFileFoBase64",
-		"token": MyRobot.Token,
-		"path":  path,
-	}
-
-	var resp MessageResp
-	err := req.C().Post(MyRobot.Server).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("get file for base64 error: %v", err)
-		return "", err
-	}
-	if resp.Code != 0 {
-		log.Errorf("get file for base64 error: %s", resp.Result)
-		return "", err
-	}
-	return resp.ReturnStr, nil
 }
