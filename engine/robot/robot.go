@@ -17,7 +17,7 @@ var BotConfig Config
 
 // Config 关于机器人的相关参数配置
 type Config struct {
-	Nickname       []string      // 机器人名称
+	Nickname       string        // 机器人名称
 	SuperUsers     []string      // 超级用户
 	CommandPrefix  string        // 触发命令
 	RingLen        uint          // 事件环长度 (默认4096)
@@ -76,6 +76,7 @@ func Run(c *Config) {
 	BotConfig = *c
 	eveRing = newRing(c.RingLen)
 	eveRing.loop(c.Latency, c.MaxProcessTime, processEventAsync)
+	log.Printf("[robot] 机器人%s开始工作", c.Nickname)
 	c.Framework.Callback(eveRing.processEvent)
 }
 

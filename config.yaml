@@ -1,0 +1,17 @@
+# 机器人名字
+nickname: "YY Bot🤖"
+# 管理员WxId
+superUsers:
+  - wxid_5cvtxuwufytd21
+# 管理员命令前缀
+commandPrefix: "/"
+# 框架配置
+frameworks:
+  # 框架选择，可选 qianxun、vlw
+  name: "qianxun"
+  # http api url
+  apiUrl: "http://192.168.31.8:9527/DaenWxHook/httpapi/?wxid=wxid_lbzw1d5b3pwl29"
+  # http api token
+  apiToken: ""
+  # 机器人回调服务端口
+  servePort: 9528

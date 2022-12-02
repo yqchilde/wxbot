@@ -1,10 +1,9 @@
-package qianxun
+package vlw
 
 import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -14,14 +13,17 @@ import (
 )
 
 const (
-	eventAccountChange   = 10014 // 账号变动事件
-	eventGroupChat       = 10008 // 群聊消息事件
-	eventPrivateChat     = 10009 // 私聊消息事件
-	eventSelfMessage     = 10010 // 自己消息事件
-	eventTransfer        = 10006 // 收到转账事件
-	eventMessageWithdraw = 10013 // 消息撤回事件
-	eventFriendVerify    = 10011 // 好友请求事件
-	eventPayment         = 10007 // 收到支付事件
+	eventGroupChat           = "EventGroupChat"           // 群聊消息事件
+	eventPrivateChat         = "EventPrivateChat"         // 私聊消息事件
+	eventDeviceCallback      = "EventDeviceCallback"      // 设备回调事件
+	eventFriendVerify        = "EventFrieneVerify"        // 好友请求事件
+	eventGroupNameChange     = "EventGroupNameChange"     // 群名称变动事件
+	eventGroupMemberAdd      = "EventGroupMemberAdd"      // 群成员增加事件
+	eventGroupMemberDecrease = "EventGroupMemberDecrease" // 群成员减少事件
+	eventInvitedInGroup      = "EventInvitedInGroup"      // 被邀请入群事件
+	eventQRCodePayment       = "EventQRcodePayment"       // 面对面收款事件
+	eventDownloadFile        = "EventDownloadFile"        // 文件下载结束事件
+	eventGroupEstablish      = "EventGroupEstablish"      // 创建新的群聊事件
 )
 
 type Framework struct {
@@ -42,14 +44,14 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.APICaller)) {
 	http.HandleFunc("/wxbot/callback", func(w http.ResponseWriter, r *http.Request) {
 		recv, err := io.ReadAll(r.Body)
 		if err != nil {
-			log.Errorf("[千寻] 接收回调错误, error: %v", err)
+			log.Errorf("[VLW] 接收回调错误, error: %v", err)
 			return
 		}
 		body := string(recv)
 		event := robot.Event{
 			RobotWxId:     gjson.Get(body, "wxid").String(),
-			IsPrivateChat: gjson.Get(body, "event").String() == strconv.Itoa(eventPrivateChat),
-			IsGroupChat:   gjson.Get(body, "event").String() == strconv.Itoa(eventGroupChat),
+			IsPrivateChat: gjson.Get(body, "event").String() == eventPrivateChat,
+			IsGroupChat:   gjson.Get(body, "event").String() == eventGroupChat,
 			Message: robot.Message{
 				Msg:      gjson.Get(body, "data.data.msg").String(),
 				MsgId:    "",
@@ -77,11 +79,8 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.APICaller)) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Write([]byte(`{"code":0}`))
 	})
-	if f.ServePort == 0 {
-		f.ServePort = 9528
-	}
-	log.Printf("[千寻] 回调地址, http://%s:%d/wxbot/callback", "127.0.0.1", f.ServePort)
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", f.ServePort), nil); err != nil {
-		log.Fatalf("[千寻] 回调服务启动失败, error: %v", err)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", f.ServePort), nil)
+	if err != nil {
+		log.Fatalf("[VLW] 回调服务启动失败, error: %v", err)
 	}
 }
