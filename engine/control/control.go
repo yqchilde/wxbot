@@ -34,7 +34,7 @@ func (manager *Manager[CTX]) NewControl(service string, o *Options[CTX]) *Contro
 		log.Fatal(err)
 	}
 	var c PluginConfig
-	if err := manager.D.Table(service).Where("gid = ?", "all").Find(&c).Error; err != nil {
+	if err := manager.D.Table(service).Where("gid = ?", "all").First(&c).Error; err == nil {
 		m.Options.DisableOnDefault = c.Enable
 	}
 	return m
@@ -121,5 +121,5 @@ func (m *Control[CTX]) IsEnabledIn(gid string) bool {
 		m.Cache[gid] = c.Enable
 		return c.Enable
 	}
-	return true
+	return !m.Options.DisableOnDefault
 }
