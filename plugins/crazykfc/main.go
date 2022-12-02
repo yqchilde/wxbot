@@ -1,28 +1,18 @@
 package crazykfc
 
 import (
-	"encoding/json"
-	"io"
-	"net/http"
+	"math/rand"
+	"time"
 
-	"github.com/yqchilde/wxbot/engine"
+	"github.com/imroc/req/v3"
+
+	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
-type CrazyKFC struct{ engine.PluginMagic }
+var sentence []string
 
-var (
-	pluginInfo = &CrazyKFC{
-		engine.PluginMagic{
-			Desc:     "🚀 输入 {kfc骚话} => 获取肯德基疯狂星期四骚话",
-			Commands: []string{"kfc骚话"},
-		},
-	}
-	_        = engine.InstallPlugin(pluginInfo)
-	sentence []string
-)
-
-func (p *CrazyKFC) OnRegister() {
+func init() {
 	resp, err := getCrazyKFCSentence()
 	if err != nil {
 		return
@@ -30,18 +20,22 @@ func (p *CrazyKFC) OnRegister() {
 	for i := range resp {
 		sentence = append(sentence, resp[i].Text)
 	}
-}
 
-func (p *CrazyKFC) OnEvent(msg *robot.Message) {
-	if msg.MatchTextCommand(pluginInfo.Commands) {
+	engine := control.Register("kfccrazy", &control.Options[*robot.Ctx]{
+		Alias: "kfc骚话",
+		Help:  "输入 {kfc骚话} => 获取肯德基疯狂星期四骚话",
+	})
+
+	engine.OnFullMatch("kfc骚话").SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		if len(sentence) > 0 {
-			msg.ReplyText(sentence[0])
-			sentence = append(sentence[:0], sentence[1:]...)
+			rand.Seed(time.Now().UnixNano())
+			idx := rand.Intn(len(sentence) - 1)
+			ctx.ReplyText(sentence[idx])
+			sentence = append(sentence[:idx], sentence[idx+1:]...)
 		} else {
-			msg.ReplyText("查询失败，这一定不是bug🤔")
-			p.OnRegister()
+			ctx.ReplyText("查询失败，这一定不是bug🤔")
 		}
-	}
+	})
 }
 
 type apiResponse struct {
@@ -50,18 +44,9 @@ type apiResponse struct {
 }
 
 func getCrazyKFCSentence() ([]apiResponse, error) {
-	api := "https://fastly.jsdelivr.net/gh/Nthily/KFC-Crazy-Thursday@main/kfc.json"
-	resp, err := http.Get(api)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	readAll, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
 	var data []apiResponse
-	if err := json.Unmarshal(readAll, &data); err != nil {
+	api := "https://fastly.jsdelivr.net/gh/Nthily/KFC-Crazy-Thursday@main/kfc.json"
+	if err := req.C().Get(api).Do().Into(&data); err != nil {
 		return nil, err
 	}
 	return data, nil

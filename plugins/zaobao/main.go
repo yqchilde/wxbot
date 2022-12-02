@@ -1,26 +1,17 @@
 package zaobao
 
 import (
-	"github.com/yqchilde/wxbot/engine"
+	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
-type ZaoBao struct{ engine.PluginMagic }
+func init() {
+	engine := control.Register("zaobao", &control.Options[*robot.Ctx]{
+		Alias: "每日早报",
+		Help:  "输入 {每日早报|早报} => 获取每天60s读懂世界",
+	})
 
-var (
-	pluginInfo = &ZaoBao{
-		engine.PluginMagic{
-			Desc:     "🚀 输入 {每日早报|早报} => 获取每天60s读懂世界",
-			Commands: []string{"每日早报", "早报"},
-		},
-	}
-	_ = engine.InstallPlugin(pluginInfo)
-)
-
-func (p *ZaoBao) OnRegister() {}
-
-func (p *ZaoBao) OnEvent(msg *robot.Message) {
-	if msg.MatchTextCommand(pluginInfo.Commands) {
-		msg.ReplyImage("https://api.qqsuu.cn/api/dm-60s?type=image")
-	}
+	engine.OnFullMatchGroup([]string{"早报", "每日早报"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		ctx.ReplyImage("https://api.qqsuu.cn/api/dm-60s?type=image")
+	})
 }

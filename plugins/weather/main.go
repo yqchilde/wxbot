@@ -2,51 +2,53 @@ package weather
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
+	"github.com/glebarez/sqlite"
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
+	"github.com/yqchilde/pkgs/log"
+	"gorm.io/gorm"
 
-	"github.com/yqchilde/wxbot/engine"
+	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
-type Weather struct {
-	engine.PluginMagic
-	Enable bool   `yaml:"enable"`
-	Key    string `yaml:"key"`
-}
+func init() {
+	engine := control.Register("weather", &control.Options[*robot.Ctx]{
+		Alias:      "天气查询",
+		Help:       "输入 {XX天气} => 获取天气数据，Ps:济南天气、北京-朝阳天气",
+		DataFolder: "weather",
+	})
 
-var (
-	pluginInfo = &Weather{
-		PluginMagic: engine.PluginMagic{
-			Desc:     "🚀 输入 {XX天气} => 获取天气数据，Ps:济南天气、北京-朝阳天气",
-			Commands: []string{`([^\x00-\xff]{0,6}-?[^\x00-\xff]{0,6})天气`},
-			Weight:   98,
-		},
+	db, err := gorm.Open(sqlite.Open(engine.GetDataFolder() + "/weather.db"))
+	if err != nil {
+		log.Fatal(err)
 	}
-	plugin = engine.InstallPlugin(pluginInfo)
-)
+	db.Table("weather").AutoMigrate(&Weather{})
 
-func (m *Weather) OnRegister() {}
+	engine.OnRegex(`([^\x00-\xff]{0,6}-?[^\x00-\xff]{0,6})天气`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		var weather Weather
+		dbRet := db.Table("weather").FirstOrCreate(&weather)
+		if err := dbRet.Error; err != nil {
+			return
+		}
+		if weather.AppKey == "" {
+			ctx.ReplyTextAndAt("请先私聊机器人配置appKey\n指令：set weather appKey __\n相关秘钥申请地址：https://dev.qweather.com")
+			return
+		}
 
-func (m *Weather) OnEvent(msg *robot.Message) {
-	if idx, ok := msg.MatchRegexCommand(pluginInfo.Commands); ok {
-		var re = regexp.MustCompile(pluginInfo.Commands[idx])
-		match := re.FindAllStringSubmatch(msg.Content.Msg, -1)
-		city := match[0][1]
-		apiKey := plugin.RawConfig.Get("key").(string)
+		city := ctx.State["regex_matched"].([]string)[1]
 		locationSplit := strings.Split(city, "-")
 		var locationList []Location
 		if len(locationSplit) == 1 {
-			locationList = getCityLocation(apiKey, "", locationSplit[0])
+			locationList = getCityLocation(weather.AppKey, "", locationSplit[0])
 		}
 		if len(locationSplit) == 2 {
-			locationList = getCityLocation(apiKey, locationSplit[0], locationSplit[1])
+			locationList = getCityLocation(weather.AppKey, locationSplit[0], locationSplit[1])
 		}
 		if len(locationList) == 0 {
-			msg.ReplyTextAndAt("未找到城市")
+			ctx.ReplyTextAndAt("未找到城市")
 			return
 		} else if len(locationList) == 1 {
 			location = locationList[0].Id
@@ -58,14 +60,14 @@ func (m *Weather) OnEvent(msg *robot.Message) {
 			if len(adm) == 1 {
 				location = locationList[0].Id
 			} else {
-				msg.ReplyTextAndAt("查询到多个地区地址，请输入更详细的地区，比如：北京-朝阳天气")
+				ctx.ReplyTextAndAt("查询到多个地区地址，请输入更详细的地区，比如：北京-朝阳天气")
 				return
 			}
 		}
 
-		weatherNow := getWeatherNow(apiKey, location)
-		weather2d := getWeather2d(apiKey, location)
-		weatherIndices := getWeatherIndices(apiKey, location)
+		weatherNow := getWeatherNow(weather.AppKey, location)
+		weather2d := getWeather2d(weather.AppKey, location)
+		weatherIndices := getWeatherIndices(weather.AppKey, location)
 		console := "城市: %s\n"
 		console += "今天: %s\n"
 		console += "当前温度: %s°，体感温度: %s°\n"
@@ -78,37 +80,22 @@ func (m *Weather) OnEvent(msg *robot.Message) {
 		console += "白天: %s(%s°-%s°)，夜间: %s\n"
 		console += "日出时间: %s，日落时间: %s\n"
 		console = fmt.Sprintf(console, locationList[0].Adm1+"/"+locationList[0].Adm2+"/"+locationList[0].Name, weather2d[0].FxDate, weatherNow.Temp, weatherNow.FeelsLike, weather2d[0].TextDay, weather2d[0].TempMin, weather2d[0].TempMax, weather2d[0].TextNight, weather2d[0].Sunrise, weather2d[0].Sunset, weatherNow.Precip, weatherNow.Vis, weatherNow.Cloud, weatherIndices, weather2d[1].FxDate, weather2d[1].TextDay, weather2d[1].TempMin, weather2d[1].TempMax, weather2d[1].TextNight, weather2d[1].Sunrise, weather2d[1].Sunset)
-		msg.ReplyText(console)
-	}
-}
+		ctx.ReplyText(console)
+	})
 
-var location string
+	engine.OnRegex("set weather appKey ([0-9a-z]{32})").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		appSecret := ctx.State["regex_matched"].([]string)[1]
+		db.Table("weather").Where("1 = 1").Update("app_key", appSecret)
+		ctx.ReplyText("appKey设置成功")
+	})
 
-type Location struct {
-	Name string `json:"name"`
-	Id   string `json:"id"`
-	Adm2 string `json:"adm2"`
-	Adm1 string `json:"adm1"`
-}
-
-type WeatherNow struct {
-	UpdateTime string `json:"updateTime"` // 更新时间
-	Temp       string `json:"temp"`       // 温度
-	FeelsLike  string `json:"feelsLike"`  // 体感温度
-	Text       string `json:"text"`       // 天气状况
-	Precip     string `json:"precip"`     // 降水量
-	Vis        string `json:"vis"`        // 能见度
-	Cloud      string `json:"cloud"`      // 云量
-}
-
-type WeatherDay struct {
-	FxDate    string `json:"fxDate"`    // 预报日期
-	Sunrise   string `json:"sunrise"`   // 日出时间
-	Sunset    string `json:"sunset"`    // 日落时间
-	TempMax   string `json:"tempMax"`   // 最高温度
-	TempMin   string `json:"tempMin"`   // 最低温度
-	TextDay   string `json:"textDay"`   // 白天天气现象文字
-	TextNight string `json:"textNight"` // 晚间天气现象文字
+	engine.OnFullMatch("get weather info").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		var weather Weather
+		if err := db.Table("plmm").Limit(1).Find(&weather).Error; err != nil {
+			return
+		}
+		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - 查询天气\nappKey: %s", weather.AppKey))
+	})
 }
 
 // 城市搜索
