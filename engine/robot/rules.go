@@ -168,7 +168,6 @@ func MustMemePicture(ctx *Ctx) bool {
 	next := NewFutureEvent(999, false, ctx.CheckSession(), HasMemePicture).Next()
 	select {
 	case <-time.After(timeout):
-		log.Println("等待图片超时")
 		return false
 	case newCtx := <-next:
 		ctx.State["image_url"] = newCtx.State["image_url"]

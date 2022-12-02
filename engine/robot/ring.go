@@ -15,8 +15,8 @@ type eventRing struct {
 }
 
 type eventRingItem struct {
-	response []byte
-	caller   APICaller
+	event  *Event
+	caller APICaller
 }
 
 func newRing(ringLen uint) eventRing {
@@ -31,31 +31,29 @@ func newRing(ringLen uint) eventRing {
 }
 
 // processEvent 同步向池中放入事件
-func (evr *eventRing) processEvent(response []byte, caller APICaller) {
+func (evr *eventRing) processEvent(event *Event, caller APICaller) {
 	evr.Lock()
 	defer evr.Unlock()
 	r := evr.r
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Add(unsafe.Pointer(&r.Value), unsafe.Sizeof(uintptr(0)))),
 		unsafe.Pointer(&eventRingItem{
-			response: response,
-			caller:   caller,
+			event:  event,
+			caller: caller,
 		}),
 	)
 	evr.r = r.Next()
 }
 
-// loop 循环处理事件
-//
-//	latency 延迟 latency 再处理事件
-func (evr *eventRing) loop(latency, maxWait time.Duration, process func([]byte, APICaller, time.Duration)) {
+// loop 循环处理事件，latency 延迟 latency 再处理事件
+func (evr *eventRing) loop(latency, maxWait time.Duration, process func(*Event, APICaller, time.Duration)) {
 	go func(r *ring.Ring) {
 		for range time.NewTicker(latency).C {
 			it := r.Value.(*eventRingItem)
 			if it == nil { // 还未有消息
 				continue
 			}
-			process(it.response, it.caller, maxWait)
-			it.response = nil
+			process(it.event, it.caller, maxWait)
+			it.event = nil
 			it.caller = nil
 			atomic.StorePointer((*unsafe.Pointer)(unsafe.Add(unsafe.Pointer(&r.Value), unsafe.Sizeof(uintptr(0)))), unsafe.Pointer(nil))
 			r = r.Next()

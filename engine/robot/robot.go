@@ -1,7 +1,6 @@
 package robot
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"runtime/debug"
@@ -29,7 +28,7 @@ type Config struct {
 
 // Framework 机器人通信驱动，暂时只支持HTTP
 type Framework interface {
-	Callback(func([]byte, APICaller))
+	Callback(func(*Event, APICaller))
 }
 
 // APICaller 定义了机器人的API调用接口，接入的框架需要实现这个接口
@@ -80,16 +79,10 @@ func Run(c *Config) {
 	c.Framework.Callback(eveRing.processEvent)
 }
 
-func processEventAsync(response []byte, caller APICaller, maxWait time.Duration) {
-	var event Event
-	if err := json.Unmarshal(response, &event); err != nil {
-		log.Warnf("[robot]无法解析事件: %v", err)
-		return
-	}
-
+func processEventAsync(event *Event, caller APICaller, maxWait time.Duration) {
 	ctx := &Ctx{
-		Event:  &event,
 		State:  State{},
+		Event:  event,
 		caller: caller,
 	}
 	matcherLock.Lock()
@@ -99,7 +92,7 @@ func processEventAsync(response []byte, caller APICaller, maxWait time.Duration)
 		hasMatcherListChanged = false
 	}
 	matcherLock.Unlock()
-	preProcessMessageEvent(ctx, &event)
+	preProcessMessageEvent(ctx, event)
 	go match(ctx, matcherListForRanging, maxWait)
 }
 
