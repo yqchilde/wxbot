@@ -98,44 +98,28 @@ func (m *Control[CTX]) Disable(groupID string) error {
 
 // IsEnabledIn 查询开启群组
 func (m *Control[CTX]) IsEnabledIn(gid string) bool {
+	m.Manager.RLock()
+	isEnable, ok := m.Cache["all"]
+	m.Manager.RUnlock()
+	if ok {
+		return isEnable
+	}
+	m.Manager.RLock()
+	isEnable, ok = m.Cache[gid]
+	m.Manager.RUnlock()
+	if ok {
+		return isEnable
+	}
+	m.Manager.Lock()
+	defer m.Manager.Unlock()
 	var c PluginConfig
-
-	{
-		// 查询是否全局开启
-		m.Manager.RLock()
-		yes, ok := m.Cache["all"]
-		m.Manager.RUnlock()
-		if !ok {
-			err := m.Manager.D.Table(m.Service).Where("gid = ?", "all").Find(&c).Error
-			if err == nil && c.Enable {
-				yes, ok = c.Enable, true
-				m.Manager.Lock()
-				m.Cache["all"] = yes
-				m.Manager.Unlock()
-			}
-		}
-		if ok && yes {
-			return true
-		}
+	if m.Manager.D.Table(m.Service).Where("gid = ?", "all").First(&c).Error == nil {
+		m.Cache["all"] = c.Enable
+		return c.Enable
 	}
-
-	// 查询是否单独开启
-	{
-		m.Manager.RLock()
-		yes, ok := m.Cache[gid]
-		m.Manager.RUnlock()
-		if !ok {
-			err := m.Manager.D.Table(m.Service).Where("gid = ?", gid).Find(&c).Error
-			if err == nil && c.Enable {
-				yes, ok = c.Enable, true
-				m.Manager.Lock()
-				m.Cache[gid] = yes
-				m.Manager.Unlock()
-			}
-		}
-		if ok && yes {
-			return true
-		}
+	if m.Manager.D.Table(m.Service).Where("gid = ?", gid).First(&c).Error == nil {
+		m.Cache[gid] = c.Enable
+		return c.Enable
 	}
-	return false
+	return true
 }

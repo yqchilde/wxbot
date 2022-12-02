@@ -22,7 +22,7 @@ func newControl(service string, o *Options[*robot.Ctx]) robot.Rule {
 func init() {
 	once := sync.Once{}
 	once.Do(func() {
-		robot.OnCommandGroup([]string{"启用", "禁用"}, robot.UserOrGrpAdmin).SetBlock(true).FirstPriority().Handle(func(ctx *robot.Ctx) {
+		robot.OnCommandGroup([]string{"启用", "禁用"}, robot.UserOrGroupAdmin).SetBlock(true).FirstPriority().Handle(func(ctx *robot.Ctx) {
 			args := ctx.State["args"].(string)
 			if args == "" {
 				return

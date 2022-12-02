@@ -8,6 +8,7 @@ import (
 	"github.com/glebarez/sqlite"
 	"github.com/yqchilde/pkgs/log"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Manager[CTX any] struct {
@@ -33,7 +34,7 @@ func NewManager[CTX any](dbpath string) (m Manager[CTX]) {
 			}
 		}
 	}
-	db, err := gorm.Open(sqlite.Open(dbpath))
+	db, err := gorm.Open(sqlite.Open(dbpath), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
 	if err != nil {
 		log.Fatal("open plugins database failed: ", err)
 	}

@@ -34,30 +34,25 @@ func (manager *Manager[CTX]) CanResponse(gid string) bool {
 	manager.RLock()
 	isResp, ok := respCache["all"]
 	manager.RUnlock()
-	if !ok {
-		var r BotResponseConfig
-		if err := manager.D.Table("__resp").Where("gid = ?", "all").Find(&r).Error; err != nil {
-			manager.Lock()
-			respCache["all"] = r.Status
-			manager.Unlock()
-			isResp, ok = r.Status, true
-		}
+	if ok {
+		return isResp
 	}
-	if ok && isResp {
-		return true
-	}
-
 	manager.RLock()
 	isResp, ok = respCache[gid]
 	manager.RUnlock()
-	if !ok {
-		var r BotResponseConfig
-		if err := manager.D.Table("__resp").Where("gid = ?", gid).Find(&r).Error; err != nil {
-			manager.Lock()
-			respCache[gid] = r.Status
-			manager.Unlock()
-			isResp, ok = r.Status, true
-		}
+	if ok {
+		return isResp
 	}
-	return ok && isResp
+	manager.Lock()
+	defer manager.Unlock()
+	var r BotResponseConfig
+	if manager.D.Table("__resp").Where("gid = ?", "all").First(&r).Error == nil {
+		respCache["all"] = r.Status
+		return r.Status
+	}
+	if manager.D.Table("__resp").Where("gid = ?", gid).First(&r).Error == nil {
+		respCache[gid] = r.Status
+		return r.Status
+	}
+	return true
 }
