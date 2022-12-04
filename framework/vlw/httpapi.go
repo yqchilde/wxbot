@@ -25,7 +25,6 @@ func (f *Framework) msgFormat(msg string) string {
 			buff.WriteString(string(r))
 			continue
 		}
-		fmt.Println(utf8.RuneLen(r))
 		switch utf8.RuneLen(r) {
 		case 2, 3:
 			buff.WriteString(`[emoji=\u`)
