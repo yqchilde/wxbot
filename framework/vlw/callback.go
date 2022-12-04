@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
+	"os"
 
 	"github.com/tidwall/gjson"
 	"github.com/yqchilde/pkgs/log"
@@ -27,13 +27,15 @@ const (
 )
 
 type Framework struct {
+	BotWxId   string // 机器人微信ID
 	ApiUrl    string // http api地址
 	ApiToken  string // http api鉴权token
 	ServePort uint   // 本地服务端口，用于接收回调
 }
 
-func New(apiUrl, apiToken string, servePort uint) *Framework {
+func New(botWxId, apiUrl, apiToken string, servePort uint) *Framework {
 	return &Framework{
+		BotWxId:   botWxId,
 		ApiUrl:    apiUrl,
 		ApiToken:  apiToken,
 		ServePort: servePort,
@@ -48,37 +50,39 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.APICaller)) {
 			return
 		}
 		body := string(recv)
+		os.WriteFile("callback.json", recv, 0644)
 		event := robot.Event{
-			RobotWxId:     gjson.Get(body, "wxid").String(),
-			IsPrivateChat: gjson.Get(body, "event").String() == eventPrivateChat,
-			IsGroupChat:   gjson.Get(body, "event").String() == eventGroupChat,
+			RobotWxId:     gjson.Get(body, "content.robot_wxid").String(),
+			IsAtMe:        gjson.Get(body, "Event").String() == eventPrivateChat,
+			IsPrivateChat: gjson.Get(body, "Event").String() == eventPrivateChat,
+			IsGroupChat:   gjson.Get(body, "Event").String() == eventGroupChat,
 			Message: robot.Message{
-				Msg:      gjson.Get(body, "data.data.msg").String(),
-				MsgId:    "",
-				MsgType:  int(gjson.Get(body, "data.data.msgType").Int()),
-				FromWxId: gjson.Get(body, "data.data.fromWxid").String(),
-				FromName: "",
+				Msg:      gjson.Get(body, "content.msg").String(),
+				MsgId:    gjson.Get(body, "content.msg_id").String(),
+				MsgType:  gjson.Get(body, "content.type").Int(),
+				FromWxId: gjson.Get(body, "content.from_wxid").String(),
+				FromName: gjson.Get(body, "content.from_name").String(),
 			},
 		}
-		if event.IsPrivateChat {
-			event.IsAtMe = true
-		}
 		if event.IsGroupChat {
-			event.Message.FromGroup = gjson.Get(body, "data.data.fromWxid").String()
-			event.Message.FromGroupName = ""
-			event.Message.FromWxId = gjson.Get(body, "data.data.finalFromWxid").String()
-			gjson.Get(body, "data.data.atWxidList").ForEach(func(key, val gjson.Result) bool {
-				if val.String() == event.RobotWxId && !strings.Contains(event.Message.Msg, "@所有人") {
-					event.IsAtMe = true
-				}
-				return true
-			})
+			event.Message.FromGroup = gjson.Get(body, "content.from_group").String()
+			event.Message.FromGroupName = gjson.Get(body, "content.from_group_name").String()
+			if gjson.Get(body, "content.msg_source.atuserlist").Exists() {
+				gjson.Get(body, "content.msg_source.atuserlist").ForEach(func(key, val gjson.Result) bool {
+					if gjson.Get(val.String(), "wxid").String() == event.RobotWxId &&
+						gjson.Get(val.String(), "nickname").String() != "@所有人" {
+						event.IsAtMe = true
+					}
+					return true
+				})
+			}
 		}
 		handler(&event, f)
 
 		w.Header().Add("Content-Type", "application/json")
 		w.Write([]byte(`{"code":0}`))
 	})
+	log.Printf("[VLW] 回调地址, http://%s:%d/wxbot/callback", "127.0.0.1", f.ServePort)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", f.ServePort), nil)
 	if err != nil {
 		log.Fatalf("[VLW] 回调服务启动失败, error: %v", err)

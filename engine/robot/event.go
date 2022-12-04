@@ -17,5 +17,5 @@ type Message struct {
 	FromGroupName string
 	Msg           string
 	MsgId         string
-	MsgType       int
+	MsgType       int64
 }

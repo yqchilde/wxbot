@@ -25,13 +25,15 @@ const (
 )
 
 type Framework struct {
+	BotWxId   string // 机器人微信ID
 	ApiUrl    string // http api地址
 	ApiToken  string // http api鉴权token
 	ServePort uint   // 本地服务端口，用于接收回调
 }
 
-func New(apiUrl, apiToken string, servePort uint) *Framework {
+func New(botWxId, apiUrl, apiToken string, servePort uint) *Framework {
 	return &Framework{
+		BotWxId:   botWxId,
 		ApiUrl:    apiUrl,
 		ApiToken:  apiToken,
 		ServePort: servePort,
@@ -48,18 +50,16 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.APICaller)) {
 		body := string(recv)
 		event := robot.Event{
 			RobotWxId:     gjson.Get(body, "wxid").String(),
+			IsAtMe:        gjson.Get(body, "event").String() == strconv.Itoa(eventPrivateChat),
 			IsPrivateChat: gjson.Get(body, "event").String() == strconv.Itoa(eventPrivateChat),
 			IsGroupChat:   gjson.Get(body, "event").String() == strconv.Itoa(eventGroupChat),
 			Message: robot.Message{
 				Msg:      gjson.Get(body, "data.data.msg").String(),
 				MsgId:    "",
-				MsgType:  int(gjson.Get(body, "data.data.msgType").Int()),
+				MsgType:  gjson.Get(body, "data.data.msgType").Int(),
 				FromWxId: gjson.Get(body, "data.data.fromWxid").String(),
 				FromName: "",
 			},
-		}
-		if event.IsPrivateChat {
-			event.IsAtMe = true
 		}
 		if event.IsGroupChat {
 			event.Message.FromGroup = gjson.Get(body, "data.data.fromWxid").String()
