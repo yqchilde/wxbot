@@ -58,7 +58,7 @@ func (f *Framework) GetMemePictures(msg robot.Message) string {
 }
 
 func (f *Framework) SendText(toWxId, text string) error {
-	f.ApiUrl = fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
 	payload := map[string]interface{}{
 		"type": "Q0001",
 		"data": map[string]interface{}{
@@ -68,7 +68,7 @@ func (f *Framework) SendText(toWxId, text string) error {
 	}
 
 	var msgResp MessageResp
-	resp := req.C().Post(f.ApiUrl).SetBody(payload).Do()
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
 	if err := resp.Into(&msgResp); err != nil {
 		log.Errorf("[千寻] SendText error: %v", err)
 		return err
@@ -81,7 +81,7 @@ func (f *Framework) SendText(toWxId, text string) error {
 }
 
 func (f *Framework) SendTextAndAt(toGroupWxId, toWxId, toWxName, text string) error {
-	f.ApiUrl = fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
 	payload := map[string]interface{}{
 		"type": "Q0001",
 		"data": map[string]interface{}{
@@ -91,7 +91,7 @@ func (f *Framework) SendTextAndAt(toGroupWxId, toWxId, toWxName, text string) er
 	}
 
 	var msgResp MessageResp
-	resp := req.C().Post(f.ApiUrl).SetBody(payload).Do()
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
 	if err := resp.Into(&msgResp); err != nil {
 		log.Errorf("[千寻] SendTextAndAt error: %v", err)
 		return err
@@ -104,7 +104,7 @@ func (f *Framework) SendTextAndAt(toGroupWxId, toWxId, toWxName, text string) er
 }
 
 func (f *Framework) SendImage(toWxId, path string) error {
-	f.ApiUrl = fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
 	payload := map[string]interface{}{
 		"type": "Q0010",
 		"data": map[string]interface{}{
@@ -114,7 +114,7 @@ func (f *Framework) SendImage(toWxId, path string) error {
 	}
 
 	var msgResp MessageResp
-	resp := req.C().Post(f.ApiUrl).SetBody(payload).Do()
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
 	if err := resp.Into(&msgResp); err != nil {
 		log.Errorf("[千寻] SendImage error: %v", err)
 		return err
@@ -127,7 +127,7 @@ func (f *Framework) SendImage(toWxId, path string) error {
 }
 
 func (f *Framework) SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string) error {
-	f.ApiUrl = fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
 	payload := map[string]interface{}{
 		"type": "Q0012",
 		"data": map[string]interface{}{
@@ -140,7 +140,7 @@ func (f *Framework) SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string)
 	}
 
 	var msgResp MessageResp
-	resp := req.C().Post(f.ApiUrl).SetBody(payload).Do()
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
 	if err := resp.Into(&msgResp); err != nil {
 		log.Errorf("[千寻] SendShareLink error: %v", err)
 		return err
