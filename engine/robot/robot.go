@@ -34,6 +34,10 @@ type Framework interface {
 
 // APICaller 定义了机器人的API调用接口，接入的框架需要实现这个接口
 type APICaller interface {
+	// GetMemePictures 判断是否是表情包图片(迷因图)
+	// return: 图片链接(网络URL或图片base64)
+	GetMemePictures(message Message) string
+
 	// SendText 发送文本消息
 	// toWxId: 好友ID/群ID
 	// text: 文本内容

@@ -9,8 +9,11 @@ import (
 	"unicode/utf16"
 	"unicode/utf8"
 
+	"github.com/antchfx/xmlquery"
 	"github.com/imroc/req/v3"
 	"github.com/yqchilde/pkgs/log"
+
+	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 type MessageResp struct {
@@ -42,7 +45,20 @@ func (f *Framework) msgFormat(msg string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(buff.String(), "\r\n", "\r"), "\n", "\r")
 }
 
+func (f *Framework) GetMemePictures(msg robot.Message) string {
+	doc, err := xmlquery.Parse(strings.NewReader(msg.Msg))
+	if err != nil {
+		return ""
+	}
+	node, err := xmlquery.Query(doc, "//emoji")
+	if err != nil {
+		return ""
+	}
+	return node.SelectAttr("cdnurl")
+}
+
 func (f *Framework) SendText(toWxId, text string) error {
+	f.ApiUrl = fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
 	payload := map[string]interface{}{
 		"type": "Q0001",
 		"data": map[string]interface{}{
@@ -65,6 +81,7 @@ func (f *Framework) SendText(toWxId, text string) error {
 }
 
 func (f *Framework) SendTextAndAt(toGroupWxId, toWxId, toWxName, text string) error {
+	f.ApiUrl = fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
 	payload := map[string]interface{}{
 		"type": "Q0001",
 		"data": map[string]interface{}{
@@ -87,6 +104,7 @@ func (f *Framework) SendTextAndAt(toGroupWxId, toWxId, toWxName, text string) er
 }
 
 func (f *Framework) SendImage(toWxId, path string) error {
+	f.ApiUrl = fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
 	payload := map[string]interface{}{
 		"type": "Q0010",
 		"data": map[string]interface{}{
@@ -109,6 +127,7 @@ func (f *Framework) SendImage(toWxId, path string) error {
 }
 
 func (f *Framework) SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string) error {
+	f.ApiUrl = fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
 	payload := map[string]interface{}{
 		"type": "Q0012",
 		"data": map[string]interface{}{

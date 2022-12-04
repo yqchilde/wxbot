@@ -10,12 +10,15 @@ import (
 
 	"github.com/imroc/req/v3"
 	"github.com/yqchilde/pkgs/log"
+
+	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 type MessageResp struct {
 	Code      int    `json:"Code"`
 	Result    string `json:"Result"`
 	ReturnStr string `json:"ReturnStr"`
+	ReturnInt string `json:"ReturnInt"`
 }
 
 func (f *Framework) msgFormat(msg string) string {
@@ -40,6 +43,28 @@ func (f *Framework) msgFormat(msg string) string {
 		}
 	}
 	return buff.String()
+}
+
+func (f *Framework) GetMemePictures(msg robot.Message) string {
+	// 获取图片base64
+	path := msg.Msg[5 : len(msg.Msg)-1]
+	payload := map[string]interface{}{
+		"api":   "GetFileFoBase64",
+		"token": f.ApiToken,
+		"path":  path,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("[VLW] GetFileFoBase64 error: %v", err)
+		return ""
+	}
+	if resp.Code != 0 {
+		log.Errorf("[VLW] GetFileFoBase64 error: %s", resp.Result)
+		return ""
+	}
+	return resp.ReturnStr
 }
 
 func (f *Framework) SendText(toWxId, text string) error {

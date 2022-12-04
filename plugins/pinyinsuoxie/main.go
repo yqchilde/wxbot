@@ -16,7 +16,7 @@ func init() {
 		Alias: "查缩写",
 		Help:  "输入 {查缩写 XX} => 获取拼音缩写翻译，Ps:查缩写 yyds",
 	})
-	engine.OnRegex(`^查缩写 ?([a-zA-Z0-9]+)$`, robot.OnlyGroup).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(`^查缩写 ?([a-zA-Z0-9]+)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		word := ctx.State["regex_matched"].([]string)[1]
 		if data, err := transPinYinSuoXie(word); err == nil {
 			if len(data) == 0 {

@@ -1,11 +1,5 @@
 package robot
 
-import (
-	"strings"
-
-	"github.com/antchfx/xmlquery"
-)
-
 // IsSendByPrivateChat 判断消息是否是私聊消息
 func (ctx *Ctx) IsSendByPrivateChat() bool {
 	return ctx.Event.IsPrivateChat
@@ -31,15 +25,7 @@ func (ctx *Ctx) IsMemePictures() (string, bool) {
 	if ctx.Event.Message.MsgType != MsgTypeMemePicture {
 		return "", false
 	}
-	doc, err := xmlquery.Parse(strings.NewReader(ctx.Event.Message.Msg))
-	if err != nil {
-		return "", false
-	}
-	node, err := xmlquery.Query(doc, "//emoji")
-	if err != nil {
-		return "", false
-	}
-	return node.SelectAttr("cdnurl"), true
+	return ctx.caller.GetMemePictures(ctx.Event.Message), true
 }
 
 // ReplyText 回复文本消息

@@ -10,8 +10,8 @@ commandPrefix: "/"
 # 框架配置
 frameworks:
   # 框架选择，可选 qianxun、vlw
-  name: "vlw"
-  # http api url
+  name: "qianxun"
+  # http api 地址(ip+端口组成)
   apiUrl: "http://192.168.31.8:9527"
   # http api token
   apiToken: "7k7k"
