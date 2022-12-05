@@ -83,13 +83,13 @@ func init() {
 		ctx.ReplyText(console)
 	})
 
-	engine.OnRegex("set weather appKey ([0-9a-z]{32})").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex("set weather appKey ([0-9a-z]{32})", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		appSecret := ctx.State["regex_matched"].([]string)[1]
 		db.Table("weather").Where("1 = 1").Update("app_key", appSecret)
 		ctx.ReplyText("appKey设置成功")
 	})
 
-	engine.OnFullMatch("get weather info").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnFullMatch("get weather info", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var weather Weather
 		if err := db.Table("plmm").Limit(1).Find(&weather).Error; err != nil {
 			return
