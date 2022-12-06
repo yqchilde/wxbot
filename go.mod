@@ -3,6 +3,7 @@ module github.com/yqchilde/wxbot
 go 1.19
 
 require (
+	github.com/PullRequestInc/go-gpt3 v1.1.9
 	github.com/antchfx/xmlquery v1.3.13
 	github.com/glebarez/sqlite v1.5.0
 	github.com/imroc/req/v3 v3.26.3

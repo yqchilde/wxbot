@@ -15,7 +15,7 @@ type Engine struct {
 	cacheFolder string        // 缓存目录
 }
 
-var priorityMap = make(map[int]string) // priorityMap is map[prio]service
+var priorityMap = make(map[int]string)
 var dataFolderFilter = make(map[string]string)
 var cacheFolderFilter = make(map[string]string)
 
@@ -57,9 +57,59 @@ func newEngine(service string, priority int, o *Options[*robot.Ctx]) (e *Engine)
 	return
 }
 
+// GetDataFolder 获取插件数据目录
+func (e *Engine) GetDataFolder() string {
+	return e.dataFolder
+}
+
+// GetCacheFolder 获取插件缓存目录
+func (e *Engine) GetCacheFolder() string {
+	return e.cacheFolder
+}
+
+// OnPrefix 前缀触发器
+func (e *Engine) OnPrefix(prefix string, rules ...robot.Rule) *Matcher {
+	return (*Matcher)(e.en.OnPrefix(prefix, rules...).SetPriority(e.priority))
+}
+
+// OnPrefixGroup 前缀触发器组
+func (e *Engine) OnPrefixGroup(prefix []string, rules ...robot.Rule) *Matcher {
+	return (*Matcher)(e.en.OnPrefixGroup(prefix, rules...).SetPriority(e.priority))
+}
+
+// OnSuffix 后缀触发器
+func (e *Engine) OnSuffix(suffix string, rules ...robot.Rule) *Matcher {
+	return (*Matcher)(e.en.OnSuffix(suffix, rules...).SetPriority(e.priority))
+}
+
+// OnSuffixGroup 后缀触发器组
+func (e *Engine) OnSuffixGroup(suffix []string, rules ...robot.Rule) *Matcher {
+	return (*Matcher)(e.en.OnSuffixGroup(suffix, rules...).SetPriority(e.priority))
+}
+
+// OnCommand 命令触发器
+func (e *Engine) OnCommand(commands string, rules ...robot.Rule) *Matcher {
+	return (*Matcher)(e.en.OnCommand(commands, rules...).SetPriority(e.priority))
+}
+
+// OnCommandGroup 命令触发器组
+func (e *Engine) OnCommandGroup(commands []string, rules ...robot.Rule) *Matcher {
+	return (*Matcher)(e.en.OnCommandGroup(commands, rules...).SetPriority(e.priority))
+}
+
 // OnRegex 正则触发器
 func (e *Engine) OnRegex(regexPattern string, rules ...robot.Rule) *Matcher {
 	return (*Matcher)(e.en.OnRegex(regexPattern, rules...).SetPriority(e.priority))
+}
+
+// OnKeyword 关键词触发器
+func (e *Engine) OnKeyword(keyword string, rules ...robot.Rule) *Matcher {
+	return (*Matcher)(e.en.OnKeyword(keyword, rules...).SetPriority(e.priority))
+}
+
+// OnKeywordGroup 关键词触发器组
+func (e *Engine) OnKeywordGroup(keywords []string, rules ...robot.Rule) *Matcher {
+	return (*Matcher)(e.en.OnKeywordGroup(keywords, rules...).SetPriority(e.priority))
 }
 
 // OnFullMatch 完全匹配触发器
@@ -70,19 +120,4 @@ func (e *Engine) OnFullMatch(src string, rules ...robot.Rule) *Matcher {
 // OnFullMatchGroup 完全匹配触发器组
 func (e *Engine) OnFullMatchGroup(src []string, rules ...robot.Rule) *Matcher {
 	return (*Matcher)(e.en.OnFullMatchGroup(src, rules...).SetPriority(e.priority))
-}
-
-// OnCommandGroup 命令触发器组
-func (e *Engine) OnCommandGroup(commands []string, rules ...robot.Rule) *Matcher {
-	return (*Matcher)(e.en.OnCommandGroup(commands, rules...).SetPriority(e.priority))
-}
-
-// GetDataFolder 获取插件数据目录
-func (e *Engine) GetDataFolder() string {
-	return e.dataFolder
-}
-
-// GetCacheFolder 获取插件缓存目录
-func (e *Engine) GetCacheFolder() string {
-	return e.cacheFolder
 }
