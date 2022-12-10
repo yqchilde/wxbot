@@ -3,68 +3,147 @@ package chatgpt
 import (
 	"context"
 	"fmt"
-	"gorm.io/gorm"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/PullRequestInc/go-gpt3"
 	"github.com/glebarez/sqlite"
 	"github.com/yqchilde/pkgs/log"
+	"gorm.io/gorm"
 
 	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
+var (
+	db         *gorm.DB
+	chatGPT    *ChatGPT
+	gpt3Client gpt3.Client
+	chatCTXMap sync.Map // 群号/私聊:消息上下文
+)
+
+type chatCTX struct {
+	prompt  string
+	created time.Time
+}
+
 func init() {
 	engine := control.Register("chatgpt", &control.Options[*robot.Ctx]{
 		Alias:      "ChatGPT",
-		Help:       "输入 {gpt 内容} => 获取ChatGPT回复",
+		Help:       "输入 {# 问题} => 获取ChatGPT回复",
 		DataFolder: "chatgpt",
 	})
 
-	db, err := gorm.Open(sqlite.Open(engine.GetDataFolder() + "/chatgpt.db"))
-	if err != nil {
+	if d, err := gorm.Open(sqlite.Open(engine.GetDataFolder() + "/chatgpt.db")); err != nil {
 		log.Fatal(err)
+	} else {
+		d.Table("chatgpt").AutoMigrate(&ChatGPT{})
+		d.Table("chatgpt").FirstOrCreate(&chatGPT)
+		db = d
 	}
-	db.Table("chatgpt").AutoMigrate(&ChatGPT{})
 
-	engine.OnPrefix("gpt").SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		var chatGPT ChatGPT
-		dbRet := db.Table("chatGPT").FirstOrCreate(&chatGPT)
-		if err := dbRet.Error; err != nil {
+	gpt3Client = gpt3.NewClient(chatGPT.ApiKey, gpt3.WithTimeout(time.Minute))
+	engine.OnPrefix("#").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		question, answer := ctx.State["args"].(string)+"\n", ""
+		if question == "" {
 			return
 		}
-		if chatGPT.Token == "" {
-			ctx.ReplyTextAndAt("请先私聊机器人配置token\n指令：set chatgpt token __\n相关秘钥申请地址：https://openai.com/api")
+		if chatGPT.ApiKey == "" {
+			ctx.ReplyTextAndAt("请先私聊机器人配置apiKey\n指令：set chatgpt apiKey __\napiKey获取请到https://beta.openai.com获取")
 			return
 		}
-
-		args, content := ctx.State["args"].(string), ""
-		client := gpt3.NewClient(chatGPT.Token, gpt3.WithTimeout(time.Minute))
-		_ = client.CompletionStreamWithEngine(context.Background(), gpt3.TextDavinci003Engine, gpt3.CompletionRequest{
-			Prompt:    []string{args},
-			MaxTokens: gpt3.IntPtr(512),
-			Echo:      true,
-		}, func(resp *gpt3.CompletionResponse) {
-			content += resp.Choices[0].Text
-		})
-		ctx.ReplyText(content)
+		chatClear := []string{"清除上下文", "换个话题", "换个问题"}
+		for i := range chatClear {
+			if strings.Contains(question, chatClear[i]) {
+				chatCTXMap.Delete(ctx.Event.FromUniqueID)
+				ctx.ReplyText("😎我已结束聊天的上下文语境，您可以重新发起提问")
+				return
+			}
+		}
+		if c, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
+			if time.Now().Sub(c.(chatCTX).created) > time.Minute*1 {
+				chatCTXMap.Delete(ctx.Event.FromUniqueID)
+				ctx.ReplyTextAndAt("😊收到您的问题了，由于距离上一次提问已超过5分钟，我在重新构建上下文，马上就好~")
+			} else {
+				question = c.(chatCTX).prompt + question
+			}
+		} else {
+			ctx.ReplyTextAndAt("😊收到您的问题了，正在构建上下文中，由于训练我的工程师们将我放在了大陆另一端，所以回复可能会有点慢哦~")
+		}
+		time.Sleep(5 * time.Second)
+		answer, err := askChatGPT(question)
+		if err != nil {
+			ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
+			return
+		}
+		chatCTXMap.Store(ctx.Event.FromUniqueID, chatCTX{prompt: question + "\n" + answer, created: time.Now()})
+		if r, need := filterReply(answer); need {
+			answer, err := askChatGPT(question + "\n" + answer + r)
+			if err != nil {
+				ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
+				return
+			}
+			chatCTXMap.Store(ctx.Event.FromUniqueID, chatCTX{prompt: question + "\n" + answer, created: time.Now()})
+			ctx.ReplyTextAndAt(answer)
+		} else {
+			ctx.ReplyTextAndAt(r)
+		}
 	})
 
-	engine.OnRegex("set chatgpt token ([0-9a-zA-Z-]{51})", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		token := ctx.State["regex_matched"].([]string)[1]
-		db.Table("chatgpt").Where("1 = 1").Update("token", token)
-		ctx.ReplyText("token设置成功")
+	// 设置openai api key
+	engine.OnRegex("set chatgpt apiKey (.*)", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		apiKey := ctx.State["regex_matched"].([]string)[1]
+		chatGPT.ApiKey = apiKey
+		gpt3Client = gpt3.NewClient(chatGPT.ApiKey, gpt3.WithTimeout(time.Minute))
+		db.Table("chatgpt").Where("1 = 1").Update("api_key", apiKey)
+		ctx.ReplyText("apiKey设置成功")
 	})
 
+	// 获取插件配置
 	engine.OnFullMatch("get chatgpt info", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var chatGPT ChatGPT
 		if err := db.Table("chatgpt").Limit(1).Find(&chatGPT).Error; err != nil {
 			return
 		}
-		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - ChatGPT\ntoken: %s", chatGPT.Token))
+		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - ChatGPT\napiKey: %s", chatGPT.ApiKey))
 	})
 }
 
 type ChatGPT struct {
-	Token string `gorm:"column:token"`
+	ApiKey string `gorm:"column:api_key"`
+}
+
+func askChatGPT(question string) (string, error) {
+	resp, err := gpt3Client.CompletionWithEngine(context.Background(), gpt3.TextDavinci003Engine, gpt3.CompletionRequest{
+		Prompt:           []string{question},
+		MaxTokens:        gpt3.IntPtr(512),
+		Temperature:      gpt3.Float32Ptr(0.7),
+		TopP:             gpt3.Float32Ptr(1),
+		Echo:             false,
+		PresencePenalty:  0,
+		FrequencyPenalty: 0,
+	})
+	if err != nil {
+		return "", err
+	}
+	return resp.Choices[0].Text, nil
+}
+
+func filterReply(msg string) (string, bool) {
+	punctuation := ",，!！?？"
+	msg = strings.TrimSpace(msg)
+	if len(msg) == 1 {
+		return msg, true
+	}
+	if len(msg) == 3 && strings.ContainsAny(msg, punctuation) {
+		return msg, true
+	}
+	msg = strings.TrimLeftFunc(msg, func(r rune) bool {
+		if strings.ContainsAny(string(r), punctuation) {
+			return true
+		}
+		return false
+	})
+	return msg, false
 }
