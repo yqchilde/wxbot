@@ -62,7 +62,7 @@ func init() {
 			}
 		}
 		if c, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
-			if time.Now().Sub(c.(chatCTX).created) > time.Minute*1 {
+			if time.Now().Sub(c.(chatCTX).created) > time.Minute*5 {
 				chatCTXMap.Delete(ctx.Event.FromUniqueID)
 				ctx.ReplyTextAndAt("😊收到您的问题了，由于距离上一次提问已超过5分钟，我在重新构建上下文，马上就好~")
 			} else {
