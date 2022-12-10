@@ -5,10 +5,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/glebarez/sqlite"
 	"github.com/yqchilde/pkgs/log"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
 )
 
 type Manager[CTX any] struct {
@@ -34,21 +35,19 @@ func NewManager[CTX any](dbpath string) (m Manager[CTX]) {
 			}
 		}
 	}
-	db, err := gorm.Open(sqlite.Open(dbpath), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
-	if err != nil {
+	var db sqlite.DB
+	if err := sqlite.Open(dbpath, &db, &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)}); err != nil {
 		log.Fatal("open plugins database failed: ", err)
 	}
 	m = Manager[CTX]{
 		M: map[string]*Control[CTX]{},
-		D: db,
+		D: db.Orm,
 	}
-	err = m.initBlock()
-	if err != nil {
-		panic(err)
+	if err := m.initBlock(); err != nil {
+		log.Fatal("init block failed: ", err)
 	}
-	err = m.initResponse()
-	if err != nil {
-		panic(err)
+	if err := m.initResponse(); err != nil {
+		log.Fatal("init response failed: ", err)
 	}
 	return
 }

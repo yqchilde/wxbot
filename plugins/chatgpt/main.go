@@ -8,17 +8,16 @@ import (
 	"time"
 
 	"github.com/PullRequestInc/go-gpt3"
-	"github.com/glebarez/sqlite"
 	"github.com/yqchilde/pkgs/log"
-	"gorm.io/gorm"
 
 	"github.com/yqchilde/wxbot/engine/control"
+	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 var (
-	db         *gorm.DB
-	chatGPT    *ChatGPT
+	db         sqlite.DB
+	chatGPT    ChatGPT
 	gpt3Client gpt3.Client
 	chatCTXMap sync.Map // 群号/私聊:消息上下文
 )
@@ -35,12 +34,11 @@ func init() {
 		DataFolder: "chatgpt",
 	})
 
-	if d, err := gorm.Open(sqlite.Open(engine.GetDataFolder() + "/chatgpt.db")); err != nil {
-		log.Fatal(err)
-	} else {
-		d.Table("chatgpt").AutoMigrate(&ChatGPT{})
-		d.Table("chatgpt").FirstOrCreate(&chatGPT)
-		db = d
+	if err := sqlite.Open(engine.GetDataFolder()+"/chatgpt.db", &db); err != nil {
+		log.Fatalf("open sqlite db failed: %v", err)
+	}
+	if err := db.CreateAndFirstOrCreate("chatgpt", &chatGPT); err != nil {
+		log.Fatalf("create chatgpt table failed: %v", err)
 	}
 
 	gpt3Client = gpt3.NewClient(chatGPT.ApiKey, gpt3.WithTimeout(time.Minute))
@@ -94,16 +92,19 @@ func init() {
 	// 设置openai api key
 	engine.OnRegex("set chatgpt apiKey (.*)", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		apiKey := ctx.State["regex_matched"].([]string)[1]
+		if err := db.Orm.Table("chatgpt").Where("1 = 1").Update("api_key", apiKey).Error; err != nil {
+			ctx.ReplyTextAndAt("设置apiKey失败")
+			return
+		}
 		chatGPT.ApiKey = apiKey
 		gpt3Client = gpt3.NewClient(chatGPT.ApiKey, gpt3.WithTimeout(time.Minute))
-		db.Table("chatgpt").Where("1 = 1").Update("api_key", apiKey)
 		ctx.ReplyText("apiKey设置成功")
 	})
 
 	// 获取插件配置
 	engine.OnFullMatch("get chatgpt info", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var chatGPT ChatGPT
-		if err := db.Table("chatgpt").Limit(1).Find(&chatGPT).Error; err != nil {
+		if err := db.Orm.Table("chatgpt").Limit(1).Find(&chatGPT).Error; err != nil {
 			return
 		}
 		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - ChatGPT\napiKey: %s", chatGPT.ApiKey))

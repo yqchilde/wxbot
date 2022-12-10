@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/glebarez/sqlite"
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
 	"github.com/yqchilde/pkgs/log"
-	"gorm.io/gorm"
 
 	"github.com/yqchilde/wxbot/engine/control"
+	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
 	"github.com/yqchilde/wxbot/engine/robot"
+)
+
+var (
+	db      sqlite.DB
+	weather Weather
 )
 
 func init() {
@@ -21,18 +25,14 @@ func init() {
 		DataFolder: "weather",
 	})
 
-	db, err := gorm.Open(sqlite.Open(engine.GetDataFolder() + "/weather.db"))
-	if err != nil {
-		log.Fatal(err)
+	if err := sqlite.Open(engine.GetDataFolder()+"/weather.db", &db); err != nil {
+		log.Fatalf("open sqlite db failed: %v", err)
 	}
-	db.Table("weather").AutoMigrate(&Weather{})
+	if err := db.CreateAndFirstOrCreate("weather", &weather); err != nil {
+		log.Fatalf("create weather table failed: %v", err)
+	}
 
 	engine.OnRegex(`([^\x00-\xff]{0,6}-?[^\x00-\xff]{0,6})天气`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		var weather Weather
-		dbRet := db.Table("weather").FirstOrCreate(&weather)
-		if err := dbRet.Error; err != nil {
-			return
-		}
 		if weather.AppKey == "" {
 			ctx.ReplyTextAndAt("请先私聊机器人配置appKey\n指令：set weather appKey __\n相关秘钥申请地址：https://dev.qweather.com")
 			return
@@ -84,14 +84,18 @@ func init() {
 	})
 
 	engine.OnRegex("set weather appKey ([0-9a-z]{32})", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		appSecret := ctx.State["regex_matched"].([]string)[1]
-		db.Table("weather").Where("1 = 1").Update("app_key", appSecret)
+		appKey := ctx.State["regex_matched"].([]string)[1]
+		if err := db.Orm.Table("weather").Where("1 = 1").Update("app_key", appKey).Error; err != nil {
+			ctx.ReplyTextAndAt("appKey配置失败")
+			return
+		}
+		weather.AppKey = appKey
 		ctx.ReplyText("appKey设置成功")
 	})
 
 	engine.OnFullMatch("get weather info", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var weather Weather
-		if err := db.Table("plmm").Limit(1).Find(&weather).Error; err != nil {
+		if err := db.Orm.Table("plmm").Limit(1).Find(&weather).Error; err != nil {
 			return
 		}
 		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - 查询天气\nappKey: %s", weather.AppKey))

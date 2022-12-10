@@ -3,13 +3,17 @@ package plmm
 import (
 	"fmt"
 
-	"github.com/glebarez/sqlite"
 	"github.com/imroc/req/v3"
 	"github.com/yqchilde/pkgs/log"
-	"gorm.io/gorm"
 
 	"github.com/yqchilde/wxbot/engine/control"
+	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
 	"github.com/yqchilde/wxbot/engine/robot"
+)
+
+var (
+	db   sqlite.DB
+	plmm Plmm
 )
 
 func init() {
@@ -20,19 +24,14 @@ func init() {
 		DisableOnDefault: true,
 	})
 
-	db, err := gorm.Open(sqlite.Open(engine.GetDataFolder() + "/plmm.db"))
-	if err != nil {
-		log.Fatal(err)
+	if err := sqlite.Open(engine.GetDataFolder()+"/plmm.db", &db); err != nil {
+		log.Fatalf("open sqlite db failed: %v", err)
 	}
-	db.Table("plmm").AutoMigrate(&Plmm{})
+	if err := db.CreateAndFirstOrCreate("plmm", &plmm); err != nil {
+		log.Fatalf("create plmm table failed: %v", err)
+	}
 
 	engine.OnFullMatch("漂亮妹妹").SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		var plmm Plmm
-		dbRet := db.Table("plmm").FirstOrCreate(&plmm)
-		if err := dbRet.Error; err != nil {
-			log.Println(err)
-			return
-		}
 		if plmm.AppId == "" || plmm.AppSecret == "" {
 			ctx.ReplyTextAndAt("请先私聊机器人配置appId和appSecret\n指令：set plmm appId __\n指令：set plmm appSecret __\n相关秘钥申请地址：https://www.mxnzp.com/doc/detail?id=15")
 			return
@@ -65,21 +64,29 @@ func init() {
 	// 设置appId
 	engine.OnRegex("set plmm appId ([0-9a-z]{16})", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		appId := ctx.State["regex_matched"].([]string)[1]
-		db.Table("plmm").Where("1 = 1").Update("app_id", appId)
+		if err := db.Orm.Table("plmm").Where("1 = 1").Update("app_id", appId).Error; err != nil {
+			ctx.ReplyText("appId设置失败")
+			return
+		}
+		plmm.AppId = appId
 		ctx.ReplyText("appId设置成功")
 	})
 
 	// 设置appSecret
 	engine.OnRegex("set plmm appSecret ([0-9a-zA-Z]{32})", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		appSecret := ctx.State["regex_matched"].([]string)[1]
-		db.Table("plmm").Where("1 = 1").Update("app_secret", appSecret)
+		if err := db.Orm.Table("plmm").Where("1 = 1").Update("app_secret", appSecret).Error; err != nil {
+			ctx.ReplyText("appSecret设置失败")
+			return
+		}
+		plmm.AppSecret = appSecret
 		ctx.ReplyText("appSecret设置成功")
 	})
 
 	// 获取插件配置信息
 	engine.OnFullMatch("get plmm info", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var plmm Plmm
-		if err := db.Table("plmm").Limit(1).Find(&plmm).Error; err != nil {
+		if err := db.Orm.Table("plmm").Limit(1).Find(&plmm).Error; err != nil {
 			return
 		}
 		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - 漂亮妹妹\nappId: %s\nappSecret: %s", plmm.AppId, plmm.AppSecret))
