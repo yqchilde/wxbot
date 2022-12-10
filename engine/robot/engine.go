@@ -43,6 +43,19 @@ func (e *Engine) SetBlock(block bool) *Engine {
 	return e
 }
 
+// On 添加新的匹配器
+func On(rules ...Rule) *Matcher { return defaultEngine.On(rules...) }
+
+// On 添加新的匹配器
+func (e *Engine) On(rules ...Rule) *Matcher {
+	matcher := &Matcher{
+		Engine: e,
+		Rules:  rules,
+	}
+	e.matchers = append(e.matchers, matcher)
+	return StoreMatcher(matcher)
+}
+
 // OnPrefix 前缀触发器
 func OnPrefix(prefix string, rules ...Rule) *Matcher { return defaultEngine.OnPrefix(prefix, rules...) }
 

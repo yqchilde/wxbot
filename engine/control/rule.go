@@ -15,7 +15,7 @@ func newControl(service string, o *Options[*robot.Ctx]) robot.Rule {
 	c := managers.NewControl(service, o)
 	return func(ctx *robot.Ctx) bool {
 		ctx.State["manager"] = c
-		return c.Handler(ctx.Event.Message.FromGroup, ctx.Event.Message.FromWxId)
+		return c.Handler(ctx.Event.FromGroup, ctx.Event.FromWxId)
 	}
 }
 
@@ -32,11 +32,7 @@ func init() {
 				ctx.ReplyTextAndAt("没有找到对应插件服务")
 				return
 			}
-			grp := ctx.Event.Message.FromGroup
-			if grp == "" {
-				// 个人用户
-				grp = ctx.Event.Message.FromWxId
-			}
+			grp := ctx.Event.FromUniqueID
 			switch ctx.State["command"].(string) {
 			case "启用":
 				if service.Enable(grp) != nil {

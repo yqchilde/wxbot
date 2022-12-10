@@ -40,14 +40,14 @@ func main() {
 	}
 	switch v.GetString("frameworks.name") {
 	case "qianxun":
-		c.Framework = robot.Framework(qianxun.New(
+		c.Framework = robot.IFramework(qianxun.New(
 			v.GetString("botWxId"),
 			v.GetString("frameworks.apiUrl"),
 			v.GetString("frameworks.apiToken"),
 			v.GetUint("frameworks.servePort"),
 		))
 	case "vlw":
-		c.Framework = robot.Framework(vlw.New(
+		c.Framework = robot.IFramework(vlw.New(
 			v.GetString("botWxId"),
 			v.GetString("frameworks.apiUrl"),
 			v.GetString("frameworks.apiToken"),

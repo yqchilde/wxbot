@@ -40,7 +40,7 @@ func New(botWxId, apiUrl, apiToken string, servePort uint) *Framework {
 	}
 }
 
-func (f *Framework) Callback(handler func(*robot.Event, robot.APICaller)) {
+func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 	http.HandleFunc("/wxbot/callback", func(w http.ResponseWriter, r *http.Request) {
 		recv, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -53,18 +53,20 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.APICaller)) {
 			IsAtMe:        gjson.Get(body, "event").String() == strconv.Itoa(eventPrivateChat),
 			IsPrivateChat: gjson.Get(body, "event").String() == strconv.Itoa(eventPrivateChat),
 			IsGroupChat:   gjson.Get(body, "event").String() == strconv.Itoa(eventGroupChat),
+			FromUniqueID:  gjson.Get(body, "data.data.fromWxid").String(),
+			FromWxId:      gjson.Get(body, "data.data.fromWxid").String(),
+			FromName:      "",
 			Message: robot.Message{
-				Msg:      gjson.Get(body, "data.data.msg").String(),
-				MsgId:    "",
-				MsgType:  gjson.Get(body, "data.data.msgType").Int(),
-				FromWxId: gjson.Get(body, "data.data.fromWxid").String(),
-				FromName: "",
+				Msg:     gjson.Get(body, "data.data.msg").String(),
+				MsgId:   "",
+				MsgType: gjson.Get(body, "data.data.msgType").Int(),
 			},
 		}
 		if event.IsGroupChat {
-			event.Message.FromGroup = gjson.Get(body, "data.data.fromWxid").String()
-			event.Message.FromGroupName = ""
-			event.Message.FromWxId = gjson.Get(body, "data.data.finalFromWxid").String()
+			event.FromUniqueID = gjson.Get(body, "data.data.fromWxid").String()
+			event.FromGroup = gjson.Get(body, "data.data.fromWxid").String()
+			event.FromGroupName = ""
+			event.FromWxId = gjson.Get(body, "data.data.finalFromWxid").String()
 			gjson.Get(body, "data.data.atWxidList").ForEach(func(key, val gjson.Result) bool {
 				if val.String() == event.RobotWxId && !strings.Contains(event.Message.Msg, "@所有人") {
 					event.IsAtMe = true

@@ -122,7 +122,7 @@ func FullMatchRule(src ...string) Rule {
 // AdminPermission 只允许系统配置的管理员使用
 func AdminPermission(ctx *Ctx) bool {
 	for _, su := range BotConfig.SuperUsers {
-		if su == ctx.Event.Message.FromWxId {
+		if su == ctx.Event.FromWxId {
 			return true
 		}
 	}
@@ -165,7 +165,7 @@ func MustMemePicture(ctx *Ctx) bool {
 		timeout = 30 * time.Second
 	}
 	ctx.ReplyTextAndAt(fmt.Sprintf("请在%d秒内发送表情包图片", int(timeout.Seconds())))
-	next := NewFutureEvent(999, false, ctx.CheckSession(), HasMemePicture).Next()
+	next := NewFutureEvent(999, true, ctx.CheckSession(), HasMemePicture).Next()
 	select {
 	case <-time.After(timeout):
 		return false
@@ -178,4 +178,14 @@ func MustMemePicture(ctx *Ctx) bool {
 // OnlyGroup 只允许群聊使用
 func OnlyGroup(ctx *Ctx) bool {
 	return ctx.IsSendByGroupChat()
+}
+
+// OnlyPrivate 只允许私聊使用
+func OnlyPrivate(ctx *Ctx) bool {
+	return ctx.IsSendByPrivateChat()
+}
+
+// OnlyAtMe 只允许@机器人使用
+func OnlyAtMe(ctx *Ctx) bool {
+	return ctx.IsAt()
 }

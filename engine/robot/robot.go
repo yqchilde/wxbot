@@ -13,9 +13,11 @@ func init() {
 	log.Default(2)
 }
 
-var BotConfig Config
+var (
+	eveRing   eventRing // 用于存储事件的环形队列
+	BotConfig *Config   // 机器人配置
+)
 
-// Config 关于机器人的相关参数配置
 type Config struct {
 	BotWxId        string        // 机器人微信ID
 	BotNickname    string        // 机器人名称
@@ -24,48 +26,8 @@ type Config struct {
 	RingLen        uint          // 事件环长度 (默认4096)
 	Latency        time.Duration // 事件处理延迟 (延迟 latency + (0~100ms) 再处理事件) (默认1min)
 	MaxProcessTime time.Duration // 事件最大处理时间 (默认3min)
-	Framework      Framework     // 接入框架
+	Framework      IFramework    // 接入框架需实现该接口
 }
-
-// Framework 机器人通信驱动，暂时只支持HTTP
-type Framework interface {
-	Callback(func(*Event, APICaller))
-}
-
-// APICaller 定义了机器人的API调用接口，接入的框架需要实现这个接口
-type APICaller interface {
-	// GetMemePictures 判断是否是表情包图片(迷因图)
-	// return: 图片链接(网络URL或图片base64)
-	GetMemePictures(message Message) string
-
-	// SendText 发送文本消息
-	// toWxId: 好友ID/群ID
-	// text: 文本内容
-	SendText(toWxId, text string) error
-
-	// SendTextAndAt 发送文本消息并@，只有群聊有效
-	// toGroupWxId: 群ID
-	// toWxId: 好友ID/群ID/all
-	// toWxName: 好友昵称/群昵称，留空为自动获取
-	// text: 文本内容
-	SendTextAndAt(toGroupWxId, toWxId, toWxName, text string) error
-
-	// SendImage 发送图片消息
-	// toWxId: 好友ID/群ID
-	// path: 图片路径
-	SendImage(toWxId, path string) error
-
-	// SendShareLink 发送分享链接消息
-	// toWxId: 好友ID/群ID
-	// title: 标题
-	// desc: 描述
-	// imageUrl: 图片链接
-	// jumpUrl: 跳转链接
-	SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string) error
-}
-
-// 事件环
-var eveRing eventRing
 
 // Run 主函数，启动机器人
 func Run(c *Config) {
@@ -78,18 +40,18 @@ func Run(c *Config) {
 	if c.MaxProcessTime == 0 {
 		c.MaxProcessTime = time.Minute * 3
 	}
-	BotConfig = *c
+	BotConfig = c
 	eveRing = newRing(c.RingLen)
 	eveRing.loop(c.Latency, c.MaxProcessTime, processEventAsync)
 	log.Printf("[robot] 机器人%s开始工作", c.BotNickname)
 	c.Framework.Callback(eveRing.processEvent)
 }
 
-func processEventAsync(event *Event, caller APICaller, maxWait time.Duration) {
+func processEventAsync(event *Event, framework IFramework, maxWait time.Duration) {
 	ctx := &Ctx{
-		State:  State{},
-		Event:  event,
-		caller: caller,
+		State:     State{},
+		Event:     event,
+		framework: framework,
 	}
 	matcherLock.Lock()
 	if hasMatcherListChanged {
@@ -137,13 +99,12 @@ func match(ctx *Ctx, matchers []*Matcher, maxWait time.Duration) {
 loop:
 	for _, matcher := range matchers {
 		for k := range ctx.State {
-			// clear state
 			delete(ctx.State, k)
 		}
 		m := matcher.copy()
 		ctx.matcher = m
 
-		// pre handler
+		// 处理前置条件
 		if m.Engine != nil {
 			for _, handler := range m.Engine.preHandler {
 				c := goRule(handler)
@@ -161,14 +122,14 @@ loop:
 							t.Reset(maxWait)
 							continue
 						}
-						log.Warn("[robot] preHandler处理达到最大时延, 退出")
+						log.Debug("[robot] preHandler处理达到最大时延, 退出")
 						break loop
 					}
 					break
 				}
 			}
 		}
-
+		// 处理rule
 		for _, rule := range m.Rules {
 			c := goRule(rule)
 			for {
@@ -185,14 +146,13 @@ loop:
 						t.Reset(maxWait)
 						continue
 					}
-					log.Warn("[robot] rule处理达到最大时延, 退出")
+					log.Debug("[robot] rule处理达到最大时延, 退出")
 					break loop
 				}
 				break
 			}
 		}
-
-		// mid handler
+		// 处理中间条件
 		if m.Engine != nil {
 			for _, handler := range m.Engine.midHandler {
 				c := goRule(handler)
@@ -210,14 +170,14 @@ loop:
 							t.Reset(maxWait)
 							continue
 						}
-						log.Warn("[robot] midHandler处理达到最大时延, 退出")
+						log.Debug("[robot] midHandler处理达到最大时延, 退出")
 						break loop
 					}
 					break
 				}
 			}
 		}
-
+		// 处理handler
 		if m.Handler != nil {
 			c := goHandler(m.Handler)
 			for {
@@ -228,7 +188,7 @@ loop:
 						t.Reset(maxWait)
 						continue
 					}
-					log.Warn("[robot] Handler处理达到最大时延, 退出")
+					log.Debug("[robot] Handler处理达到最大时延, 退出")
 					break loop
 				}
 				break
@@ -237,9 +197,8 @@ loop:
 		if matcher.Temp {
 			matcher.Delete()
 		}
-
+		// 处理后置条件
 		if m.Engine != nil {
-			// post handler
 			for _, handler := range m.Engine.postHandler {
 				c := goHandler(handler)
 				for {
@@ -266,8 +225,8 @@ loop:
 // preProcessMessageEvent 预处理消息事件
 func preProcessMessageEvent(ctx *Ctx, e *Event) {
 	if ctx.IsSendByPrivateChat() {
-		log.Println(fmt.Sprintf("收到私聊(%s)消息 ==> %v", e.Message.FromWxId, e.Message.Msg))
+		log.Println(fmt.Sprintf("收到私聊(%s)消息 ==> %v", e.FromWxId, e.Message.Msg))
 	} else if ctx.IsSendByGroupChat() {
-		log.Println(fmt.Sprintf("收到群聊(%s[%s])消息 ==> %v", e.Message.FromGroup, e.Message.FromWxId, e.Message.Msg))
+		log.Println(fmt.Sprintf("收到群聊(%s[%s])消息 ==> %v", e.FromGroup, e.FromWxId, e.Message.Msg))
 	}
 }

@@ -67,6 +67,11 @@ func (e *Engine) GetCacheFolder() string {
 	return e.cacheFolder
 }
 
+// OnMessage 消息触发器
+func (e *Engine) OnMessage(rules ...robot.Rule) *Matcher {
+	return (*Matcher)(e.en.On(rules...).SetPriority(e.priority))
+}
+
 // OnPrefix 前缀触发器
 func (e *Engine) OnPrefix(prefix string, rules ...robot.Rule) *Matcher {
 	return (*Matcher)(e.en.OnPrefix(prefix, rules...).SetPriority(e.priority))

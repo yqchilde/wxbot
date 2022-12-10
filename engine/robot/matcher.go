@@ -80,6 +80,12 @@ func (m *Matcher) SetBlock(block bool) *Matcher {
 	return m
 }
 
+// SetNoTimeout 设置处理时不设超时
+func (m *Matcher) SetNoTimeout(noTimeout bool) *Matcher {
+	m.NoTimeout = noTimeout
+	return m
+}
+
 // SetPriority 设置当前 Matcher 优先级
 func (m *Matcher) SetPriority(priority int) *Matcher {
 	matcherLock.Lock()

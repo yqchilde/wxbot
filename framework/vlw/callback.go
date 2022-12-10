@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 
 	"github.com/tidwall/gjson"
 	"github.com/yqchilde/pkgs/log"
@@ -42,7 +41,7 @@ func New(botWxId, apiUrl, apiToken string, servePort uint) *Framework {
 	}
 }
 
-func (f *Framework) Callback(handler func(*robot.Event, robot.APICaller)) {
+func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 	http.HandleFunc("/wxbot/callback", func(w http.ResponseWriter, r *http.Request) {
 		recv, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -50,23 +49,24 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.APICaller)) {
 			return
 		}
 		body := string(recv)
-		os.WriteFile("callback.json", recv, 0644)
 		event := robot.Event{
 			RobotWxId:     gjson.Get(body, "content.robot_wxid").String(),
 			IsAtMe:        gjson.Get(body, "Event").String() == eventPrivateChat,
 			IsPrivateChat: gjson.Get(body, "Event").String() == eventPrivateChat,
 			IsGroupChat:   gjson.Get(body, "Event").String() == eventGroupChat,
+			FromUniqueID:  gjson.Get(body, "content.from_wxid").String(),
+			FromWxId:      gjson.Get(body, "content.from_wxid").String(),
+			FromName:      gjson.Get(body, "content.from_name").String(),
 			Message: robot.Message{
-				Msg:      gjson.Get(body, "content.msg").String(),
-				MsgId:    gjson.Get(body, "content.msg_id").String(),
-				MsgType:  gjson.Get(body, "content.type").Int(),
-				FromWxId: gjson.Get(body, "content.from_wxid").String(),
-				FromName: gjson.Get(body, "content.from_name").String(),
+				Msg:     gjson.Get(body, "content.msg").String(),
+				MsgId:   gjson.Get(body, "content.msg_id").String(),
+				MsgType: gjson.Get(body, "content.type").Int(),
 			},
 		}
 		if event.IsGroupChat {
-			event.Message.FromGroup = gjson.Get(body, "content.from_group").String()
-			event.Message.FromGroupName = gjson.Get(body, "content.from_group_name").String()
+			event.FromUniqueID = gjson.Get(body, "content.from_group").String()
+			event.FromGroup = gjson.Get(body, "content.from_group").String()
+			event.FromGroupName = gjson.Get(body, "content.from_group_name").String()
 			if gjson.Get(body, "content.msg_source.atuserlist").Exists() {
 				gjson.Get(body, "content.msg_source.atuserlist").ForEach(func(key, val gjson.Result) bool {
 					if gjson.Get(val.String(), "wxid").String() == event.RobotWxId &&
