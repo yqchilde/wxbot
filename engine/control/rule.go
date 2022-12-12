@@ -3,10 +3,13 @@ package control
 import (
 	"sync"
 
+	"github.com/imroc/req/v3"
+
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 var (
+	once = sync.Once{}
 	// managers 每个插件对应的管理
 	managers = NewManager[*robot.Ctx]("data/manager/plugins.db")
 )
@@ -20,8 +23,33 @@ func newControl(service string, o *Options[*robot.Ctx]) robot.Rule {
 }
 
 func init() {
-	once := sync.Once{}
 	once.Do(func() {
+		robot.On(robot.OnlyAtMe).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+			ctx.ReplyTextAndAt("您可以发送menu | 菜单解锁更多功能😎")
+		})
+
+		robot.OnFullMatchGroup([]string{"menu", "菜单"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+			services := managers.LookupAll()
+			data := make(map[string]interface{})
+			data["wxId"] = ctx.Event.FromUniqueID
+			data["menus"] = make([]map[string]interface{}, 0, len(services))
+			for _, s := range services {
+				data["menus"] = append(data["menus"].([]map[string]interface{}), map[string]interface{}{
+					"name":      s.Service,
+					"alias":     s.Options.Alias,
+					"priority":  s.Options.priority,
+					"describe":  s.Options.Help,
+					"defStatus": !s.Options.DisableOnDefault,
+					"curStatus": s.IsEnabledIn(ctx.Event.FromUniqueID),
+				})
+			}
+			if err := req.C().Post("https://bot.yqqy.top/api/menu").SetBodyJsonMarshal(data).Do().Error(); err != nil {
+				ctx.ReplyTextAndAt("菜单获取失败，请联系管理员")
+				return
+			}
+			ctx.ReplyShareLink(robot.BotConfig.BotNickname, "机器人当前所有的指令都在这里哦！", "https://imgbed.link/file/10160", "https://bot.yqqy.top/menu?wxId="+ctx.Event.FromUniqueID)
+		})
+
 		robot.OnCommandGroup([]string{"启用", "禁用"}, robot.UserOrGroupAdmin).SetBlock(true).FirstPriority().Handle(func(ctx *robot.Ctx) {
 			args := ctx.State["args"].(string)
 			if args == "" {

@@ -1,6 +1,7 @@
 package control
 
 type Options[CTX any] struct {
+	priority         int       // 优先级
 	DisableOnDefault bool      // 默认禁用状态
 	Alias            string    // 插件别名
 	Help             string    // 插件帮助信息

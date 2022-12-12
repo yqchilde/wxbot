@@ -21,21 +21,21 @@ func init() {
 		if strings.HasPrefix(url[:20], "http") {
 			url = base64.StdEncoding.EncodeToString([]byte(url))
 			var resp apiResponse
-			if err := req.C().Post("http://api.yqqy.top/thumbnail").
+			if err := req.C().Post("https://bot.yqqy.top/api/thumbnail").
 				SetFormData(map[string]string{
 					"type":  "url",
 					"image": url,
 				}).Do().Into(&resp); err == nil {
-				ctx.ReplyShareLink("快来下载你要的表情原图", "打开后长按图片可保存到本地哦", "http://api.yqqy.top/thumbnail?image="+resp.Data.Thumbnail, "http://api.yqqy.top/direct?image="+resp.Data.Original)
+				ctx.ReplyShareLink("快来下载你要的表情原图", "打开后长按图片可保存到本地哦", "https://bot.yqqy.top/api/thumbnail?image="+resp.Data.Thumbnail, "https://bot.yqqy.top/api/direct?image="+resp.Data.Original)
 			}
 		} else {
 			var resp apiResponse
-			if err := req.C().Post("http://api.yqqy.top/thumbnail").
+			if err := req.C().Post("https://bot.yqqy.top/api/thumbnail").
 				SetFormData(map[string]string{
 					"type":  "base64",
 					"image": url,
 				}).Do().Into(&resp); err == nil {
-				ctx.ReplyShareLink("快来下载你要的表情原图", "打开后长按图片可保存到本地哦", "http://api.yqqy.top/thumbnail?image="+resp.Data.Thumbnail, "http://api.yqqy.top/direct?image="+resp.Data.Original)
+				ctx.ReplyShareLink("快来下载你要的表情原图", "打开后长按图片可保存到本地哦", "https://bot.yqqy.top/api/thumbnail?image="+resp.Data.Thumbnail, "https://bot.yqqy.top/api/direct?image="+resp.Data.Original)
 			}
 		}
 	})

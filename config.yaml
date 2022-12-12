@@ -1,7 +1,7 @@
 # 机器人WxId
 botWxId: "wxid_lbzw1d5b3pwl29"
 # 机器人名字
-botNickname: "YY Bot🤖"
+botNickname: "YY Bot(个人助手)"
 # 管理员WxId
 superUsers:
   - "wxid_5cvtxuwufytd21"
@@ -13,7 +13,7 @@ frameworks:
   name: "qianxun"
   # http api 地址(ip+端口组成)
   apiUrl: "http://192.168.31.8:9527"
-  # http api token
-  apiToken: "7k7k"
+  # http api token (千寻目前没有，vlw需要)
+  apiToken: ""
   # 机器人回调服务端口
   servePort: 9528

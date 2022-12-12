@@ -69,7 +69,7 @@ func init() {
 		} else {
 			ctx.ReplyTextAndAt("😊收到您的问题了，正在构建上下文中，由于训练我的工程师们将我放在了大陆另一端，所以回复可能会有点慢哦~")
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(3 * time.Second)
 		answer, err := askChatGPT(question)
 		if err != nil {
 			ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())

@@ -187,5 +187,5 @@ func OnlyPrivate(ctx *Ctx) bool {
 
 // OnlyAtMe 只允许@机器人使用
 func OnlyAtMe(ctx *Ctx) bool {
-	return ctx.IsAt()
+	return ctx.IsSendByGroupChat() && ctx.IsAt()
 }

@@ -32,6 +32,7 @@ func newEngine(service string, priority int, o *Options[*robot.Ctx]) (e *Engine)
 		priority: priority,
 		service:  service,
 	}
+	o.priority = priority
 	e.en.UsePreHandler(newControl(service, o))
 
 	if o.DataFolder != "" {

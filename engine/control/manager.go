@@ -59,3 +59,8 @@ func (manager *Manager[CTX]) Lookup(service string) (*Control[CTX], bool) {
 	manager.RUnlock()
 	return m, ok
 }
+
+// LookupAll 查找全部插件管理器
+func (manager *Manager[CTX]) LookupAll() map[string]*Control[CTX] {
+	return manager.M
+}
