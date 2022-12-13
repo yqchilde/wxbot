@@ -30,11 +30,18 @@ func (ctx *Ctx) MessageString() string {
 	return ctx.message
 }
 
-// CheckSession 判断会话连续性
-func (ctx *Ctx) CheckSession() Rule {
+// CheckUserSession 判断会话连续性，必须同一个群同一个用户
+func (ctx *Ctx) CheckUserSession() Rule {
 	return func(ctx2 *Ctx) bool {
 		return ctx.Event.FromWxId == ctx2.Event.FromWxId &&
 			ctx.Event.FromGroup == ctx2.Event.FromGroup
+	}
+}
+
+// CheckGroupSession 判断会话连续性，必须同一个群，可以不同用户
+func (ctx *Ctx) CheckGroupSession() Rule {
+	return func(ctx2 *Ctx) bool {
+		return ctx.Event.FromUniqueID == ctx2.Event.FromUniqueID
 	}
 }
 

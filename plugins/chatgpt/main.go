@@ -44,7 +44,7 @@ func init() {
 			return
 		}
 
-		recv, cancel := ctx.EventChannel().Repeat()
+		recv, cancel := ctx.EventChannel(ctx.CheckGroupSession()).Repeat()
 		defer cancel()
 		ctx.ReplyTextAndAt("收到！已开始ChatGPT会话，输入\"结束ChatGPT会话\"结束会话，或5分钟后自动结束，请开始吧！")
 		for {
