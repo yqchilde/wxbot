@@ -16,7 +16,7 @@ func init() {
 		Alias: "疫情查询",
 		Help:  "输入 {XX疫情} => 获取疫情数据，Ps:济南疫情",
 	})
-	engine.OnRegex(`([^\x00-\xff]{0,6})疫情(.*)`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(`([^\x00-\xff]{0,6})疫情`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		city := ctx.State["regex_matched"].([]string)[1]
 		var str string
 		var ret string

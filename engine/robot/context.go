@@ -37,3 +37,8 @@ func (ctx *Ctx) CheckSession() Rule {
 			ctx.Event.FromGroup == ctx2.Event.FromGroup
 	}
 }
+
+// EventChannel 用当前事件创建一个新的事件通道
+func (ctx *Ctx) EventChannel(rule ...Rule) *EventChannel {
+	return ctx.matcher.EventChannel(rule...)
+}

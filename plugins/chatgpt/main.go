@@ -22,15 +22,10 @@ var (
 	chatCTXMap sync.Map // 群号/私聊:消息上下文
 )
 
-type chatCTX struct {
-	prompt  string
-	created time.Time
-}
-
 func init() {
 	engine := control.Register("chatgpt", &control.Options[*robot.Ctx]{
 		Alias:      "ChatGPT",
-		Help:       "输入 {# 问题} => 获取ChatGPT回复",
+		Help:       "输入 {开始ChatGPT会话} => 进行ChatGPT连续会话",
 		DataFolder: "chatgpt",
 	})
 
@@ -42,50 +37,54 @@ func init() {
 	}
 
 	gpt3Client = gpt3.NewClient(chatGPT.ApiKey, gpt3.WithTimeout(time.Minute))
-	engine.OnPrefix("#").SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		question, answer := ctx.State["args"].(string)+"\n", ""
-		if question == "" {
-			return
-		}
+
+	engine.OnFullMatch("开始ChatGPT会话").SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		if chatGPT.ApiKey == "" {
 			ctx.ReplyTextAndAt("请先私聊机器人配置apiKey\n指令：set chatgpt apiKey __\napiKey获取请到https://beta.openai.com获取")
 			return
 		}
-		chatClear := []string{"清除上下文", "换个话题", "换个问题"}
-		for i := range chatClear {
-			if strings.Contains(question, chatClear[i]) {
-				chatCTXMap.Delete(ctx.Event.FromUniqueID)
-				ctx.ReplyText("😎我已结束聊天的上下文语境，您可以重新发起提问")
+
+		recv, cancel := ctx.EventChannel().Repeat()
+		defer cancel()
+		ctx.ReplyTextAndAt("收到！已开始ChatGPT会话，输入\"结束ChatGPT会话\"结束会话，或5分钟后自动结束，请开始吧！")
+		for {
+			select {
+			case <-time.After(time.Minute * 5):
+				ctx.ReplyTextAndAt("😊检测到您已有5分钟不再提问，那我先主动结束会话咯")
 				return
+			case c := <-recv:
+				msg := c.Event.Message.Msg
+				if msg == "结束ChatGPT会话" {
+					chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
+					ctx.ReplyText("已结束聊天的上下文语境，您可以重新发起提问")
+					return
+				}
+				question, answer := msg+"\n", ""
+				if question == "" {
+					continue
+				}
+				if c, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
+					question = c.(string) + question
+				}
+				time.Sleep(3 * time.Second)
+				answer, err := askChatGPT(question)
+				if err != nil {
+					ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
+					return
+				}
+				chatCTXMap.Store(ctx.Event.FromUniqueID, question+"\n"+answer)
+				if r, need := filterReply(answer); need {
+					answer, err := askChatGPT(question + "\n" + answer + r)
+					if err != nil {
+						ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
+						return
+					}
+					chatCTXMap.Store(ctx.Event.FromUniqueID, question+"\n"+answer)
+					ctx.ReplyText(answer)
+				} else {
+					ctx.ReplyText(r)
+				}
 			}
-		}
-		if c, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
-			if time.Now().Sub(c.(chatCTX).created) > time.Minute*5 {
-				chatCTXMap.Delete(ctx.Event.FromUniqueID)
-				ctx.ReplyTextAndAt("😊收到您的问题了，由于距离上一次提问已超过5分钟，我在重新构建上下文，马上就好~")
-			} else {
-				question = c.(chatCTX).prompt + question
-			}
-		} else {
-			ctx.ReplyTextAndAt("😊收到您的问题了，正在构建上下文中，由于训练我的工程师们将我放在了大陆另一端，所以回复可能会有点慢哦~")
-		}
-		time.Sleep(3 * time.Second)
-		answer, err := askChatGPT(question)
-		if err != nil {
-			ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
-			return
-		}
-		chatCTXMap.Store(ctx.Event.FromUniqueID, chatCTX{prompt: question + "\n" + answer, created: time.Now()})
-		if r, need := filterReply(answer); need {
-			answer, err := askChatGPT(question + "\n" + answer + r)
-			if err != nil {
-				ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
-				return
-			}
-			chatCTXMap.Store(ctx.Event.FromUniqueID, chatCTX{prompt: question + "\n" + answer, created: time.Now()})
-			ctx.ReplyTextAndAt(answer)
-		} else {
-			ctx.ReplyTextAndAt(r)
 		}
 	})
 

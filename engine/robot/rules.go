@@ -165,7 +165,7 @@ func MustMemePicture(ctx *Ctx) bool {
 		timeout = 30 * time.Second
 	}
 	ctx.ReplyTextAndAt(fmt.Sprintf("请在%d秒内发送表情包图片", int(timeout.Seconds())))
-	next := NewFutureEvent(999, true, ctx.CheckSession(), HasMemePicture).Next()
+	next := NewEventChannel(999, true, ctx.CheckSession(), HasMemePicture).Next()
 	select {
 	case <-time.After(timeout):
 		return false
