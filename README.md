@@ -97,7 +97,7 @@
 
 如果您有疑惑可以加交流群讨论，加机器人备注 `wxbot` 邀请您进入
 
-![img](https://github.com/yqchilde/wxbot/blob/hook/docs/wechat.png)
+<img src="https://github.com/yqchilde/wxbot/blob/hook/docs/wechat.png" width=30%>
 
 ## Thanks
 
