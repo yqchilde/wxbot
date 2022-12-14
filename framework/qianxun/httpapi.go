@@ -45,8 +45,8 @@ func (f *Framework) msgFormat(msg string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(buff.String(), "\r\n", "\r"), "\n", "\r")
 }
 
-func (f *Framework) GetMemePictures(msg robot.Message) string {
-	doc, err := xmlquery.Parse(strings.NewReader(msg.Msg))
+func (f *Framework) GetMemePictures(msg *robot.Message) string {
+	doc, err := xmlquery.Parse(strings.NewReader(msg.Content))
 	if err != nil {
 		return ""
 	}
@@ -147,6 +147,54 @@ func (f *Framework) SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string)
 	}
 	if msgResp.Code != 200 {
 		log.Errorf("[千寻] SendShareLink error: %s", resp.String())
+		return errors.New(msgResp.Msg)
+	}
+	return nil
+}
+
+func (f *Framework) AgreeFriendVerify(v3, v4, scene string) error {
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0017",
+		"data": map[string]interface{}{
+			"scene": scene,
+			"v3":    v3,
+			"v4":    v4,
+		},
+	}
+
+	var msgResp MessageResp
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
+	if err := resp.Into(&msgResp); err != nil {
+		log.Errorf("[千寻] AgreeFriendVerify error: %v", err)
+		return err
+	}
+	if msgResp.Code != 200 {
+		log.Errorf("[千寻] AgreeFriendVerify error: %s", resp.String())
+		return errors.New(msgResp.Msg)
+	}
+	return nil
+}
+
+func (f *Framework) InviteIntoGroup(groupWxId, wxId string, typ int) error {
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0021",
+		"data": map[string]interface{}{
+			"wxid":    groupWxId,
+			"objWxid": wxId,
+			"type":    typ,
+		},
+	}
+
+	var msgResp MessageResp
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
+	if err := resp.Into(&msgResp); err != nil {
+		log.Errorf("[千寻] InviteIntoGroup error: %v", err)
+		return err
+	}
+	if msgResp.Code != 200 {
+		log.Errorf("[千寻] InviteIntoGroup error: %s", resp.String())
 		return errors.New(msgResp.Msg)
 	}
 	return nil

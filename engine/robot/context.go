@@ -24,7 +24,7 @@ func (ctx *Ctx) GetMatcher() *Matcher {
 func (ctx *Ctx) MessageString() string {
 	ctx.once.Do(func() {
 		if ctx.Event != nil {
-			ctx.message = ctx.Event.Message.Msg
+			ctx.message = ctx.Event.Message.Content
 		}
 	})
 	return ctx.message

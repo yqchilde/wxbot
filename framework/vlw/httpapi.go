@@ -45,9 +45,9 @@ func (f *Framework) msgFormat(msg string) string {
 	return buff.String()
 }
 
-func (f *Framework) GetMemePictures(msg robot.Message) string {
+func (f *Framework) GetMemePictures(msg *robot.Message) string {
 	// 获取图片base64
-	path := msg.Msg[5 : len(msg.Msg)-1]
+	path := msg.Content[5 : len(msg.Content)-1]
 	payload := map[string]interface{}{
 		"api":   "GetFileFoBase64",
 		"token": f.ApiToken,
@@ -157,5 +157,15 @@ func (f *Framework) SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string)
 		log.Errorf("[VLW] SendShareLink error: %s", resp.Result)
 		return err
 	}
+	return nil
+}
+
+func (f *Framework) AgreeFriendVerify(v1, v2, scene string) error {
+	// todo 抽空补充
+	return nil
+}
+
+func (f *Framework) InviteIntoGroup(groupWxId, wxId string, typ int) error {
+	// todo 抽空补充
 	return nil
 }

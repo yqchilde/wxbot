@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -48,34 +47,50 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 			return
 		}
 		body := string(recv)
-		event := robot.Event{
-			RobotWxId:     gjson.Get(body, "wxid").String(),
-			IsAtMe:        gjson.Get(body, "event").String() == strconv.Itoa(eventPrivateChat),
-			IsPrivateChat: gjson.Get(body, "event").String() == strconv.Itoa(eventPrivateChat),
-			IsGroupChat:   gjson.Get(body, "event").String() == strconv.Itoa(eventGroupChat),
-			FromUniqueID:  gjson.Get(body, "data.data.fromWxid").String(),
-			FromWxId:      gjson.Get(body, "data.data.fromWxid").String(),
-			FromName:      "",
-			Message: robot.Message{
-				Msg:     gjson.Get(body, "data.data.msg").String(),
-				MsgId:   "",
-				MsgType: gjson.Get(body, "data.data.msgType").Int(),
-			},
-		}
-		if event.IsGroupChat {
+		event := robot.Event{RobotWxId: gjson.Get(body, "wxid").String()}
+		switch gjson.Get(body, "event").Int() {
+		case eventPrivateChat:
+			event.Type = robot.EventPrivateChat
+			event.FromUniqueID = gjson.Get(body, "data.data.fromWxid").String()
+			event.FromWxId = gjson.Get(body, "data.data.fromWxid").String()
+			event.FromName = ""
+			event.IsAtMe = true
+			event.Message = &robot.Message{
+				Id:      "",
+				Type:    gjson.Get(body, "data.data.msgType").Int(),
+				Content: gjson.Get(body, "data.data.msg").String(),
+			}
+		case eventGroupChat:
+			event.Type = robot.EventGroupChat
 			event.FromUniqueID = gjson.Get(body, "data.data.fromWxid").String()
 			event.FromGroup = gjson.Get(body, "data.data.fromWxid").String()
 			event.FromGroupName = ""
 			event.FromWxId = gjson.Get(body, "data.data.finalFromWxid").String()
+			event.FromName = ""
 			gjson.Get(body, "data.data.atWxidList").ForEach(func(key, val gjson.Result) bool {
-				if val.String() == event.RobotWxId && !strings.Contains(event.Message.Msg, "@所有人") {
+				if val.String() == event.RobotWxId && !strings.Contains(event.Message.Content, "@所有人") {
 					event.IsAtMe = true
 				}
 				return true
 			})
+			event.Message = &robot.Message{
+				Id:      "",
+				Type:    gjson.Get(body, "data.data.msgType").Int(),
+				Content: gjson.Get(body, "data.data.msg").String(),
+			}
+		case eventFriendVerify:
+			event.Type = robot.EventFriendVerify
+			event.FriendVerify = &robot.FriendVerify{
+				WxId:      gjson.Get(body, "data.data.wxid").String(),
+				Nick:      gjson.Get(body, "data.data.nick").String(),
+				V3:        gjson.Get(body, "data.data.v3").String(),
+				V4:        gjson.Get(body, "data.data.v4").String(),
+				AvatarUrl: gjson.Get(body, "data.data.avatarMinUrl").String(),
+				Content:   gjson.Get(body, "data.data.content").String(),
+				Scene:     gjson.Get(body, "data.data.scene").String(),
+			}
 		}
 		handler(&event, f)
-
 		w.Header().Add("Content-Type", "application/json")
 		w.Write([]byte(`{"code":0}`))
 	})

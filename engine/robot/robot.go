@@ -60,7 +60,7 @@ func processEventAsync(event *Event, framework IFramework, maxWait time.Duration
 		hasMatcherListChanged = false
 	}
 	matcherLock.Unlock()
-	preProcessMessageEvent(ctx, event)
+	preProcessMessageEvent(event)
 	go match(ctx, matcherListForRanging, maxWait)
 }
 
@@ -223,10 +223,13 @@ loop:
 }
 
 // preProcessMessageEvent 预处理消息事件
-func preProcessMessageEvent(ctx *Ctx, e *Event) {
-	if ctx.IsSendByPrivateChat() {
-		log.Println(fmt.Sprintf("收到私聊(%s)消息 ==> %v", e.FromWxId, e.Message.Msg))
-	} else if ctx.IsSendByGroupChat() {
-		log.Println(fmt.Sprintf("收到群聊(%s[%s])消息 ==> %v", e.FromGroup, e.FromWxId, e.Message.Msg))
+func preProcessMessageEvent(e *Event) {
+	switch e.Type {
+	case EventPrivateChat:
+		log.Println(fmt.Sprintf("收到私聊(%s)消息 ==> %v", e.FromWxId, e.Message.Content))
+	case EventGroupChat:
+		log.Println(fmt.Sprintf("收到群聊(%s[%s])消息 ==> %v", e.FromGroup, e.FromWxId, e.Message.Content))
+	case EventFriendVerify:
+		log.Println(fmt.Sprintf("收到好友验证消息, wxId:%s, nick:%s, content:%s", e.FriendVerify.WxId, e.FriendVerify.Nick, e.FriendVerify.Content))
 	}
 }

@@ -53,10 +53,10 @@ func CommandRule(commands ...string) Rule {
 		if !ctx.IsText() {
 			return false
 		}
-		if !strings.HasPrefix(ctx.Event.Message.Msg, BotConfig.CommandPrefix) {
+		if !strings.HasPrefix(ctx.Event.Message.Content, BotConfig.CommandPrefix) {
 			return false
 		}
-		cmdMessage := ctx.Event.Message.Msg[len(BotConfig.CommandPrefix):]
+		cmdMessage := ctx.Event.Message.Content[len(BotConfig.CommandPrefix):]
 		for _, command := range commands {
 			if strings.HasPrefix(cmdMessage, command) {
 				ctx.State["command"] = command
@@ -131,7 +131,7 @@ func AdminPermission(ctx *Ctx) bool {
 
 // UserOrGroupAdmin 允许用户单独使用或群管使用
 func UserOrGroupAdmin(ctx *Ctx) bool {
-	if ctx.IsSendByGroupChat() {
+	if ctx.IsEventGroupChat() {
 		return AdminPermission(ctx)
 	}
 	return true
@@ -177,15 +177,15 @@ func MustMemePicture(ctx *Ctx) bool {
 
 // OnlyGroup 只允许群聊使用
 func OnlyGroup(ctx *Ctx) bool {
-	return ctx.IsSendByGroupChat()
+	return ctx.IsEventGroupChat()
 }
 
 // OnlyPrivate 只允许私聊使用
 func OnlyPrivate(ctx *Ctx) bool {
-	return ctx.IsSendByPrivateChat()
+	return ctx.IsEventPrivateChat()
 }
 
 // OnlyAtMe 只允许@机器人使用
 func OnlyAtMe(ctx *Ctx) bool {
-	return ctx.IsSendByGroupChat() && ctx.IsAt()
+	return ctx.IsEventGroupChat() && ctx.IsAt()
 }

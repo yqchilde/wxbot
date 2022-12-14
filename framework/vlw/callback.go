@@ -49,24 +49,26 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 			return
 		}
 		body := string(recv)
-		event := robot.Event{
-			RobotWxId:     gjson.Get(body, "content.robot_wxid").String(),
-			IsAtMe:        gjson.Get(body, "Event").String() == eventPrivateChat,
-			IsPrivateChat: gjson.Get(body, "Event").String() == eventPrivateChat,
-			IsGroupChat:   gjson.Get(body, "Event").String() == eventGroupChat,
-			FromUniqueID:  gjson.Get(body, "content.from_wxid").String(),
-			FromWxId:      gjson.Get(body, "content.from_wxid").String(),
-			FromName:      gjson.Get(body, "content.from_name").String(),
-			Message: robot.Message{
-				Msg:     gjson.Get(body, "content.msg").String(),
-				MsgId:   gjson.Get(body, "content.msg_id").String(),
-				MsgType: gjson.Get(body, "content.type").Int(),
-			},
-		}
-		if event.IsGroupChat {
+		event := robot.Event{RobotWxId: gjson.Get(body, "content.robot_wxid").String()}
+		switch gjson.Get(body, "Event").String() {
+		case eventPrivateChat:
+			event.Type = robot.EventPrivateChat
+			event.FromUniqueID = gjson.Get(body, "content.from_wxid").String()
+			event.FromWxId = gjson.Get(body, "content.from_wxid").String()
+			event.FromName = gjson.Get(body, "content.from_name").String()
+			event.IsAtMe = true
+			event.Message = &robot.Message{
+				Id:      gjson.Get(body, "content.msg_id").String(),
+				Type:    gjson.Get(body, "content.type").Int(),
+				Content: gjson.Get(body, "content.msg").String(),
+			}
+		case eventGroupChat:
+			event.Type = robot.EventGroupChat
 			event.FromUniqueID = gjson.Get(body, "content.from_group").String()
 			event.FromGroup = gjson.Get(body, "content.from_group").String()
 			event.FromGroupName = gjson.Get(body, "content.from_group_name").String()
+			event.FromWxId = gjson.Get(body, "content.from_wxid").String()
+			event.FromName = gjson.Get(body, "content.from_name").String()
 			if gjson.Get(body, "content.msg_source.atuserlist").Exists() {
 				gjson.Get(body, "content.msg_source.atuserlist").ForEach(func(key, val gjson.Result) bool {
 					if gjson.Get(val.String(), "wxid").String() == event.RobotWxId &&
@@ -76,9 +78,13 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 					return true
 				})
 			}
+			event.Message = &robot.Message{
+				Id:      gjson.Get(body, "content.msg_id").String(),
+				Type:    gjson.Get(body, "content.type").Int(),
+				Content: gjson.Get(body, "content.msg").String(),
+			}
 		}
 		handler(&event, f)
-
 		w.Header().Add("Content-Type", "application/json")
 		w.Write([]byte(`{"code":0}`))
 	})

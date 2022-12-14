@@ -1,5 +1,7 @@
 package robot
 
+import "errors"
+
 // IFramework 这是接入框架所定义的接口
 type IFramework interface {
 	// Callback 这是消息回调方法，vx框架回调消息转发给该Server
@@ -7,7 +9,7 @@ type IFramework interface {
 
 	// GetMemePictures 判断是否是表情包图片(迷因图)
 	// return: 图片链接(网络URL或图片base64)
-	GetMemePictures(message Message) string
+	GetMemePictures(message *Message) string
 
 	// SendText 发送文本消息
 	// toWxId: 好友ID/群ID
@@ -33,34 +35,41 @@ type IFramework interface {
 	// imageUrl: 图片链接
 	// jumpUrl: 跳转链接
 	SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string) error
+
+	// AgreeFriendVerify 同意好友验证
+	// v3: 验证V3
+	// v4: 验证V4
+	// scene: 验证场景
+	AgreeFriendVerify(v3, v4, scene string) error
+
+	// InviteIntoGroup 邀请好友加入群组
+	// groupWxId: 群ID
+	// wxId: 好友ID
+	// typ: 邀请类型，1-直接拉，2-发送邀请链接
+	InviteIntoGroup(groupWxId, wxId string, typ int) error
 }
 
-// IsSendByPrivateChat 判断消息是否是私聊消息
-func (ctx *Ctx) IsSendByPrivateChat() bool {
-	return ctx.Event.IsPrivateChat
-}
-
-// IsSendByGroupChat 判断消息是否是群聊消息
-func (ctx *Ctx) IsSendByGroupChat() bool {
-	return ctx.Event.IsGroupChat
-}
-
-// IsText 判断消息类型是否为文本
-func (ctx *Ctx) IsText() bool {
-	return ctx.Event.Message.MsgType == MsgTypeText
-}
-
-// IsAt 判断是否被@了，仅在群聊中有效，私聊也算被@了
-func (ctx *Ctx) IsAt() bool {
-	return ctx.Event.IsAtMe
-}
-
-// IsMemePictures 判断消息类型是否为表情包
-func (ctx *Ctx) IsMemePictures() (string, bool) {
-	if ctx.Event.Message.MsgType != MsgTypeMemePicture {
-		return "", false
+// SendText 发送文本消息到指定好友
+func (ctx *Ctx) SendText(wxId, text string) error {
+	if text == "" {
+		return nil
 	}
-	return ctx.framework.GetMemePictures(ctx.Event.Message), true
+	return ctx.framework.SendText(wxId, text)
+}
+
+// SendTextAndAt 发送文本消息并@某人到指定群指定用户，仅限群聊
+func (ctx *Ctx) SendTextAndAt(groupWxId, wxId, text string) error {
+	return ctx.framework.SendTextAndAt(groupWxId, wxId, "", text)
+}
+
+// SendImage 发送图片消息到指定好友
+func (ctx *Ctx) SendImage(wxId, path string) error {
+	return ctx.framework.SendImage(wxId, path)
+}
+
+// SendShareLink 发送分享链接消息到指定好友
+func (ctx *Ctx) SendShareLink(wxId, title, desc, imageUrl, jumpUrl string) error {
+	return ctx.framework.SendShareLink(wxId, title, desc, imageUrl, jumpUrl)
 }
 
 // ReplyText 回复文本消息
@@ -73,7 +82,7 @@ func (ctx *Ctx) ReplyText(text string) error {
 
 // ReplyTextAndAt 回复文本消息并@某人，如果在私聊中则不会@某人
 func (ctx *Ctx) ReplyTextAndAt(text string) error {
-	if ctx.IsSendByPrivateChat() {
+	if ctx.IsEventPrivateChat() {
 		return ctx.framework.SendText(ctx.Event.FromWxId, text)
 	}
 	return ctx.framework.SendTextAndAt(ctx.Event.FromGroup, ctx.Event.FromWxId, "", text)
@@ -87,4 +96,17 @@ func (ctx *Ctx) ReplyImage(path string) error {
 // ReplyShareLink 回复分享链接消息
 func (ctx *Ctx) ReplyShareLink(title, desc, imageUrl, jumpUrl string) error {
 	return ctx.framework.SendShareLink(ctx.Event.FromUniqueID, title, desc, imageUrl, jumpUrl)
+}
+
+// AgreeFriendVerify 同意好友验证
+func (ctx *Ctx) AgreeFriendVerify(v3, v4, scene string) error {
+	return ctx.framework.AgreeFriendVerify(v3, v4, scene)
+}
+
+// InviteIntoGroup 邀请好友加入群组; typ:1-直接拉，2-发送邀请链接
+func (ctx *Ctx) InviteIntoGroup(groupWxId, wxId string, typ int) error {
+	if typ != 1 && typ != 2 {
+		return errors.New("类型错误，请参考方法注释")
+	}
+	return ctx.framework.InviteIntoGroup(groupWxId, wxId, typ)
 }
