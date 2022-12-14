@@ -13,6 +13,7 @@ import (
 	_ "github.com/yqchilde/wxbot/plugins/covid19"      // 城市新冠疫情查询
 	_ "github.com/yqchilde/wxbot/plugins/crazykfc"     // 肯德基疯狂星期四骚话
 	_ "github.com/yqchilde/wxbot/plugins/jingdong"     // 京豆上车
+	_ "github.com/yqchilde/wxbot/plugins/manager"      // 群组管理相关
 	_ "github.com/yqchilde/wxbot/plugins/memepicture"  // 表情包原图
 	_ "github.com/yqchilde/wxbot/plugins/moyuban"      // 摸鱼办
 	_ "github.com/yqchilde/wxbot/plugins/pinyinsuoxie" // 拼音缩写翻译

@@ -2,9 +2,10 @@ package control
 
 type Options[CTX any] struct {
 	priority         int       // 优先级
-	DisableOnDefault bool      // 默认禁用状态
 	Alias            string    // 插件别名
 	Help             string    // 插件帮助信息
+	DisableOnDefault bool      // 默认禁用状态
+	ShowMenu         bool      // 是否显示在菜单中，默认显示，可用于隐藏一些不希望展示的插件
 	CacheFolder      string    // 缓存文件夹
 	DataFolder       string    // 数据文件夹
 	OnEnable         func(CTX) // 自定义启用插件后执行的操作

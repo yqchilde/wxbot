@@ -95,6 +95,10 @@
 如果您感觉这个项目有意思，麻烦帮我点一下star  
 这个项目待(不)补(完)充(善)很多东西，由于工作关系会抽出时间弄，感谢您发现并使用此仓库
 
+如果您有疑惑可以加交流群讨论，加机器人备注 `wxbot` 邀请您进入
+
+![img](https://github.com/yqchilde/wxbot/blob/hook/docs/wechat.png)
+
 ## Thanks
 
 * 非Hook版机器人核心由 [openwechat](https://github.com/eatmoreapple/openwechat) SDK实现，在`nohook`分支，已暂停维护

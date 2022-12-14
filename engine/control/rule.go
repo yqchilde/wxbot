@@ -34,6 +34,9 @@ func init() {
 			data["wxId"] = ctx.Event.FromUniqueID
 			data["menus"] = make([]map[string]interface{}, 0, len(services))
 			for _, s := range services {
+				if !s.Options.ShowMenu {
+					continue
+				}
 				data["menus"] = append(data["menus"].([]map[string]interface{}), map[string]interface{}{
 					"name":      s.Service,
 					"alias":     s.Options.Alias,
