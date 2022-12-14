@@ -83,7 +83,7 @@ func init() {
 		ctx.ReplyText(console)
 	})
 
-	engine.OnRegex("set weather appKey ([0-9a-z]{32})", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex("set weather appKey ([0-9a-z]{32})", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		appKey := ctx.State["regex_matched"].([]string)[1]
 		if err := db.Orm.Table("weather").Where("1 = 1").Update("app_key", appKey).Error; err != nil {
 			ctx.ReplyTextAndAt("appKey配置失败")
@@ -93,9 +93,9 @@ func init() {
 		ctx.ReplyText("appKey设置成功")
 	})
 
-	engine.OnFullMatch("get weather info", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnFullMatch("get weather info", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var weather Weather
-		if err := db.Orm.Table("plmm").Limit(1).Find(&weather).Error; err != nil {
+		if err := db.Orm.Table("weather").Limit(1).Find(&weather).Error; err != nil {
 			return
 		}
 		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - 查询天气\nappKey: %s", weather.AppKey))

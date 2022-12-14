@@ -89,7 +89,7 @@ func init() {
 	})
 
 	// 设置openai api key
-	engine.OnRegex("set chatgpt apiKey (.*)", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex("set chatgpt apiKey (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		apiKey := ctx.State["regex_matched"].([]string)[1]
 		if err := db.Orm.Table("chatgpt").Where("1 = 1").Update("api_key", apiKey).Error; err != nil {
 			ctx.ReplyTextAndAt("设置apiKey失败")
@@ -101,7 +101,7 @@ func init() {
 	})
 
 	// 获取插件配置
-	engine.OnFullMatch("get chatgpt info", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnFullMatch("get chatgpt info", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var chatGPT ChatGPT
 		if err := db.Orm.Table("chatgpt").Limit(1).Find(&chatGPT).Error; err != nil {
 			return

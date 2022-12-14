@@ -62,7 +62,7 @@ func init() {
 	})
 
 	// 设置appId
-	engine.OnRegex("set plmm appId ([0-9a-z]{16})", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex("set plmm appId ([0-9a-z]{16})", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		appId := ctx.State["regex_matched"].([]string)[1]
 		if err := db.Orm.Table("plmm").Where("1 = 1").Update("app_id", appId).Error; err != nil {
 			ctx.ReplyText("appId设置失败")
@@ -73,7 +73,7 @@ func init() {
 	})
 
 	// 设置appSecret
-	engine.OnRegex("set plmm appSecret ([0-9a-zA-Z]{32})", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex("set plmm appSecret ([0-9a-zA-Z]{32})", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		appSecret := ctx.State["regex_matched"].([]string)[1]
 		if err := db.Orm.Table("plmm").Where("1 = 1").Update("app_secret", appSecret).Error; err != nil {
 			ctx.ReplyText("appSecret设置失败")
@@ -84,7 +84,7 @@ func init() {
 	})
 
 	// 获取插件配置信息
-	engine.OnFullMatch("get plmm info", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnFullMatch("get plmm info", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var plmm Plmm
 		if err := db.Orm.Table("plmm").Limit(1).Find(&plmm).Error; err != nil {
 			return
