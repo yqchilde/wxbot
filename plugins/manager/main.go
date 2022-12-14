@@ -12,7 +12,7 @@ import (
 
 func init() {
 	engine := control.Register("event", &control.Options[*robot.Ctx]{
-		ShowMenu: false,
+		HideMenu: true,
 	})
 
 	// 该插件按需引入，自行修改
