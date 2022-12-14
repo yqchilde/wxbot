@@ -16,7 +16,9 @@
 <summary>🎁 已接入框架</summary>
 
 * [x] 千寻框架
+    * 具体配置查看 `config.yaml` 文件注释说明
 * [x] VLW框架
+    * 具体配置查看 `config.yaml` 文件注释说明
 
 </details>
 
