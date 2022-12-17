@@ -1,29 +1,39 @@
 ## What's this?
 
-一个还算有意思的wechat robot项目，诞生于摸鱼 😈
+一个还算有意思的wechat robot项目，理想将其设计成一个多功能的机器人助手 😈
 
-本项目只是用于`Hook`类微信框架处理消息回调，暂时只支持HTTP协议，简而言之`wxbot`
-并不能单独实现让您的微信成为Bot，它必须依赖其他`Hook`框架处理回调过来的数据。
-
-* 框架可无侵入扩展，现已集成千寻框架和vlw框架，请参考`framework`目录
+* 框架可无侵入扩展，现已接入`千寻框架`和`vlw框架`，请参考`framework`目录
 * 功能可无侵入扩展，现已集成`plugins`目录下的功能，请参考`plugins`目录
+
+**📢注意：**
+
+1. 使用本项目之前需要您已经配置好相关的 `vx的hook` 类软件，那么只需要在这类软件上设置回调地址即可
+2. 本项目已接入`vlw`、`千寻`两个框架，如果您有其他框架，可以自行添加(参考`framework`目录`，实现`IFramework`接口即可)，或者联系我添加
+3. 本项目不提供任何`hook`类软件，您需要利用搜索引擎自行寻找
+4. 本项目暂时只支持HTTP协议，关于websocket协议支持目前不考虑
+5. 简而言之，本项目是一个消息处理的中间件，它不会帮您实现微信机器人，它只是一个消息处理的中间件，它只是一个消息处理的中间件，它只是一个消息处理的中间件，重要的事情说三遍
+6. 使用本项目造成封禁账号等后果(项目立项到现在，作者还没出现过异常)，本项目不承担任何责任，实际上您使用任何非官方的微信机器人都有可能造成账号封禁，所以请谨慎使用
+7. 本项目仅供学习交流使用，不得用于商业用途，否则后果自负
+8. 如果您阅读了上面的内容，觉得没有问题，那么请继续阅读下面的内容
 
 **功能示例：**
 
 ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/screenshots.jpg)
 
 <details>
-<summary>🎁 已接入框架</summary>
+<summary>🎁 已接入框架，展开看👇</summary>
 
 * [x] 千寻框架
     * 具体配置查看 `config.yaml` 文件注释说明
+    * ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/qianxun.png)
 * [x] VLW框架
     * 具体配置查看 `config.yaml` 文件注释说明
+    * ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/vlw.png)
 
 </details>
 
 <details>
-<summary>🎁 已有插件</summary>
+<summary>🎁 已有插件，展开看 👇</summary>
 
 * [x] [百度百科](https://github.com/yqchilde/wxbot/tree/hook/plugins/baidubaike)
     * 用法：`百度百科 你要查的词`
@@ -55,6 +65,9 @@
 * [x] [获取每日早报](https://github.com/yqchilde/wxbot/tree/hook/plugins/zaobao)
     * 用法：`早报` `每日早报`
     * 示例：`早报`
+* [x] [管理相关](https://github.com/yqchilde/wxbot/tree/hook/plugins/manager)
+    * 可以全局设置定时任务
+    * 可以全局监听好友添加邀请拉群等
 
 </details>
 
