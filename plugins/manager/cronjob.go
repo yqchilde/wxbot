@@ -12,12 +12,19 @@ import (
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
+const (
+	JobTypeRemind = "remind"
+	JobTypeFunc   = "func"
+	JobTypePlugin = "plugin"
+)
+
 var task = timer.NewTimerTask()
 
 type Cronjob struct {
 	Id      int64  `gorm:"primary_key"`
-	JobId   uint32 `gorm:"column:jid"`
-	GroupId string `gorm:"column:gid"`
+	JobId   uint32 `gorm:"column:job_id"`
+	JobType string `gorm:"column:job_type"`
+	GroupId string `gorm:"column:group_id"`
 	Desc    string `gorm:"column:desc"`
 	Cron    string `gorm:"column:cron"`
 	Remind  string `gorm:"column:remind"`
@@ -39,9 +46,11 @@ func registerCronjob() {
 		if err := db.Orm.Table("cronjob").Find(&cronjobs).Error; err == nil {
 			for i := range cronjobs {
 				job := cronjobs[i]
-				task.AddTaskByFunc("cronjob", job.Cron, func() {
-					c.SendText(job.GroupId, job.Remind)
-				})
+				if job.JobType == JobTypeRemind {
+					task.AddTaskByFunc("cronjob", job.Cron, func() {
+						c.SendText(job.GroupId, job.Remind)
+					})
+				}
 			}
 		}
 	}()
@@ -71,6 +80,7 @@ func registerCronjob() {
 				db.Orm.Table("cronjob").Create(&Cronjob{
 					Id:      mid.UniqueId(),
 					JobId:   uint32(entryID),
+					JobType: JobTypeRemind,
 					GroupId: ctx.Event.FromUniqueID,
 					Desc:    descStr,
 					Cron:    cronStr,
@@ -84,7 +94,7 @@ func registerCronjob() {
 
 	engine.OnFullMatch("列出所有定时任务").SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var cronjobs []Cronjob
-		if err := db.Orm.Table("cronjob").Where("gid = ?", ctx.Event.FromUniqueID).Find(&cronjobs).Error; err != nil {
+		if err := db.Orm.Table("cronjob").Where("group_id = ?", ctx.Event.FromUniqueID).Find(&cronjobs).Error; err != nil {
 			ctx.ReplyTextAndAt("查询定时任务失败")
 			return
 		}
@@ -101,27 +111,27 @@ func registerCronjob() {
 
 	engine.OnRegex(`^删除任务 ?(\d+)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		tid := ctx.State["regex_matched"].([]string)[1]
-		var jid int
-		if err := db.Orm.Table("cronjob").Where("id = ?", tid).Pluck("jid", &jid).Error; err != nil {
+		var jobId int
+		if err := db.Orm.Table("cronjob").Where("id = ?", tid).Pluck("job_id", &jobId).Error; err != nil {
 			ctx.ReplyTextAndAt("任务ID错误")
 			return
 		}
 
-		task.RemoveTask("cronjob", jid)
+		task.RemoveTask("cronjob", jobId)
 		db.Orm.Table("cronjob").Where("id = ?", tid).Delete(&Cronjob{})
 		ctx.ReplyTextAndAt("任务删除成功")
 	})
 
 	engine.OnFullMatch("删除全部任务").SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		var jidList []int
-		if err := db.Orm.Table("cronjob").Pluck("jid", &jidList).Error; err != nil {
+		var jobIds []int
+		if err := db.Orm.Table("cronjob").Pluck("job_id", &jobIds).Error; err != nil {
 			ctx.ReplyTextAndAt("删除全部任务失败")
 			return
 		}
-		for i := range jidList {
-			task.RemoveTask("cronjob", jidList[i])
+		for i := range jobIds {
+			task.RemoveTask("cronjob", jobIds[i])
 		}
-		db.Orm.Table("cronjob").Where("gid = ?", ctx.Event.FromUniqueID).Delete(&Cronjob{})
+		db.Orm.Table("cronjob").Where("group_id = ?", ctx.Event.FromUniqueID).Delete(&Cronjob{})
 		ctx.ReplyTextAndAt("已删除全部任务")
 	})
 }
