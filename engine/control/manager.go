@@ -5,10 +5,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/yqchilde/pkgs/log"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
 )
 

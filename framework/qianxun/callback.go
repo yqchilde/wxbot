@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/tidwall/gjson"
-	"github.com/yqchilde/pkgs/log"
 
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
@@ -97,7 +97,7 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 	if f.ServePort == 0 {
 		f.ServePort = 9528
 	}
-	log.Printf("[千寻] 回调地址, http://%s:%d/wxbot/callback", "127.0.0.1", f.ServePort)
+	log.Printf("[千寻] 回调地址: http://%s:%d/wxbot/callback", "127.0.0.1", f.ServePort)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", f.ServePort), nil); err != nil {
 		log.Fatalf("[千寻] 回调服务启动失败, error: %v", err)
 	}

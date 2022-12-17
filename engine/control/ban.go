@@ -3,7 +3,7 @@ package control
 import (
 	"fmt"
 
-	"github.com/yqchilde/pkgs/log"
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 )
 
 var banCache = make(map[string]struct{})

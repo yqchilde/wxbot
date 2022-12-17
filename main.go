@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/spf13/viper"
-	"github.com/yqchilde/pkgs/log"
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 	"github.com/yqchilde/wxbot/framework/qianxun"
 	"github.com/yqchilde/wxbot/framework/vlw"

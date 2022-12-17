@@ -6,12 +6,8 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/yqchilde/pkgs/log"
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 )
-
-func init() {
-	log.Default(2)
-}
 
 var (
 	eveRing   eventRing // 用于存储事件的环形队列

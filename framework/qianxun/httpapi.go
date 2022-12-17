@@ -11,8 +11,8 @@ import (
 
 	"github.com/antchfx/xmlquery"
 	"github.com/imroc/req/v3"
-	"github.com/yqchilde/pkgs/log"
 
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 

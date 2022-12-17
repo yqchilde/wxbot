@@ -6,9 +6,9 @@ import (
 
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
-	"github.com/yqchilde/pkgs/log"
 
 	"github.com/yqchilde/wxbot/engine/control"
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
@@ -115,7 +115,7 @@ func getCityLocation(key, adm, location string) []Location {
 	gjson.Get(resp.String(), "location").ForEach(func(key, value gjson.Result) bool {
 		locationList = append(locationList, Location{
 			Name: value.Get("name").String(),
-			Id:   value.Get("id").String(),
+			Id:   value.Get("mid").String(),
 			Adm2: value.Get("adm2").String(),
 			Adm1: value.Get("adm1").String(),
 		})

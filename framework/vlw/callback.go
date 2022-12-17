@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/tidwall/gjson"
-	"github.com/yqchilde/pkgs/log"
 
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
@@ -88,7 +88,7 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Write([]byte(`{"code":0}`))
 	})
-	log.Printf("[VLW] 回调地址, http://%s:%d/wxbot/callback", "127.0.0.1", f.ServePort)
+	log.Printf("[VLW] 回调地址: http://%s:%d/wxbot/callback", "127.0.0.1", f.ServePort)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", f.ServePort), nil)
 	if err != nil {
 		log.Fatalf("[VLW] 回调服务启动失败, error: %v", err)

@@ -1,9 +1,9 @@
 package control
 
 import (
-	"github.com/yqchilde/pkgs/log"
 	"github.com/yqchilde/pkgs/utils"
 
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
