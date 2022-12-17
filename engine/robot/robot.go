@@ -229,3 +229,20 @@ func preProcessMessageEvent(e *Event) {
 		log.Println(fmt.Sprintf("收到好友验证消息, wxId:%s, nick:%s, content:%s", e.FriendVerify.WxId, e.FriendVerify.Nick, e.FriendVerify.Content))
 	}
 }
+
+// GetCTX 获取当前系统中的CTX
+func GetCTX() *Ctx {
+	t := time.NewTimer(3 * time.Minute)
+	for {
+		select {
+		case <-t.C:
+			log.Fatal("[robot] 获取CTX超时")
+		default:
+			if BotConfig != nil {
+				t.Stop()
+				return &Ctx{framework: BotConfig.Framework}
+			}
+			time.Sleep(time.Second)
+		}
+	}
+}
