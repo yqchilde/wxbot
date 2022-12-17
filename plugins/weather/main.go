@@ -115,7 +115,7 @@ func getCityLocation(key, adm, location string) []Location {
 	gjson.Get(resp.String(), "location").ForEach(func(key, value gjson.Result) bool {
 		locationList = append(locationList, Location{
 			Name: value.Get("name").String(),
-			Id:   value.Get("mid").String(),
+			Id:   value.Get("id").String(),
 			Adm2: value.Get("adm2").String(),
 			Adm1: value.Get("adm1").String(),
 		})

@@ -102,13 +102,13 @@ func registerCronjob() {
 	engine.OnRegex(`^删除任务 ?(\d+)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		tid := ctx.State["regex_matched"].([]string)[1]
 		var jid int
-		if err := db.Orm.Table("cronjob").Where("mid = ?", tid).Pluck("jid", &jid).Error; err != nil {
+		if err := db.Orm.Table("cronjob").Where("id = ?", tid).Pluck("jid", &jid).Error; err != nil {
 			ctx.ReplyTextAndAt("任务ID错误")
 			return
 		}
 
 		task.RemoveTask("cronjob", jid)
-		db.Orm.Table("cronjob").Where("mid = ?", tid).Delete(&Cronjob{})
+		db.Orm.Table("cronjob").Where("id = ?", tid).Delete(&Cronjob{})
 		ctx.ReplyTextAndAt("任务删除成功")
 	})
 

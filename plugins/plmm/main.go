@@ -33,7 +33,7 @@ func init() {
 
 	engine.OnFullMatch("漂亮妹妹").SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		if plmm.AppId == "" || plmm.AppSecret == "" {
-			ctx.ReplyTextAndAt("请先私聊机器人配置appId和appSecret\n指令：set plmm appId __\n指令：set plmm appSecret __\n相关秘钥申请地址：https://www.mxnzp.com/doc/detail?mid=15")
+			ctx.ReplyTextAndAt("请先私聊机器人配置appId和appSecret\n指令：set plmm appId __\n指令：set plmm appSecret __\n相关秘钥申请地址：https://www.mxnzp.com/doc/detail?id=15")
 			return
 		}
 
