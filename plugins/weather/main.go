@@ -32,7 +32,7 @@ func init() {
 		log.Fatalf("create weather table failed: %v", err)
 	}
 
-	engine.OnRegex(`([^\x00-\xff]{2,6}-?[^\x00-\xff]{0,6})测试`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(`([^\x00-\xff]{2,6}-?[^\x00-\xff]{0,6})天气`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		if weather.AppKey == "" {
 			ctx.ReplyTextAndAt("请先私聊机器人配置appKey\n指令：set weather appKey __\n相关秘钥申请地址：https://dev.qweather.com")
 			return
