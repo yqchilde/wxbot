@@ -1,15 +1,24 @@
 package cronjob
 
+import (
+	"fmt"
+	"strconv"
+)
+
 func ParseToCron(duration string, unit string) string {
 	switch unit {
 	case "秒", "s":
-		return "@every " + duration + "s"
+		return fmt.Sprintf("@every %ss", duration)
 	case "分", "分钟", "m":
-		return "@every " + duration + "m"
+		return fmt.Sprintf("@every %sm", duration)
 	case "时", "小时", "h":
-		return "@every " + duration + "h"
+		return fmt.Sprintf("@every %sh", duration)
 	case "天", "日", "d":
-		return "@every " + duration + "d"
+		if durInt, err := strconv.Atoi(duration); err != nil {
+			return ""
+		} else {
+			return fmt.Sprintf("@every %dh", durInt*24)
+		}
 	}
 	return ""
 }
