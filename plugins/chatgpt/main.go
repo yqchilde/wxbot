@@ -43,13 +43,19 @@ func init() {
 			ctx.ReplyTextAndAt("请先私聊机器人配置apiKey\n指令：set chatgpt apiKey __\napiKey获取请到https://beta.openai.com获取")
 			return
 		}
+		if _, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
+			ctx.ReplyTextAndAt("当前已经在进行ChatGPT会话了")
+			return
+		}
 
 		recv, cancel := ctx.EventChannel(ctx.CheckGroupSession()).Repeat()
 		defer cancel()
 		ctx.ReplyTextAndAt("收到！已开始ChatGPT会话，输入\"结束ChatGPT会话\"结束会话，或5分钟后自动结束，请开始吧！")
+		chatCTXMap.LoadOrStore(ctx.Event.FromUniqueID, "")
 		for {
 			select {
 			case <-time.After(time.Minute * 5):
+				chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
 				ctx.ReplyTextAndAt("😊检测到您已有5分钟不再提问，那我先主动结束会话咯")
 				return
 			case c := <-recv:
