@@ -1,6 +1,8 @@
 package zaobao
 
 import (
+	"fmt"
+
 	"github.com/imroc/req/v3"
 
 	"github.com/yqchilde/wxbot/engine/control"
@@ -50,6 +52,14 @@ func init() {
 		}
 		zaobao.Token = token
 		ctx.ReplyText("token设置成功")
+	})
+
+	engine.OnFullMatch("get zaobao info", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		var data ZaoBao
+		if err := db.Orm.Table("zaobao").Limit(1).Find(&data).Error; err != nil {
+			return
+		}
+		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - 每日早报\ntoken: %s", data.Token))
 	})
 }
 
