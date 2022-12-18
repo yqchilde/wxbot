@@ -69,6 +69,11 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 			event.FromGroupName = gjson.Get(body, "content.from_group_name").String()
 			event.FromWxId = gjson.Get(body, "content.from_wxid").String()
 			event.FromName = gjson.Get(body, "content.from_name").String()
+			event.Message = &robot.Message{
+				Id:      gjson.Get(body, "content.msg_id").String(),
+				Type:    gjson.Get(body, "content.type").Int(),
+				Content: gjson.Get(body, "content.msg").String(),
+			}
 			if gjson.Get(body, "content.msg_source.atuserlist").Exists() {
 				gjson.Get(body, "content.msg_source.atuserlist").ForEach(func(key, val gjson.Result) bool {
 					if gjson.Get(val.String(), "wxid").String() == event.RobotWxId &&
@@ -77,11 +82,6 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 					}
 					return true
 				})
-			}
-			event.Message = &robot.Message{
-				Id:      gjson.Get(body, "content.msg_id").String(),
-				Type:    gjson.Get(body, "content.type").Int(),
-				Content: gjson.Get(body, "content.msg").String(),
 			}
 		}
 		handler(&event, f)
