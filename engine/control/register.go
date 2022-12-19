@@ -19,7 +19,6 @@ func Register(service string, o *Options[*robot.Ctx]) *Engine {
 // GetOptions 获取当前群组/私聊插件控制器配置
 func GetOptions(wxId string) *MenuOptions {
 	services := managers.LookupAll()
-
 	menuOptions := MenuOptions{WxId: wxId}
 	for _, s := range services {
 		if s.Options.HideMenu {
