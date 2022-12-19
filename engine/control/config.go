@@ -35,3 +35,16 @@ type BotResponseConfig struct {
 	GroupID string `gorm:"column:gid"`    // 群组ID
 	Status  bool   `gorm:"column:status"` // 响应状态，默认启用
 }
+
+// MenuOptions 菜单配置
+type MenuOptions struct {
+	WxId  string `json:"wxId"`
+	Menus []struct {
+		Name      string `json:"name"`
+		Alias     string `json:"alias"`
+		Priority  int    `json:"priority"`
+		Describe  string `json:"describe"`
+		DefStatus bool   `json:"defStatus"`
+		CurStatus bool   `json:"curStatus"`
+	} `json:"menus"`
+}

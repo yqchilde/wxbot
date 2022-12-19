@@ -18,4 +18,7 @@ func init() {
 
 	// 注册定时任务插件
 	registerCronjob()
+
+	// 注册命令插件
+	registerCommand()
 }
