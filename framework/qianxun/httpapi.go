@@ -152,6 +152,179 @@ func (f *Framework) SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string)
 	return nil
 }
 
+func (f *Framework) SendFile(toWxId, path string) error {
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0011",
+		"data": map[string]interface{}{
+			"wxid": toWxId,
+			"path": path,
+		},
+	}
+
+	var msgResp MessageResp
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
+	if err := resp.Into(&msgResp); err != nil {
+		log.Errorf("[千寻] SendFile error: %v", err)
+		return err
+	}
+	if msgResp.Code != 200 {
+		log.Errorf("[千寻] SendFile error: %s", resp.String())
+		return errors.New(msgResp.Msg)
+	}
+	return nil
+}
+
+func (f *Framework) SendVideo(toWxId, path string) error {
+	log.Errorf("[千寻] SendVideo not support")
+	return errors.New("SendVideo not support")
+}
+
+func (f *Framework) SendEmoji(toWxId, path string) error {
+	log.Errorf("[千寻] SendEmoji not support")
+	return errors.New("SendEmoji not support")
+}
+
+func (f *Framework) SendMusic(toWxId, name, author, app, jumpUrl, musicUrl, coverUrl string) error {
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0014",
+		"data": map[string]interface{}{
+			"wxid":     toWxId,
+			"name":     name,
+			"author":   author,
+			"app":      app,
+			"jumpUrl":  jumpUrl,
+			"musicUrl": musicUrl,
+			"imageUrl": coverUrl,
+		},
+	}
+
+	var msgResp MessageResp
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
+	if err := resp.Into(&msgResp); err != nil {
+		log.Errorf("[千寻] SendMusic error: %v", err)
+		return err
+	}
+	if msgResp.Code != 200 {
+		log.Errorf("[千寻] SendMusic error: %s", resp.String())
+		return errors.New(msgResp.Msg)
+	}
+	return nil
+}
+
+func (f *Framework) SendMiniProgram(toWxId, ghId, title, content, imagePath, jumpPath string) error {
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0013",
+		"data": map[string]interface{}{
+			"wxid":     toWxId,
+			"title":    title,
+			"content":  content,
+			"jumpPath": jumpPath,
+			"gh":       ghId,
+			"path":     imagePath,
+		},
+	}
+
+	var msgResp MessageResp
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
+	if err := resp.Into(&msgResp); err != nil {
+		log.Errorf("[千寻] SendMiniProgram error: %v", err)
+		return err
+	}
+	if msgResp.Code != 200 {
+		log.Errorf("[千寻] SendMiniProgram error: %s", resp.String())
+		return errors.New(msgResp.Msg)
+	}
+	return nil
+}
+
+func (f *Framework) SendMessageRecord(toWxId, title string, dataList []map[string]interface{}) error {
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0009",
+		"data": map[string]interface{}{
+			"wxid":     toWxId,
+			"title":    title,
+			"dataList": dataList,
+		},
+	}
+
+	var msgResp MessageResp
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
+	if err := resp.Into(&msgResp); err != nil {
+		log.Errorf("[千寻] SendMessageRecord error: %v", err)
+		return err
+	}
+	if msgResp.Code != 200 {
+		log.Errorf("[千寻] SendMessageRecord error: %s", resp.String())
+		return errors.New(msgResp.Msg)
+	}
+	return nil
+}
+
+func (f *Framework) SendMessageRecordXML(toWxId, xmlStr string) error {
+	log.Errorf("[千寻] SendMessageRecordXML not support")
+	return errors.New("SendMessageRecordXML not support, please use SendMessageRecord")
+}
+
+func (f *Framework) SendFavorites(toWxId, favoritesId string) error {
+	log.Errorf("[千寻] SendFavorites not support")
+	return errors.New("SendFavorites not support")
+}
+
+func (f *Framework) SendXML(toWxId, xmlStr string) error {
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0015",
+		"data": map[string]interface{}{
+			"wxid": toWxId,
+			"xml":  xmlStr,
+		},
+	}
+
+	var msgResp MessageResp
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
+	if err := resp.Into(&msgResp); err != nil {
+		log.Errorf("[千寻] SendXML error: %v", err)
+		return err
+	}
+	if msgResp.Code != 200 {
+		log.Errorf("[千寻] SendXML error: %s", resp.String())
+		return errors.New(msgResp.Msg)
+	}
+	return nil
+}
+
+func (f *Framework) SendBusinessCard(toWxId, targetWxId string) error {
+	log.Errorf("[千寻] SendBusinessCard not support")
+	return errors.New("SendBusinessCard not support, please use SendBusinessCardXML")
+}
+
+func (f *Framework) SendBusinessCardXML(toWxId, xmlStr string) error {
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0025",
+		"data": map[string]interface{}{
+			"wxid": toWxId,
+			"xml":  xmlStr,
+		},
+	}
+
+	var msgResp MessageResp
+	resp := req.C().Post(apiUrl).SetBody(payload).Do()
+	if err := resp.Into(&msgResp); err != nil {
+		log.Errorf("[千寻] SendBusinessCardXML error: %v", err)
+		return err
+	}
+	if msgResp.Code != 200 {
+		log.Errorf("[千寻] SendBusinessCardXML error: %s", resp.String())
+		return errors.New(msgResp.Msg)
+	}
+	return nil
+}
+
 func (f *Framework) AgreeFriendVerify(v3, v4, scene string) error {
 	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
 	payload := map[string]interface{}{

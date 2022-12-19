@@ -1,6 +1,8 @@
 package robot
 
-import "errors"
+import (
+	"errors"
+)
 
 // IFramework 这是接入框架所定义的接口
 type IFramework interface {
@@ -35,6 +37,75 @@ type IFramework interface {
 	// imageUrl: 图片链接
 	// jumpUrl: 跳转链接
 	SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string) error
+
+	// SendFile 发送文件消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// path: 本地文件绝对路径
+	SendFile(toWxId, path string) error
+
+	// SendVideo 发送视频消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// path: 本地视频文件绝对路径
+	SendVideo(toWxId, path string) error
+
+	// SendEmoji 发送表情消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// path: 本地动态表情文件绝对路径
+	SendEmoji(toWxId, path string) error
+
+	// SendMusic 发送音乐消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// name: 音乐名称
+	// author: 音乐作者
+	// app: 音乐来源(VLW需留空)，酷狗/wx79f2c4418704b4f8，网易云/wx8dd6ecd81906fd84，QQ音乐/wx5aa333606550dfd5
+	// jumpUrl: 音乐跳转链接
+	// musicUrl: 网络歌曲直链
+	// coverUrl: 封面图片链接
+	SendMusic(toWxId, name, author, app, jumpUrl, musicUrl, coverUrl string) error
+
+	// SendMiniProgram 发送小程序消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// ghId: 小程序ID
+	// title: 标题
+	// content: 内容
+	// imagePath: 图片路径, 本地图片路径或网络图片URL
+	// jumpPath: 小程序点击跳转地址，例如：pages/index/index.html
+	SendMiniProgram(toWxId, ghId, title, content, imagePath, jumpPath string) error
+
+	// SendMessageRecord 发送消息记录
+	// toWxId: 好友ID/群ID/公众号ID
+	// title: 仅供电脑上显示用，手机上的话微信会根据[显示昵称]来自动生成 谁和谁的聊天记录
+	// dataList:
+	// 	- wxid: 发送此条消息的人的wxid
+	// 	- nickName: 显示的昵称(可随意伪造)
+	// 	- timestamp: 10位时间戳
+	// 	- msg: 消息内容
+	SendMessageRecord(toWxId, title string, dataList []map[string]interface{}) error
+
+	// SendMessageRecordXML 发送消息记录(XML方式)
+	// toWxId: 好友ID/群ID/公众号ID
+	// xmlStr: 消息记录XML代码
+	SendMessageRecordXML(toWxId, xmlStr string) error
+
+	// SendFavorites 发送收藏消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// favoritesId: 收藏夹ID
+	SendFavorites(toWxId, favoritesId string) error
+
+	// SendXML 发送XML消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// xmlStr: XML代码
+	SendXML(toWxId, xmlStr string) error
+
+	// SendBusinessCard 发送名片消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// targetWxId: 目标用户ID
+	SendBusinessCard(toWxId, targetWxId string) error
+
+	// SendBusinessCardXML 发送名片消息(XML方式)
+	// toWxId: 好友ID/群ID/公众号ID
+	// xmlStr: 名片XML代码
+	SendBusinessCardXML(toWxId, xmlStr string) error
 
 	// AgreeFriendVerify 同意好友验证
 	// v3: 验证V3
@@ -72,6 +143,61 @@ func (ctx *Ctx) SendShareLink(wxId, title, desc, imageUrl, jumpUrl string) error
 	return ctx.framework.SendShareLink(wxId, title, desc, imageUrl, jumpUrl)
 }
 
+// SendFile 发送文件消息到指定好友
+func (ctx *Ctx) SendFile(wxId, path string) error {
+	return ctx.framework.SendFile(wxId, path)
+}
+
+// SendVideo 发送视频消息到指定好友
+func (ctx *Ctx) SendVideo(wxId, path string) error {
+	return ctx.framework.SendVideo(wxId, path)
+}
+
+// SendEmoji 发送表情消息到指定好友
+func (ctx *Ctx) SendEmoji(wxId, path string) error {
+	return ctx.framework.SendEmoji(wxId, path)
+}
+
+// SendMusic 发送音乐消息到指定好友
+func (ctx *Ctx) SendMusic(toWxId, name, author, app, jumpUrl, musicUrl, coverUrl string) error {
+	return ctx.framework.SendMusic(toWxId, name, author, app, jumpUrl, musicUrl, coverUrl)
+}
+
+// SendMiniProgram 发送小程序消息到指定好友
+func (ctx *Ctx) SendMiniProgram(toWxId, ghId, title, content, imagePath, jumpPath string) error {
+	return ctx.framework.SendMiniProgram(toWxId, ghId, title, content, imagePath, jumpPath)
+}
+
+// SendMessageRecord 发送消息记录到指定好友
+func (ctx *Ctx) SendMessageRecord(toWxId, title string, dataList []map[string]interface{}) error {
+	return ctx.framework.SendMessageRecord(toWxId, title, dataList)
+}
+
+// SendMessageRecordXML 发送消息记录(XML方式)到指定好友
+func (ctx *Ctx) SendMessageRecordXML(toWxId, xmlStr string) error {
+	return ctx.framework.SendMessageRecordXML(toWxId, xmlStr)
+}
+
+// SendFavorites 发送收藏消息到指定好友
+func (ctx *Ctx) SendFavorites(toWxId, favoritesId string) error {
+	return ctx.framework.SendFavorites(toWxId, favoritesId)
+}
+
+// SendXML 发送XML消息到指定好友
+func (ctx *Ctx) SendXML(toWxId, xmlStr string) error {
+	return ctx.framework.SendXML(toWxId, xmlStr)
+}
+
+// SendBusinessCard 发送名片消息到指定好友
+func (ctx *Ctx) SendBusinessCard(toWxId, targetWxId string) error {
+	return ctx.framework.SendBusinessCard(toWxId, targetWxId)
+}
+
+// SendBusinessCardXML 发送名片消息(XML方式)到指定好友
+func (ctx *Ctx) SendBusinessCardXML(toWxId, xmlStr string) error {
+	return ctx.framework.SendBusinessCardXML(toWxId, xmlStr)
+}
+
 // ReplyText 回复文本消息
 func (ctx *Ctx) ReplyText(text string) error {
 	if text == "" {
@@ -96,6 +222,61 @@ func (ctx *Ctx) ReplyImage(path string) error {
 // ReplyShareLink 回复分享链接消息
 func (ctx *Ctx) ReplyShareLink(title, desc, imageUrl, jumpUrl string) error {
 	return ctx.framework.SendShareLink(ctx.Event.FromUniqueID, title, desc, imageUrl, jumpUrl)
+}
+
+// ReplyFile 回复文件消息
+func (ctx *Ctx) ReplyFile(path string) error {
+	return ctx.framework.SendFile(ctx.Event.FromUniqueID, path)
+}
+
+// ReplyVideo 回复视频消息
+func (ctx *Ctx) ReplyVideo(path string) error {
+	return ctx.framework.SendVideo(ctx.Event.FromUniqueID, path)
+}
+
+// ReplyEmoji 回复表情消息
+func (ctx *Ctx) ReplyEmoji(path string) error {
+	return ctx.framework.SendEmoji(ctx.Event.FromUniqueID, path)
+}
+
+// ReplyMusic 回复音乐消息
+func (ctx *Ctx) ReplyMusic(name, author, app, jumpUrl, musicUrl, coverUrl string) error {
+	return ctx.framework.SendMusic(ctx.Event.FromUniqueID, name, author, app, jumpUrl, musicUrl, coverUrl)
+}
+
+// ReplyMiniProgram 回复小程序消息
+func (ctx *Ctx) ReplyMiniProgram(ghId, title, content, imagePath, jumpPath string) error {
+	return ctx.framework.SendMiniProgram(ctx.Event.FromUniqueID, ghId, title, content, imagePath, jumpPath)
+}
+
+// ReplyMessageRecord 回复消息记录
+func (ctx *Ctx) ReplyMessageRecord(title string, dataList []map[string]interface{}) error {
+	return ctx.framework.SendMessageRecord(ctx.Event.FromUniqueID, title, dataList)
+}
+
+// ReplyMessageRecordXML 回复消息记录(XML方式)
+func (ctx *Ctx) ReplyMessageRecordXML(xmlStr string) error {
+	return ctx.framework.SendMessageRecordXML(ctx.Event.FromUniqueID, xmlStr)
+}
+
+// ReplyFavorites 回复收藏消息
+func (ctx *Ctx) ReplyFavorites(favoritesId string) error {
+	return ctx.framework.SendFavorites(ctx.Event.FromUniqueID, favoritesId)
+}
+
+// ReplyXML 回复XML消息
+func (ctx *Ctx) ReplyXML(xmlStr string) error {
+	return ctx.framework.SendXML(ctx.Event.FromUniqueID, xmlStr)
+}
+
+// ReplyBusinessCard 回复名片消息
+func (ctx *Ctx) ReplyBusinessCard(targetWxId string) error {
+	return ctx.framework.SendBusinessCard(ctx.Event.FromUniqueID, targetWxId)
+}
+
+// ReplyBusinessCardXML 回复名片消息(XML方式)
+func (ctx *Ctx) ReplyBusinessCardXML(xmlStr string) error {
+	return ctx.framework.SendBusinessCardXML(ctx.Event.FromUniqueID, xmlStr)
 }
 
 // AgreeFriendVerify 同意好友验证

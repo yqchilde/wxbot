@@ -2,6 +2,7 @@ package vlw
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"strconv"
 	"unicode"
@@ -160,12 +161,259 @@ func (f *Framework) SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string)
 	return nil
 }
 
+func (f *Framework) SendFile(toWxId, path string) error {
+	payload := map[string]interface{}{
+		"api":        "SendFileMsg",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"to_wxid":    toWxId,
+		"path":       path,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("[VLW] SendFile error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("[VLW] SendFile error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+func (f *Framework) SendVideo(toWxId, path string) error {
+	payload := map[string]interface{}{
+		"api":        "SendVideoMsg",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"to_wxid":    toWxId,
+		"path":       path,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("[VLW] SendVideo error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("[VLW] SendVideo error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+func (f *Framework) SendEmoji(toWxId, path string) error {
+	payload := map[string]interface{}{
+		"api":        "SendEmojiMsg",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"to_wxid":    toWxId,
+		"path":       path,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("[VLW] SendEmoji error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("[VLW] SendEmoji error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+func (f *Framework) SendMusic(toWxId, name, author, app, jumpUrl, musicUrl, coverUrl string) error {
+	payload := map[string]interface{}{
+		"api":        "SendMusicLinkMsg",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"to_wxid":    toWxId,
+		"title":      name,
+		"desc":       author,
+		"url":        jumpUrl,
+		"dataurl":    musicUrl,
+		"thumburl":   coverUrl,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("[VLW] SendMusic error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("[VLW] SendMusic error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+func (f *Framework) SendMiniProgram(toWxId, ghId, title, content, imagePath, jumpPath string) error {
+	log.Errorf("[VLW] SendMiniProgram not support")
+	return errors.New("SendMiniProgram not support，please use SendXML")
+}
+
+func (f *Framework) SendMessageRecord(toWxId, title string, dataList []map[string]interface{}) error {
+	log.Errorf("[千寻] SendMessageRecord not support")
+	return errors.New("SendMessageRecord not support, please use SendMessageRecordXML")
+}
+
+func (f *Framework) SendMessageRecordXML(toWxId, xmlStr string) error {
+	payload := map[string]interface{}{
+		"api":        "SendMessageRecord",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"to_wxid":    toWxId,
+		"content":    xmlStr,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("[VLW] SendMessageRecordXML error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("[VLW] SendMessageRecordXML error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+func (f *Framework) SendFavorites(toWxId, favoritesId string) error {
+	payload := map[string]interface{}{
+		"api":        "SendFavorites",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"to_wxid":    toWxId,
+		"local_id":   favoritesId,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("[VLW] SendFavorites error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("[VLW] SendFavorites error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+func (f *Framework) SendXML(toWxId, xmlStr string) error {
+	payload := map[string]interface{}{
+		"api":        "SendXmlMsg",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"to_wxid":    toWxId,
+		"xml":        xmlStr,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("[VLW] SendXML error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("[VLW] SendXML error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+func (f *Framework) SendBusinessCard(toWxId, targetWxId string) error {
+	payload := map[string]interface{}{
+		"api":        "SendCardMsg",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"to_wxid":    toWxId,
+		"content":    targetWxId,
+	}
+
+	var resp MessageResp
+	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("[VLW] SendBusinessCard error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("[VLW] SendBusinessCard error: %s", resp.Result)
+		return err
+	}
+	return nil
+}
+
+func (f *Framework) SendBusinessCardXML(toWxId, xmlStr string) error {
+	log.Errorf("[千寻] SendBusinessCardXML not support")
+	return errors.New("SendBusinessCardXML not support, please use SendBusinessCard")
+}
+
 func (f *Framework) AgreeFriendVerify(v1, v2, scene string) error {
-	// todo 抽空补充
+	sceneInt, err := strconv.Atoi(scene)
+	if err != nil {
+		log.Errorf("[VLW] AgreeFriendVerify error: %v", err)
+		return err
+	}
+
+	payload := map[string]interface{}{
+		"api":        "AgreeFriendVerify",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"v1":         v1,
+		"v2":         v2,
+		"type":       sceneInt,
+	}
+
+	var resp MessageResp
+	err = req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("[VLW] SendXML error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("[VLW] SendXML error: %s", resp.Result)
+		return err
+	}
 	return nil
 }
 
 func (f *Framework) InviteIntoGroup(groupWxId, wxId string, typ int) error {
-	// todo 抽空补充
+	payload := make(map[string]interface{}, 5)
+	switch typ {
+	case 1:
+		payload = map[string]interface{}{
+			"api":         "InviteInGroup",
+			"token":       f.ApiToken,
+			"robot_wxid":  f.BotWxId,
+			"group_wxid":  groupWxId,
+			"friend_wxid": wxId,
+		}
+	case 2:
+		payload = map[string]interface{}{
+			"api":         "InviteInGroupByLink",
+			"token":       f.ApiToken,
+			"robot_wxid":  f.BotWxId,
+			"group_wxid":  groupWxId,
+			"friend_wxid": wxId,
+		}
+	}
+	var resp MessageResp
+	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
+	if err != nil {
+		log.Errorf("[VLW] InviteIntoGroup error: %v", err)
+		return err
+	}
+	if resp.Code != 0 {
+		log.Errorf("[VLW] InviteIntoGroup error: %s", resp.Result)
+		return err
+	}
 	return nil
 }

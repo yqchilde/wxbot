@@ -21,6 +21,128 @@
 ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/screenshots.jpg)
 
 <details>
+<summary>🎁 已对接API，展开看👇</summary>
+
+```go
+type IFramework interface {
+	// Callback 这是消息回调方法，vx框架回调消息转发给该Server
+	Callback(func(*Event, IFramework))
+
+	// GetMemePictures 判断是否是表情包图片(迷因图)
+	// return: 图片链接(网络URL或图片base64)
+	GetMemePictures(message *Message) string
+
+	// SendText 发送文本消息
+	// toWxId: 好友ID/群ID
+	// text: 文本内容
+	SendText(toWxId, text string) error
+
+	// SendTextAndAt 发送文本消息并@，只有群聊有效
+	// toGroupWxId: 群ID
+	// toWxId: 好友ID/群ID/all
+	// toWxName: 好友昵称/群昵称，留空为自动获取
+	// text: 文本内容
+	SendTextAndAt(toGroupWxId, toWxId, toWxName, text string) error
+
+	// SendImage 发送图片消息
+	// toWxId: 好友ID/群ID
+	// path: 图片路径
+	SendImage(toWxId, path string) error
+
+	// SendShareLink 发送分享链接消息
+	// toWxId: 好友ID/群ID
+	// title: 标题
+	// desc: 描述
+	// imageUrl: 图片链接
+	// jumpUrl: 跳转链接
+	SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string) error
+
+	// SendFile 发送文件消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// path: 本地文件绝对路径
+	SendFile(toWxId, path string) error
+
+	// SendVideo 发送视频消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// path: 本地视频文件绝对路径
+	SendVideo(toWxId, path string) error
+
+	// SendEmoji 发送表情消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// path: 本地动态表情文件绝对路径
+	SendEmoji(toWxId, path string) error
+
+	// SendMusic 发送音乐消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// name: 音乐名称
+	// author: 音乐作者
+	// app: 音乐来源(VLW需留空)，酷狗/wx79f2c4418704b4f8，网易云/wx8dd6ecd81906fd84，QQ音乐/wx5aa333606550dfd5
+	// jumpUrl: 音乐跳转链接
+	// musicUrl: 网络歌曲直链
+	// coverUrl: 封面图片链接
+	SendMusic(toWxId, name, author, app, jumpUrl, musicUrl, coverUrl string) error
+
+	// SendMiniProgram 发送小程序消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// ghId: 小程序ID
+	// title: 标题
+	// content: 内容
+	// imagePath: 图片路径, 本地图片路径或网络图片URL
+	// jumpPath: 小程序点击跳转地址，例如：pages/index/index.html
+	SendMiniProgram(toWxId, ghId, title, content, imagePath, jumpPath string) error
+
+	// SendMessageRecord 发送消息记录
+	// toWxId: 好友ID/群ID/公众号ID
+	// title: 仅供电脑上显示用，手机上的话微信会根据[显示昵称]来自动生成 谁和谁的聊天记录
+	// dataList:
+	// 	- wxid: 发送此条消息的人的wxid
+	// 	- nickName: 显示的昵称(可随意伪造)
+	// 	- timestamp: 10位时间戳
+	// 	- msg: 消息内容
+	SendMessageRecord(toWxId, title string, dataList []map[string]interface{}) error
+
+	// SendMessageRecordXML 发送消息记录(XML方式)
+	// toWxId: 好友ID/群ID/公众号ID
+	// xmlStr: 消息记录XML代码
+	SendMessageRecordXML(toWxId, xmlStr string) error
+
+	// SendFavorites 发送收藏消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// favoritesId: 收藏夹ID
+	SendFavorites(toWxId, favoritesId string) error
+
+	// SendXML 发送XML消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// xmlStr: XML代码
+	SendXML(toWxId, xmlStr string) error
+
+	// SendBusinessCard 发送名片消息
+	// toWxId: 好友ID/群ID/公众号ID
+	// targetWxId: 目标用户ID
+	SendBusinessCard(toWxId, targetWxId string) error
+
+	// SendBusinessCardXML 发送名片消息(XML方式)
+	// toWxId: 好友ID/群ID/公众号ID
+	// xmlStr: 名片XML代码
+	SendBusinessCardXML(toWxId, xmlStr string) error
+
+	// AgreeFriendVerify 同意好友验证
+	// v3: 验证V3
+	// v4: 验证V4
+	// scene: 验证场景
+	AgreeFriendVerify(v3, v4, scene string) error
+
+	// InviteIntoGroup 邀请好友加入群组
+	// groupWxId: 群ID
+	// wxId: 好友ID
+	// typ: 邀请类型，1-直接拉，2-发送邀请链接
+	InviteIntoGroup(groupWxId, wxId string, typ int) error
+}
+```
+
+</details>
+
+<details>
 <summary>🎁 已接入框架，展开看👇</summary>
 
 * [x] 千寻框架
