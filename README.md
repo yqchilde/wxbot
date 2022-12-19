@@ -28,7 +28,7 @@ type IFramework interface {
 	// Callback 这是消息回调方法，vx框架回调消息转发给该Server
 	Callback(func(*Event, IFramework))
 
-    // GetMemePictures 获取表情包图片地址(迷因图)
+	// GetMemePictures 获取表情包图片地址(迷因图)
 	// return: 图片链接(网络URL或图片base64)
 	GetMemePictures(message *Message) string
 
