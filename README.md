@@ -232,7 +232,9 @@ type IFramework interface {
 如果您感觉这个项目有意思，麻烦帮我点一下star  
 这个项目待(不)补(完)充(善)很多东西，由于工作关系会抽出时间弄，感谢您发现并使用此仓库
 
-如果您有疑惑可以加TG交流群讨论 [点我加入](https://t.me/goWxbot)
+如果您有疑惑可以加Q群讨论
+
+<img src="https://github.com/yqchilde/wxbot/blob/hook/docs/qq.png" width=30%>
 
 ## Thanks
 
