@@ -234,7 +234,7 @@ type IFramework interface {
 
 如果您有疑惑可以加Q群讨论
 
-<img src="https://github.com/yqchilde/wxbot/blob/hook/docs/qq.png" width=30%>
+<img src="https://github.com/yqchilde/wxbot/blob/hook/docs/qq.jpg" width=30%>
 
 ## Thanks
 
