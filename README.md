@@ -121,11 +121,6 @@ type IFramework interface {
 	// targetWxId: 目标用户ID
 	SendBusinessCard(toWxId, targetWxId string) error
 
-	// SendBusinessCardXML 发送名片消息(XML方式)
-	// toWxId: 好友ID/群ID/公众号ID
-	// xmlStr: 名片XML代码
-	SendBusinessCardXML(toWxId, xmlStr string) error
-
 	// AgreeFriendVerify 同意好友验证
 	// v3: 验证V3
 	// v4: 验证V4
@@ -137,6 +132,11 @@ type IFramework interface {
 	// wxId: 好友ID
 	// typ: 邀请类型，1-直接拉，2-发送邀请链接
 	InviteIntoGroup(groupWxId, wxId string, typ int) error
+
+	// GetObjectInfo 获取对象信息
+	// wxId: 好友ID/群ID/公众号ID
+	// return: ObjectInfo, error
+	GetObjectInfo(wxId string) (*ObjectInfo, error)
 }
 ```
 
@@ -232,9 +232,7 @@ type IFramework interface {
 如果您感觉这个项目有意思，麻烦帮我点一下star  
 这个项目待(不)补(完)充(善)很多东西，由于工作关系会抽出时间弄，感谢您发现并使用此仓库
 
-如果您有疑惑可以加交流群讨论，加机器人备注 `wxbot` 邀请您进入
-
-<img src="https://github.com/yqchilde/wxbot/blob/hook/docs/wechat.png" width=30%>
+如果您有疑惑可以加TG交流群讨论 [点我加入](https://t.me/goWxbot)
 
 ## Thanks
 

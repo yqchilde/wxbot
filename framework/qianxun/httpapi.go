@@ -2,6 +2,7 @@ package qianxun
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -10,16 +11,10 @@ import (
 	"unicode/utf8"
 
 	"github.com/antchfx/xmlquery"
-	"github.com/imroc/req/v3"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
-
-type MessageResp struct {
-	Code int    `json:"code"`
-	Msg  string `json:"msg"`
-}
 
 func (f *Framework) msgFormat(msg string) string {
 	buff := bytes.NewBuffer(make([]byte, 0, len(msg)*2))
@@ -67,15 +62,9 @@ func (f *Framework) SendText(toWxId, text string) error {
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] SendText error: %v", err)
+	if err := NewRequest().Post(apiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[千寻] SendText error: %v", err.Error())
 		return err
-	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] SendText error: %s", resp.String())
-		return errors.New(msgResp.Msg)
 	}
 	return nil
 }
@@ -90,15 +79,9 @@ func (f *Framework) SendTextAndAt(toGroupWxId, toWxId, toWxName, text string) er
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] SendTextAndAt error: %v", err)
+	if err := NewRequest().Post(apiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[千寻] SendTextAndAt error: %v", err.Error())
 		return err
-	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] SendTextAndAt error: %s", resp.String())
-		return errors.New(msgResp.Msg)
 	}
 	return nil
 }
@@ -113,15 +96,9 @@ func (f *Framework) SendImage(toWxId, path string) error {
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] SendImage error: %v", err)
+	if err := NewRequest().Post(apiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[千寻] SendImage error: %v", err.Error())
 		return err
-	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] SendImage error: %s", resp.String())
-		return errors.New(msgResp.Msg)
 	}
 	return nil
 }
@@ -139,15 +116,9 @@ func (f *Framework) SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string)
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] SendShareLink error: %v", err)
+	if err := NewRequest().Post(apiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[千寻] SendShareLink error: %v", err.Error())
 		return err
-	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] SendShareLink error: %s", resp.String())
-		return errors.New(msgResp.Msg)
 	}
 	return nil
 }
@@ -162,15 +133,9 @@ func (f *Framework) SendFile(toWxId, path string) error {
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] SendFile error: %v", err)
+	if err := NewRequest().Post(apiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[千寻] SendFile error: %v", err.Error())
 		return err
-	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] SendFile error: %s", resp.String())
-		return errors.New(msgResp.Msg)
 	}
 	return nil
 }
@@ -200,15 +165,9 @@ func (f *Framework) SendMusic(toWxId, name, author, app, jumpUrl, musicUrl, cove
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] SendMusic error: %v", err)
+	if err := NewRequest().Post(apiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[千寻] SendMusic error: %v", err.Error())
 		return err
-	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] SendMusic error: %s", resp.String())
-		return errors.New(msgResp.Msg)
 	}
 	return nil
 }
@@ -227,15 +186,9 @@ func (f *Framework) SendMiniProgram(toWxId, ghId, title, content, imagePath, jum
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] SendMiniProgram error: %v", err)
+	if err := NewRequest().Post(apiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[千寻] SendMiniProgram error: %v", err.Error())
 		return err
-	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] SendMiniProgram error: %s", resp.String())
-		return errors.New(msgResp.Msg)
 	}
 	return nil
 }
@@ -251,15 +204,9 @@ func (f *Framework) SendMessageRecord(toWxId, title string, dataList []map[strin
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] SendMessageRecord error: %v", err)
+	if err := NewRequest().Post(apiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[千寻] SendMessageRecord error: %v", err.Error())
 		return err
-	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] SendMessageRecord error: %s", resp.String())
-		return errors.New(msgResp.Msg)
 	}
 	return nil
 }
@@ -284,43 +231,40 @@ func (f *Framework) SendXML(toWxId, xmlStr string) error {
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] SendXML error: %v", err)
+	buf := bytes.NewBuffer([]byte{})
+	jsonEncoder := json.NewEncoder(buf)
+	jsonEncoder.SetEscapeHTML(false)
+	jsonEncoder.Encode(payload)
+	if err := NewRequest().Post(apiUrl).SetBodyJsonString(buf.String()).Do().Err; err != nil {
+		log.Errorf("[千寻] SendXML error: %v", err.Error())
 		return err
-	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] SendXML error: %s", resp.String())
-		return errors.New(msgResp.Msg)
 	}
 	return nil
 }
 
 func (f *Framework) SendBusinessCard(toWxId, targetWxId string) error {
-	log.Errorf("[千寻] SendBusinessCard not support")
-	return errors.New("SendBusinessCard not support, please use SendBusinessCardXML")
-}
+	info, err := f.GetObjectInfo(targetWxId)
+	if err != nil {
+		log.Errorf("[千寻] SendBusinessCard error: %v", err)
+		return err
+	}
 
-func (f *Framework) SendBusinessCardXML(toWxId, xmlStr string) error {
 	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
 	payload := map[string]interface{}{
 		"type": "Q0025",
 		"data": map[string]interface{}{
 			"wxid": toWxId,
-			"xml":  xmlStr,
+			"xml":  fmt.Sprintf(`<msg username="%s" nickname="%s" />`, targetWxId, info.Nick),
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] SendBusinessCardXML error: %v", err)
+	buf := bytes.NewBuffer([]byte{})
+	jsonEncoder := json.NewEncoder(buf)
+	jsonEncoder.SetEscapeHTML(false)
+	jsonEncoder.Encode(payload)
+	if err := NewRequest().Post(apiUrl).SetBodyJsonString(buf.String()).Do().Err; err != nil {
+		log.Errorf("[千寻] SendBusinessCard error: %v", err.Error())
 		return err
-	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] SendBusinessCardXML error: %s", resp.String())
-		return errors.New(msgResp.Msg)
 	}
 	return nil
 }
@@ -336,15 +280,9 @@ func (f *Framework) AgreeFriendVerify(v3, v4, scene string) error {
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] AgreeFriendVerify error: %v", err)
+	if err := NewRequest().Post(apiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[千寻] AgreeFriendVerify error: %v", err.Error())
 		return err
-	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] AgreeFriendVerify error: %s", resp.String())
-		return errors.New(msgResp.Msg)
 	}
 	return nil
 }
@@ -360,15 +298,48 @@ func (f *Framework) InviteIntoGroup(groupWxId, wxId string, typ int) error {
 		},
 	}
 
-	var msgResp MessageResp
-	resp := req.C().Post(apiUrl).SetBody(payload).Do()
-	if err := resp.Into(&msgResp); err != nil {
-		log.Errorf("[千寻] InviteIntoGroup error: %v", err)
+	if err := NewRequest().Post(apiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[千寻] InviteIntoGroup error: %v", err.Error())
 		return err
 	}
-	if msgResp.Code != 200 {
-		log.Errorf("[千寻] InviteIntoGroup error: %s", resp.String())
-		return errors.New(msgResp.Msg)
-	}
 	return nil
+}
+
+func (f *Framework) GetObjectInfo(wxId string) (*robot.ObjectInfo, error) {
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0004",
+		"data": map[string]interface{}{
+			"wxid": wxId,
+		},
+	}
+
+	var dataResp ObjectInfoResp
+	if err := NewRequest().Post(apiUrl).SetBody(payload).SetResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[千寻] InviteIntoGroup error: %v", err.Error())
+		return nil, err
+	}
+	return &robot.ObjectInfo{
+		WxId:                    dataResp.Result.Wxid,
+		WxNum:                   dataResp.Result.WxNum,
+		Nick:                    dataResp.Result.Nick,
+		Remark:                  dataResp.Result.Remark,
+		NickBrief:               dataResp.Result.NickBrief,
+		NickWhole:               dataResp.Result.NickWhole,
+		RemarkBrief:             dataResp.Result.RemarkBrief,
+		RemarkWhole:             dataResp.Result.RemarkWhole,
+		EnBrief:                 dataResp.Result.EnBrief,
+		EnWhole:                 dataResp.Result.EnWhole,
+		V3:                      dataResp.Result.V3,
+		V4:                      dataResp.Result.V4,
+		Sign:                    dataResp.Result.Sign,
+		Country:                 dataResp.Result.Country,
+		Province:                dataResp.Result.Province,
+		City:                    dataResp.Result.City,
+		MomentsBackgroundImgUrl: dataResp.Result.MomentsBackgroudImgUrl,
+		AvatarMinUrl:            dataResp.Result.AvatarMinUrl,
+		AvatarMaxUrl:            dataResp.Result.AvatarMaxUrl,
+		Sex:                     dataResp.Result.Sex,
+		MemberNum:               dataResp.Result.MemberNum,
+	}, nil
 }

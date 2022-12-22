@@ -2,6 +2,7 @@ package vlw
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -14,13 +15,6 @@ import (
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
-
-type MessageResp struct {
-	Code      int    `json:"Code"`
-	Result    string `json:"Result"`
-	ReturnStr string `json:"ReturnStr"`
-	ReturnInt string `json:"ReturnInt"`
-}
 
 func (f *Framework) msgFormat(msg string) string {
 	buff := bytes.NewBuffer(make([]byte, 0, len(msg)*2))
@@ -55,17 +49,12 @@ func (f *Framework) GetMemePictures(msg *robot.Message) string {
 		"path":  path,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] GetFileFoBase64 error: %v", err)
+	var dataResp MessageResp
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).SetResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[VLW] GetMemePictures error: %v", err.Error())
 		return ""
 	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] GetFileFoBase64 error: %s", resp.Result)
-		return ""
-	}
-	return resp.ReturnStr
+	return dataResp.ReturnStr
 }
 
 func (f *Framework) SendText(toWxId, text string) error {
@@ -77,14 +66,8 @@ func (f *Framework) SendText(toWxId, text string) error {
 		"robot_wxid": f.BotWxId,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendText error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendText error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] SendText error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -101,14 +84,8 @@ func (f *Framework) SendTextAndAt(toGroupWxId, toWxId, toWxName, text string) er
 		"member_name": toWxName,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendTextAndAt error: %s", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendTextAndAt error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] SendTextAndAt error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -123,14 +100,8 @@ func (f *Framework) SendImage(toWxId, path string) error {
 		"to_wxid":    toWxId,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendImage error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendImage error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] SendImage error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -148,14 +119,8 @@ func (f *Framework) SendShareLink(toWxId, title, desc, imageUrl, jumpUrl string)
 		"url":        jumpUrl,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendShareLink error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendShareLink error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] SendShareLink error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -170,14 +135,8 @@ func (f *Framework) SendFile(toWxId, path string) error {
 		"path":       path,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendFile error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendFile error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] SendFile error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -192,14 +151,8 @@ func (f *Framework) SendVideo(toWxId, path string) error {
 		"path":       path,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendVideo error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendVideo error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] SendVideo error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -214,14 +167,8 @@ func (f *Framework) SendEmoji(toWxId, path string) error {
 		"path":       path,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendEmoji error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendEmoji error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] SendEmoji error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -240,14 +187,8 @@ func (f *Framework) SendMusic(toWxId, name, author, app, jumpUrl, musicUrl, cove
 		"thumburl":   coverUrl,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendMusic error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendMusic error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] SendMusic error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -272,14 +213,12 @@ func (f *Framework) SendMessageRecordXML(toWxId, xmlStr string) error {
 		"content":    xmlStr,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendMessageRecordXML error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendMessageRecordXML error: %s", resp.Result)
+	buf := bytes.NewBuffer([]byte{})
+	jsonEncoder := json.NewEncoder(buf)
+	jsonEncoder.SetEscapeHTML(false)
+	jsonEncoder.Encode(payload)
+	if err := req.C().Post(f.ApiUrl).SetBodyJsonString(buf.String()).Do().Err; err != nil {
+		log.Errorf("[VLW] SendMessageRecordXML error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -294,14 +233,8 @@ func (f *Framework) SendFavorites(toWxId, favoritesId string) error {
 		"local_id":   favoritesId,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendFavorites error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendFavorites error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] SendFavorites error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -316,14 +249,12 @@ func (f *Framework) SendXML(toWxId, xmlStr string) error {
 		"xml":        xmlStr,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendXML error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendXML error: %s", resp.Result)
+	buf := bytes.NewBuffer([]byte{})
+	jsonEncoder := json.NewEncoder(buf)
+	jsonEncoder.SetEscapeHTML(false)
+	jsonEncoder.Encode(payload)
+	if err := req.C().Post(f.ApiUrl).SetBodyJsonString(buf.String()).Do().Err; err != nil {
+		log.Errorf("[VLW] SendXML error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -338,22 +269,11 @@ func (f *Framework) SendBusinessCard(toWxId, targetWxId string) error {
 		"content":    targetWxId,
 	}
 
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendBusinessCard error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendBusinessCard error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] SendBusinessCard error: %v", err.Error())
 		return err
 	}
 	return nil
-}
-
-func (f *Framework) SendBusinessCardXML(toWxId, xmlStr string) error {
-	log.Errorf("[千寻] SendBusinessCardXML not support")
-	return errors.New("SendBusinessCardXML not support, please use SendBusinessCard")
 }
 
 func (f *Framework) AgreeFriendVerify(v1, v2, scene string) error {
@@ -372,14 +292,8 @@ func (f *Framework) AgreeFriendVerify(v1, v2, scene string) error {
 		"type":       sceneInt,
 	}
 
-	var resp MessageResp
-	err = req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] SendXML error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] SendXML error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] AgreeFriendVerify error: %v", err.Error())
 		return err
 	}
 	return nil
@@ -405,15 +319,13 @@ func (f *Framework) InviteIntoGroup(groupWxId, wxId string, typ int) error {
 			"friend_wxid": wxId,
 		}
 	}
-	var resp MessageResp
-	err := req.C().Post(f.ApiUrl).SetBody(payload).Do().Into(&resp)
-	if err != nil {
-		log.Errorf("[VLW] InviteIntoGroup error: %v", err)
-		return err
-	}
-	if resp.Code != 0 {
-		log.Errorf("[VLW] InviteIntoGroup error: %s", resp.Result)
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).Do().Err; err != nil {
+		log.Errorf("[VLW] InviteIntoGroup error: %v", err.Error())
 		return err
 	}
 	return nil
+}
+
+func (f *Framework) GetObjectInfo(wxId string) (*robot.ObjectInfo, error) {
+	return nil, nil
 }

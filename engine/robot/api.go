@@ -102,11 +102,6 @@ type IFramework interface {
 	// targetWxId: 目标用户ID
 	SendBusinessCard(toWxId, targetWxId string) error
 
-	// SendBusinessCardXML 发送名片消息(XML方式)
-	// toWxId: 好友ID/群ID/公众号ID
-	// xmlStr: 名片XML代码
-	SendBusinessCardXML(toWxId, xmlStr string) error
-
 	// AgreeFriendVerify 同意好友验证
 	// v3: 验证V3
 	// v4: 验证V4
@@ -118,6 +113,11 @@ type IFramework interface {
 	// wxId: 好友ID
 	// typ: 邀请类型，1-直接拉，2-发送邀请链接
 	InviteIntoGroup(groupWxId, wxId string, typ int) error
+
+	// GetObjectInfo 获取对象信息
+	// wxId: 好友ID/群ID/公众号ID
+	// return: ObjectInfo, error
+	GetObjectInfo(wxId string) (*ObjectInfo, error)
 }
 
 // SendText 发送文本消息到指定好友
@@ -191,11 +191,6 @@ func (ctx *Ctx) SendXML(toWxId, xmlStr string) error {
 // SendBusinessCard 发送名片消息到指定好友
 func (ctx *Ctx) SendBusinessCard(toWxId, targetWxId string) error {
 	return ctx.framework.SendBusinessCard(toWxId, targetWxId)
-}
-
-// SendBusinessCardXML 发送名片消息(XML方式)到指定好友
-func (ctx *Ctx) SendBusinessCardXML(toWxId, xmlStr string) error {
-	return ctx.framework.SendBusinessCardXML(toWxId, xmlStr)
 }
 
 // ReplyText 回复文本消息
@@ -272,11 +267,6 @@ func (ctx *Ctx) ReplyXML(xmlStr string) error {
 // ReplyBusinessCard 回复名片消息
 func (ctx *Ctx) ReplyBusinessCard(targetWxId string) error {
 	return ctx.framework.SendBusinessCard(ctx.Event.FromUniqueID, targetWxId)
-}
-
-// ReplyBusinessCardXML 回复名片消息(XML方式)
-func (ctx *Ctx) ReplyBusinessCardXML(xmlStr string) error {
-	return ctx.framework.SendBusinessCardXML(ctx.Event.FromUniqueID, xmlStr)
 }
 
 // AgreeFriendVerify 同意好友验证
