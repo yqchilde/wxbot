@@ -154,41 +154,33 @@ type IFramework interface {
 
 </details>
 
-<details>
-<summary>🎁 已有插件，展开看 👇</summary>
+<details open>
+<summary>🎁 已有插件 👇</summary>
 
-* [x] [百度百科](https://github.com/yqchilde/wxbot/tree/hook/plugins/baidubaike)
-    * 用法：`百度百科 你要查的词`
-    * 示例：`百度百科 OCR`
-* [x] [ChatGPT聊天](https://github.com/yqchilde/wxbot/tree/hook/plugins/chatgpt)
-    * 用法：`# 你要聊的内容`
-    * 示例：`# 你好啊`
-* [x] [疫情查询](https://github.com/yqchilde/wxbot/tree/hook/plugins/covid19)
-    * 用法：`XX疫情`
-    * 示例：`济南疫情`
-* [x] [KFC疯狂星期四骚话](https://github.com/yqchilde/wxbot/tree/hook/plugins/crazykfc)
-    * 用法：`kfc骚话`
-    * 示例：`kfc骚话`
-* [x] [获取表情原图](https://github.com/yqchilde/wxbot/tree/hook/plugins/memepicture)
-    * 用法：输入`表情原图`后30秒内发送表情包(迷因图)
-    * 示例：`表情原图`
-* [x] [摸鱼办](https://github.com/yqchilde/wxbot/tree/hook/plugins/moyuban)
-    * 用法：`摸鱼` `摸鱼办`
-    * 用法：`摸鱼办`
-* [x] [查拼音缩写](https://github.com/yqchilde/wxbot/tree/hook/plugins/pinyinsuoxie)
-    * 用法：`查缩写 你要查的词`
-    * 用法：`查缩写 emo`
-* [x] [获取美女图片](https://github.com/yqchilde/wxbot/tree/hook/plugins/plmm)
-    * 用法：`漂亮妹妹`
-    * 示例：`漂亮妹妹`
-* [x] [查天气](https://github.com/yqchilde/wxbot/tree/hook/plugins/weather)
-    * 用法：`XX天气`
-    * 示例：`济南天气`
-* [x] [获取每日早报](https://github.com/yqchilde/wxbot/tree/hook/plugins/zaobao)
-    * 用法：`早报` `每日早报`
-    * 示例：`早报`
-* [x] [管理相关](https://github.com/yqchilde/wxbot/tree/hook/plugins/manager)
+* [x] [百度百科-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/baidubaike)
+    * 用法：发送`百度百科 你要查的词`，例如：`百度百科 OCR`
+* [x] [ChatGPT聊天-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/chatgpt)
+    * 用法：发送`开始ChatGPT会话`，然后就可以和机器人连续对话聊天了
+* [x] [KFC疯狂星期四骚话-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/crazykfc)
+    * 用法：发送`kfc骚话`，获取一条v50骚话
+* [x] [获取表情原图-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/memepicture)
+    * 用法：发送`表情原图`后30秒内发送一张表情包(迷因图)，即可获取原图
+* [x] [摸鱼办-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/moyuban)
+    * 用法：发送`摸鱼`或`摸鱼办`，即可获取一张摸鱼办图片
+* [x] [查拼音缩写-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/pinyinsuoxie)
+    * 用法：发送`查缩写 你要查的词`，即可获取拼音缩写含义
+* [x] [获取美女图片-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/plmm)
+    * 用法：发送`漂亮妹妹`，即可获取一张美女图片
+* [x] [查天气-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/weather)
+    * 用法：发送`XX天气`，即可获取XX地区的天气情况，例如：`济南天气`
+* [x] [获取每日早报-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/zaobao)
+    * 用法：发送`早报`或`每日早报`，即可获取每日早报
+* [x] [管理相关-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/manager)
     * 可以全局设置定时任务
+        * 设置每月8号10:00:00的提醒 
+        * 设置每周三10:00:00的提醒 
+        * 设置每天10:00:00的提醒 
+        * 设置每隔1小时的提醒 
     * 可以全局监听好友添加邀请拉群等
 
 </details>

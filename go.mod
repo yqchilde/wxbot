@@ -6,6 +6,7 @@ require (
 	github.com/PullRequestInc/go-gpt3 v1.1.9
 	github.com/antchfx/xmlquery v1.3.13
 	github.com/glebarez/sqlite v1.5.0
+	github.com/go-co-op/gocron v1.18.0
 	github.com/imroc/req/v3 v3.26.3
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.14.0
@@ -52,6 +53,7 @@ require (
 	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/tools v0.1.12 // indirect
