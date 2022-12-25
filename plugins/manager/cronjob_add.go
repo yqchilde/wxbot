@@ -66,3 +66,15 @@ func AddRemindForInterval(ctx *robot.Ctx, jobTag string, matched []string, f fun
 	}
 	return job.Tag(jobTag).Do(func() { f() })
 }
+
+// AddRemindForSpecifyTime 添加指定时间提醒
+func AddRemindForSpecifyTime(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
+	parseTime, _ := time.ParseInLocation("2006-01-02 15:04:05", matched[1], time.Local)
+	if parseTime.Before(time.Now()) {
+		return nil, fmt.Errorf("请不要设置过去的时间")
+	}
+	return job.Every(1).Tag(jobTag).LimitRunsTo(1).StartAt(parseTime).Do(func() {
+		f()
+		db.Orm.Table("cronjob").Where("tag = ?", jobTag).Delete(&CronJob{})
+	})
+}
