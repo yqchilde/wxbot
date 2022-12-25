@@ -83,3 +83,8 @@ func AddRemindForSpecifyTime(ctx *robot.Ctx, jobTag string, matched []string, f 
 func AddRemindForExpression(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
 	return job.Tag(jobTag).CronWithSeconds(matched[1]).Do(func() { f() })
 }
+
+// AddPluginOfEveryDay 添加每天执行的插件
+func AddPluginOfEveryDay(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
+	return job.Tag(jobTag).Every(1).Day().At(matched[1]).Do(func() { f() })
+}

@@ -16,8 +16,8 @@ func Register(service string, o *Options[*robot.Ctx]) *Engine {
 	return engine
 }
 
-// GetOptions 获取当前群组/私聊插件控制器配置
-func GetOptions(wxId string) *MenuOptions {
+// GetOptionsMenu 获取当前群组/私聊插件控制器菜单配置
+func GetOptionsMenu(wxId string) *MenuOptions {
 	services := managers.LookupAll()
 	menuOptions := MenuOptions{WxId: wxId}
 	for _, s := range services {
@@ -41,4 +41,20 @@ func GetOptions(wxId string) *MenuOptions {
 		})
 	}
 	return &menuOptions
+}
+
+// GetOptionsOnCronjob 获取定时任务插件控制器配置
+func GetOptionsOnCronjob() map[string]*Control[*robot.Ctx] {
+	var (
+		services      = managers.LookupAll()
+		servicesClone = make(map[string]*Control[*robot.Ctx])
+	)
+
+	for i := range services {
+		if services[i].Options.OnCronjob == nil {
+			continue
+		}
+		servicesClone[services[i].Service] = services[i]
+	}
+	return servicesClone
 }

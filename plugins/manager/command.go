@@ -18,7 +18,7 @@ func registerCommand() {
 
 	// 菜单输出
 	engine.OnFullMatchGroup([]string{"menu", "菜单"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		options := control.GetOptions(ctx.Event.FromUniqueID)
+		options := control.GetOptionsMenu(ctx.Event.FromUniqueID)
 		if options == nil || len(options.Menus) == 0 {
 			ctx.ReplyTextAndAt("当前没有注册任何插件")
 			return

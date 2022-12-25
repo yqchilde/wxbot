@@ -10,6 +10,7 @@ type Options[CTX any] struct {
 	DataFolder       string    // 数据文件夹
 	OnEnable         func(CTX) // 自定义启用插件后执行的操作
 	OnDisable        func(CTX) // 自定义禁用插件后执行的操作
+	OnCronjob        func(CTX) // 自定义定时任务，用于被定时调用
 }
 
 // PluginConfig 插件配置表

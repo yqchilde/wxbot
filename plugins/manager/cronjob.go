@@ -23,6 +23,7 @@ const (
 	RegexOfRemindInterval    = `^设置每隔(\d+)(s|秒|m|分|分钟|h|时|d|小时)的提醒$`
 	RegexOfRemindSpecifyTime = `^设置((20[2-9][0-9]|2100)-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\s([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])的提醒$`
 	RegexOfRemindExpression  = `^设置表达式\((((\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?)\s+(\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?\s+(\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?\s+(\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?\s+(\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?\s+(\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?)\)的提醒$`
+	RegexOfPluginEveryDay    = `^设置每天(([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])执行插件$`
 )
 
 type CronJob struct {
@@ -32,6 +33,7 @@ type CronJob struct {
 	Desc    string `gorm:"column:desc"`
 	GroupId string `gorm:"column:group_id"`
 	Remind  string `gorm:"column:remind"`
+	Service string `gorm:"column:service"`
 }
 
 func registerCronjob() {
@@ -51,6 +53,7 @@ func registerCronjob() {
 			return
 		}
 		ctx := robot.GetCTX()
+		options := control.GetOptionsOnCronjob()
 		for i := range cronJobs {
 			cronJob := cronJobs[i]
 			switch cronJob.Type {
@@ -108,6 +111,19 @@ func registerCronjob() {
 						log.Errorf("恢复表达式提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
 				}
+			case JobTypePlugin:
+				// 恢复每天的插件任务
+				if matched := regexp.MustCompile(RegexOfPluginEveryDay).FindStringSubmatch(cronJob.Desc); matched != nil {
+					if _, err := AddPluginOfEveryDay(ctx, cronJob.Tag, matched, func() {
+						if s, ok := options[cronJob.Service]; ok {
+							ctx.State = make(map[string]interface{})
+							ctx.State["toWxId"] = cronJob.GroupId
+							s.Options.OnCronjob(ctx)
+						}
+					}); err != nil {
+						log.Errorf("恢复每天插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
+					}
+				}
 			}
 		}
 		job.StartAsync()
@@ -142,8 +158,8 @@ func registerCronjob() {
 					Id:      jobId,
 					Tag:     jobTag,
 					Type:    JobTypeRemind,
-					GroupId: ctx.Event.FromUniqueID,
 					Desc:    jobDesc,
+					GroupId: ctx.Event.FromUniqueID,
 					Remind:  remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
@@ -185,8 +201,8 @@ func registerCronjob() {
 					Id:      jobId,
 					Tag:     jobTag,
 					Type:    JobTypeRemind,
-					GroupId: ctx.Event.FromUniqueID,
 					Desc:    jobDesc,
+					GroupId: ctx.Event.FromUniqueID,
 					Remind:  remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
@@ -228,8 +244,8 @@ func registerCronjob() {
 					Id:      jobId,
 					Tag:     jobTag,
 					Type:    JobTypeRemind,
-					GroupId: ctx.Event.FromUniqueID,
 					Desc:    jobDesc,
+					GroupId: ctx.Event.FromUniqueID,
 					Remind:  remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
@@ -271,8 +287,8 @@ func registerCronjob() {
 					Id:      jobId,
 					Tag:     jobTag,
 					Type:    JobTypeRemind,
-					GroupId: ctx.Event.FromUniqueID,
 					Desc:    jobDesc,
+					GroupId: ctx.Event.FromUniqueID,
 					Remind:  remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
@@ -314,8 +330,8 @@ func registerCronjob() {
 					Id:      jobId,
 					Tag:     jobTag,
 					Type:    JobTypeRemind,
-					GroupId: ctx.Event.FromUniqueID,
 					Desc:    jobDesc,
+					GroupId: ctx.Event.FromUniqueID,
 					Remind:  remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
@@ -357,14 +373,68 @@ func registerCronjob() {
 					Id:      jobId,
 					Tag:     jobTag,
 					Type:    JobTypeRemind,
-					GroupId: ctx.Event.FromUniqueID,
 					Desc:    jobDesc,
+					GroupId: ctx.Event.FromUniqueID,
 					Remind:  remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
 				ctx.ReplyTextAndAt(fmt.Sprintf("已为您%s: %s", jobDesc, remind))
+				job.StartAsync()
+				return
+			}
+		}
+	})
+
+	// 设置每天的执行插件任务
+	// 设置每天08:00:00执行插件
+	engine.OnRegex(RegexOfPluginEveryDay, robot.UserOrGroupAdmin).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		matched := ctx.State["regex_matched"].([]string)
+		jobDesc := ctx.MessageString()
+		recv, cancel := ctx.EventChannel(ctx.CheckUserSession()).Repeat()
+		defer cancel()
+		options := control.GetOptionsOnCronjob()
+		msg := "请问需要设置哪个插件呢？\n"
+		for i := range options {
+			msg += options[i].Service + "\n"
+		}
+		ctx.ReplyText(msg)
+		for {
+			select {
+			case <-time.After(20 * time.Second):
+				ctx.ReplyTextAndAt("操作时间太久了，请重新设置")
+				return
+			case c := <-recv:
+				s, ok := options[c.MessageString()]
+				if !ok {
+					ctx.ReplyTextAndAt("没有这个插件服务，请重新设置")
+					continue
+				}
+
+				jobId := mid.UniqueId()
+				jobTag := strconv.Itoa(int(jobId))
+				service := c.MessageString()
+
+				// 设置定时任务
+				if _, err := AddPluginOfEveryDay(ctx, jobTag, matched, func() { s.Options.OnCronjob(c) }); err != nil {
+					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
+					return
+				}
+
+				// 存起来便于服务启动恢复
+				if err := db.Orm.Table("cronjob").Create(&CronJob{
+					Id:      jobId,
+					Tag:     jobTag,
+					Type:    JobTypePlugin,
+					Desc:    jobDesc,
+					GroupId: ctx.Event.FromUniqueID,
+					Service: service,
+				}).Error; err != nil {
+					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
+					return
+				}
+				ctx.ReplyTextAndAt(fmt.Sprintf("已为您%s: %s", jobDesc, service))
 				job.StartAsync()
 				return
 			}

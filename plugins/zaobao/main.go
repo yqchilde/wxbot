@@ -25,6 +25,12 @@ func init() {
 		Alias:      "每日早报",
 		Help:       "输入 {每日早报|早报} => 获取每天60s读懂世界",
 		DataFolder: "zaobao",
+		OnCronjob: func(ctx *robot.Ctx) {
+			resp := getZaoBaoImageUrl(zaobao.Token)
+			if wxId, ok := ctx.State["toWxId"]; ok {
+				ctx.SendImage(wxId.(string), resp)
+			}
+		},
 	})
 
 	if err := sqlite.Open(engine.GetDataFolder()+"/zaobao.db", &db); err != nil {
