@@ -78,3 +78,8 @@ func AddRemindForSpecifyTime(ctx *robot.Ctx, jobTag string, matched []string, f 
 		db.Orm.Table("cronjob").Where("tag = ?", jobTag).Delete(&CronJob{})
 	})
 }
+
+// AddRemindForExpression 添加表达式提醒
+func AddRemindForExpression(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
+	return job.Tag(jobTag).CronWithSeconds(matched[1]).Do(func() { f() })
+}

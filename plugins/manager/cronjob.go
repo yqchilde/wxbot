@@ -22,6 +22,7 @@ const (
 	RegexOfRemindEveryDay    = `^设置每天(([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])的提醒$`
 	RegexOfRemindInterval    = `^设置每隔(\d+)(s|秒|m|分|分钟|h|时|d|小时)的提醒$`
 	RegexOfRemindSpecifyTime = `^设置((20[2-9][0-9]|2100)-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\s([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])的提醒$`
+	RegexOfRemindExpression  = `^设置表达式\((((\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?)\s+(\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?\s+(\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?\s+(\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?\s+(\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?\s+(\*(/\d+)?|((\d+(-\d+)?)(,\d+(-\d+)?)*))(/\d+)?)\)的提醒$`
 )
 
 type CronJob struct {
@@ -96,6 +97,15 @@ func registerCronjob() {
 						ctx.SendText(cronJob.GroupId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复指定时间提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
+					}
+				}
+
+				// 恢复表达式提醒任务
+				if matched := regexp.MustCompile(RegexOfRemindExpression).FindStringSubmatch(cronJob.Desc); matched != nil {
+					if _, err := AddRemindForExpression(ctx, cronJob.Tag, matched, func() {
+						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+					}); err != nil {
+						log.Errorf("恢复表达式提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
 				}
 			}
@@ -295,6 +305,49 @@ func registerCronjob() {
 
 				// 设置定时任务
 				if _, err := AddRemindForSpecifyTime(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
+					ctx.ReplyText(fmt.Errorf("设置失败: %v", err).Error())
+					return
+				}
+
+				// 存起来便于服务启动恢复
+				if err := db.Orm.Table("cronjob").Create(&CronJob{
+					Id:      jobId,
+					Tag:     jobTag,
+					Type:    JobTypeRemind,
+					GroupId: ctx.Event.FromUniqueID,
+					Desc:    jobDesc,
+					Remind:  remind,
+				}).Error; err != nil {
+					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
+					return
+				}
+				ctx.ReplyTextAndAt(fmt.Sprintf("已为您%s: %s", jobDesc, remind))
+				job.StartAsync()
+				return
+			}
+		}
+	})
+
+	// 设置自定义cron表达式的提醒任务(6位带秒)
+	// 设置表达式(*/10 * * * * *)的提醒
+	engine.OnRegex(RegexOfRemindExpression, robot.UserOrGroupAdmin).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		matched := ctx.State["regex_matched"].([]string)
+		jobDesc := ctx.MessageString()
+		recv, cancel := ctx.EventChannel(ctx.CheckUserSession()).Repeat()
+		defer cancel()
+		ctx.ReplyText("请问需要提醒什么呢？")
+		for {
+			select {
+			case <-time.After(20 * time.Second):
+				ctx.ReplyTextAndAt("操作时间太久了，请重新设置")
+				return
+			case c := <-recv:
+				jobId := mid.UniqueId()
+				jobTag := strconv.Itoa(int(jobId))
+				remind := c.Event.Message.Content
+
+				// 设置定时任务
+				if _, err := AddRemindForExpression(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
 					ctx.ReplyText(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
