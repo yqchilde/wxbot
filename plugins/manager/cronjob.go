@@ -450,7 +450,12 @@ func registerCronjob() {
 		}
 		var jobInfo string
 		for i := range cronJobs {
-			jobInfo += fmt.Sprintf("任务ID: %d\n任务类型: %s\n任务描述: %s\n任务内容: %s\n\n", cronJobs[i].Id, cronJobs[i].Type, cronJobs[i].Desc, cronJobs[i].Remind)
+			switch cronJobs[i].Type {
+			case JobTypeRemind:
+				jobInfo += fmt.Sprintf("任务ID: %d\n任务类型: %s\n任务描述: %s\n任务内容: %s\n\n", cronJobs[i].Id, cronJobs[i].Type, cronJobs[i].Desc, cronJobs[i].Remind)
+			case JobTypePlugin:
+				jobInfo += fmt.Sprintf("任务ID: %d\n任务类型: %s\n任务描述: %s\n任务内容: %s\n\n", cronJobs[i].Id, cronJobs[i].Type, cronJobs[i].Desc, cronJobs[i].Service)
+			}
 		}
 		if len(cronJobs) == 0 {
 			ctx.ReplyTextAndAt(fmt.Sprintf("\n当前共有%d个定时任务", len(cronJobs)))
