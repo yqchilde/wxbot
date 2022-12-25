@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/tidwall/gjson"
+	"github.com/yqchilde/pkgs/net"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
@@ -97,8 +98,13 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 	if f.ServePort == 0 {
 		f.ServePort = 9528
 	}
-	log.Printf("[千寻] 回调地址: http://%s:%d/wxbot/callback", "127.0.0.1", f.ServePort)
+
+	if ip, err := net.GetIPWithLocal(); err != nil {
+		log.Printf("[千寻] WxBot回调地址: http://%s:%d/wxbot/callback", "127.0.0.1", f.ServePort)
+	} else {
+		log.Printf("[千寻] WxBot回调地址: http://%s:%d/wxbot/callback", ip, f.ServePort)
+	}
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", f.ServePort), nil); err != nil {
-		log.Fatalf("[千寻] 回调服务启动失败, error: %v", err)
+		log.Fatalf("[千寻] WxBot回调服务启动失败, error: %v", err)
 	}
 }
