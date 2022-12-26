@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	eveRing   eventRing // 用于存储事件的环形队列
-	BotConfig *Config   // 机器人配置
+	BotConfig   *Config      // 机器人配置
+	eventBuffer *EventBuffer // 处理事件的队列
 )
 
 type Config struct {
@@ -19,16 +19,16 @@ type Config struct {
 	BotNickname    string        // 机器人名称
 	SuperUsers     []string      // 超级用户
 	CommandPrefix  string        // 触发命令
-	RingLen        uint          // 事件环长度 (默认4096)
-	Latency        time.Duration // 事件处理延迟 (延迟 latency + (0~100ms) 再处理事件) (默认1min)
+	BufferLen      uint          // 事件缓冲区长度, 默认4096
+	Latency        time.Duration // 事件处理延迟 (延迟 latency + (0~100ms) 再处理事件) (默认1s)
 	MaxProcessTime time.Duration // 事件最大处理时间 (默认3min)
 	Framework      IFramework    // 接入框架需实现该接口
 }
 
 // Run 主函数，启动机器人
 func Run(c *Config) {
-	if c.RingLen == 0 {
-		c.RingLen = 4096
+	if c.BufferLen == 0 {
+		c.BufferLen = 4096
 	}
 	if c.Latency == 0 {
 		c.Latency = time.Second
@@ -37,10 +37,10 @@ func Run(c *Config) {
 		c.MaxProcessTime = time.Minute * 3
 	}
 	BotConfig = c
-	eveRing = newRing(c.RingLen)
-	eveRing.loop(c.Latency, c.MaxProcessTime, processEventAsync)
+	eventBuffer = NewEventBuffer(c.BufferLen)
+	eventBuffer.Loop(c.Latency, c.MaxProcessTime, processEventAsync)
 	log.Printf("[robot] 机器人%s开始工作", c.BotNickname)
-	c.Framework.Callback(eveRing.processEvent)
+	c.Framework.Callback(eventBuffer.ProcessEvent)
 }
 
 func processEventAsync(event *Event, framework IFramework, maxWait time.Duration) {
