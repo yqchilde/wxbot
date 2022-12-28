@@ -36,7 +36,7 @@ func init() {
 }
 
 func getCaller() {
-	_, file, line, ok := runtime.Caller(3)
+	_, file, line, ok := runtime.Caller(2)
 	if !ok {
 		return
 	}
@@ -44,68 +44,72 @@ func getCaller() {
 	log.callerLine = line
 }
 
-func (log *logger) log(level logrus.Level, msg ...interface{}) {
-	getCaller()
-	log.l.Log(level, msg...)
-}
-
-func (log *logger) logf(level logrus.Level, format string, msg ...interface{}) {
-	getCaller()
-	log.l.Logf(level, format, msg...)
-}
-
 func Println(args ...interface{}) {
-	log.log(logrus.InfoLevel, args...)
+	getCaller()
+	log.l.Println(args...)
 }
 
 func Printf(format string, args ...interface{}) {
-	log.logf(logrus.InfoLevel, format, args...)
+	getCaller()
+	log.l.Printf(format, args...)
 }
 
 func Debug(args ...interface{}) {
-	log.log(logrus.DebugLevel, args...)
+	getCaller()
+	log.l.Debug(args...)
 }
 
 func Debugf(format string, args ...interface{}) {
-	log.logf(logrus.DebugLevel, format, args...)
+	getCaller()
+	log.l.Debugf(format, args...)
 }
 
 func Warn(args ...interface{}) {
-	log.log(logrus.WarnLevel, args...)
+	getCaller()
+	log.l.Warn(args...)
 }
 
 func Warnf(format string, args ...interface{}) {
-	log.logf(logrus.WarnLevel, format, args...)
+	getCaller()
+	log.l.Warnf(format, args...)
 }
 
 func Error(args ...interface{}) {
-	log.log(logrus.ErrorLevel, args...)
+	getCaller()
+	log.l.Error(args...)
 }
 
 func Errorf(format string, args ...interface{}) {
-	log.logf(logrus.ErrorLevel, format, args...)
+	getCaller()
+	log.l.Errorf(format, args...)
 }
 
 func Fatal(args ...interface{}) {
-	log.log(logrus.FatalLevel, args...)
+	getCaller()
+	log.l.Fatal(args...)
 }
 
 func Fatalf(format string, args ...interface{}) {
-	log.logf(logrus.FatalLevel, format, args...)
+	getCaller()
+	log.l.Fatalf(format, args...)
 }
 
 func Panic(args ...interface{}) {
-	log.log(logrus.PanicLevel, args...)
+	getCaller()
+	log.l.Panic(args...)
 }
 
 func Panicf(format string, args ...interface{}) {
-	log.logf(logrus.PanicLevel, format, args...)
+	getCaller()
+	log.l.Panicf(format, args...)
 }
 
 func Trace(args ...interface{}) {
-	log.log(logrus.TraceLevel, args...)
+	getCaller()
+	log.l.Trace(args...)
 }
 
 func Tracef(format string, args ...interface{}) {
-	log.logf(logrus.TraceLevel, format, args...)
+	getCaller()
+	log.l.Tracef(format, args...)
 }
