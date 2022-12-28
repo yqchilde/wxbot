@@ -44,7 +44,7 @@ jobs:
       - name: Build
         run: |
           export GOPROXY=https://goproxy.cn,direct
-          go mod download
+          go mod tidy
           make release
 
       - name: Release
