@@ -43,6 +43,8 @@ jobs:
 
       - name: Build
         run: |
+          export GOPROXY=https://goproxy.cn,direct
+          go mod download
           make release
 
       - name: Release
