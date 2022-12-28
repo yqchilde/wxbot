@@ -40,25 +40,25 @@ compress:
     compress-linux-amd64 compress-linux-arm64
 
 compress-darwin-amd64:
-	tar -czvf build/darwin-amd64.tar.gz -C build/darwin-amd64/ wxbot; \
+	tar -czvf build/wxbot-darwin-amd64.tar.gz -C build/darwin-amd64/ wxbot; \
     rm -rf build/darwin-amd64
 
 compress-darwin-arm64:
-	tar -czvf build/darwin-arm64.tar.gz -C build/darwin-arm64/ wxbot; \
+	tar -czvf build/wxbot-darwin-arm64.tar.gz -C build/darwin-arm64/ wxbot; \
     rm -rf build/darwin-arm64
 
 compress-windows-amd64:
-	tar -czvf build/windows-amd64.tar.gz -C build/windows-amd64/ wxbot.exe; \
+	tar -czvf build/wxbot-windows-amd64.tar.gz -C build/windows-amd64/ wxbot.exe; \
     rm -rf build/windows-amd64
 
 compress-windows-arm64:
-	tar -czvf build/windows-arm64.tar.gz -C build/windows-arm64/ wxbot.exe; \
+	tar -czvf build/wxbot-windows-arm64.tar.gz -C build/windows-arm64/ wxbot.exe; \
     rm -rf build/windows-arm64
 
 compress-linux-amd64:
-	tar -czvf build/linux-amd64.tar.gz -C build/linux-amd64/ wxbot; \
+	tar -czvf build/wxbot-linux-amd64.tar.gz -C build/linux-amd64/ wxbot; \
     rm -rf build/linux-amd64
 
 compress-linux-arm64:
-	tar -czvf build/linux-arm64.tar.gz -C build/linux-arm64/ wxbot; \
+	tar -czvf build/wxbot-linux-arm64.tar.gz -C build/linux-arm64/ wxbot; \
     rm -rf build/linux-arm64
