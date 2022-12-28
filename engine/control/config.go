@@ -1,9 +1,9 @@
 package control
 
 type Options[CTX any] struct {
-	priority         int       // 优先级
 	Alias            string    // 插件别名
 	Help             string    // 插件帮助信息
+	Priority         uint64    // 优先级,只读
 	DisableOnDefault bool      // 默认禁用状态
 	HideMenu         bool      // 是否隐藏在菜单中，默认显示，可用于隐藏一些不希望展示的插件
 	CacheFolder      string    // 缓存文件夹
@@ -35,17 +35,4 @@ type BotBlockConfig struct {
 type BotResponseConfig struct {
 	GroupID string `gorm:"column:gid"`    // 群组ID
 	Status  bool   `gorm:"column:status"` // 响应状态，默认启用
-}
-
-// MenuOptions 菜单配置
-type MenuOptions struct {
-	WxId  string `json:"wxId"`
-	Menus []struct {
-		Name      string `json:"name"`
-		Alias     string `json:"alias"`
-		Priority  int    `json:"priority"`
-		Describe  string `json:"describe"`
-		DefStatus bool   `json:"defStatus"`
-		CurStatus bool   `json:"curStatus"`
-	} `json:"menus"`
 }

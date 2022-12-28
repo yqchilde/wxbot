@@ -3,13 +3,13 @@ package robot
 // EventChannel 用于异步获取指定事件
 type EventChannel struct {
 	Type     string
-	Priority int
+	Priority uint64
 	Rule     []Rule
 	Block    bool
 }
 
 // NewEventChannel 创建一个新的 EventChannel用于异步获取指定事件
-func NewEventChannel(Priority int, Block bool, rule ...Rule) *EventChannel {
+func NewEventChannel(Priority uint64, Block bool, rule ...Rule) *EventChannel {
 	return &EventChannel{
 		Priority: Priority,
 		Rule:     rule,

@@ -25,7 +25,7 @@ type Matcher struct {
 	NoTimeout bool
 
 	// Priority 优先级，越小优先级越高
-	Priority int
+	Priority uint64
 
 	// Rules 匹配规则
 	Rules []Rule
@@ -87,7 +87,7 @@ func (m *Matcher) SetNoTimeout(noTimeout bool) *Matcher {
 }
 
 // SetPriority 设置当前 Matcher 优先级
-func (m *Matcher) SetPriority(priority int) *Matcher {
+func (m *Matcher) SetPriority(priority uint64) *Matcher {
 	matcherLock.Lock()
 	defer matcherLock.Unlock()
 	m.Priority = priority

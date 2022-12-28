@@ -18,10 +18,27 @@ func registerCommand() {
 
 	// 菜单输出
 	engine.OnFullMatchGroup([]string{"menu", "菜单"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		options := control.GetOptionsMenu(ctx.Event.FromUniqueID)
-		if options == nil || len(options.Menus) == 0 {
-			ctx.ReplyTextAndAt("当前没有注册任何插件")
-			return
+		c := ctx.State["manager"].(*control.Control[*robot.Ctx])
+		options := MenuOptions{WxId: ctx.Event.FromUniqueID}
+		for _, m := range c.Manager.M {
+			if m.Options.HideMenu {
+				continue
+			}
+			options.Menus = append(options.Menus, struct {
+				Name      string `json:"name"`
+				Alias     string `json:"alias"`
+				Priority  uint64 `json:"priority"`
+				Describe  string `json:"describe"`
+				DefStatus bool   `json:"defStatus"`
+				CurStatus bool   `json:"curStatus"`
+			}{
+				Name:      m.Service,
+				Alias:     m.Options.Alias,
+				Priority:  m.Options.Priority,
+				Describe:  m.Options.Help,
+				DefStatus: !m.Options.DisableOnDefault,
+				CurStatus: m.IsEnabledIn(ctx.Event.FromUniqueID),
+			})
 		}
 
 		// 🔔实现方案一：直接输出菜单

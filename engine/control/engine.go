@@ -9,30 +9,22 @@ import (
 
 type Engine struct {
 	en          *robot.Engine // robot engine
-	priority    int           // 优先级
+	priority    uint64        // 优先级
 	service     string        // 插件服务名
 	dataFolder  string        // 数据目录
 	cacheFolder string        // 缓存目录
 }
 
-var priorityMap = make(map[int]string)
 var dataFolderFilter = make(map[string]string)
 var cacheFolderFilter = make(map[string]string)
 
-func newEngine(service string, priority int, o *Options[*robot.Ctx]) (e *Engine) {
-	s, ok := priorityMap[priority]
-	if ok {
-		log.Fatal("priority %d is already used by %s", priority, s)
-	}
-	priorityMap[priority] = service
-	log.Debugf("[%s]插件已注册, 优先级: %d", service, priority)
-
+func newEngine(service string, o *Options[*robot.Ctx]) (e *Engine) {
 	e = &Engine{
 		en:       robot.New(),
 		priority: priority,
 		service:  service,
 	}
-	o.priority = priority
+	o.Priority = priority
 	e.en.UsePreHandler(newControl(service, o))
 
 	if o.DataFolder != "" {
