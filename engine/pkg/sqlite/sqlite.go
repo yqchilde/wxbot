@@ -1,6 +1,9 @@
 package sqlite
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
@@ -9,8 +12,25 @@ type DB struct {
 	Orm *gorm.DB
 }
 
+func CreateDBFile(dbPath string) error {
+	if _, err := os.Stat(filepath.Dir(dbPath)); os.IsNotExist(err) {
+		if err := os.MkdirAll(filepath.Dir(dbPath), 0755); err != nil {
+			return err
+		}
+	}
+	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		if _, err := os.Create(dbPath); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Open 创建数据库连接
 func Open(dbPath string, db *DB, opts ...gorm.Option) error {
+	if err := CreateDBFile(dbPath); err != nil {
+		return err
+	}
 	d, err := gorm.Open(sqlite.Open(dbPath), opts...)
 	if err != nil {
 		return err

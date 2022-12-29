@@ -19,20 +19,10 @@ type Manager[CTX any] struct {
 }
 
 func NewManager[CTX any](dbpath string) (m Manager[CTX]) {
-	switch {
-	case dbpath == "":
-		dbpath = "plugins.db"
-	case strings.HasSuffix(dbpath, "/"):
-		if err := os.MkdirAll(dbpath, 0755); err != nil {
+	i := strings.LastIndex(dbpath, "/")
+	if i > 0 {
+		if err := os.MkdirAll(dbpath[:i], 0755); err != nil {
 			log.Fatal(err)
-		}
-		dbpath += "plugins.db"
-	default:
-		i := strings.LastIndex(dbpath, "/")
-		if i > 0 {
-			if err := os.MkdirAll(dbpath[:i], 0755); err != nil {
-				log.Fatal(err)
-			}
 		}
 	}
 	var db sqlite.DB
