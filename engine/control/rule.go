@@ -7,8 +7,7 @@ import (
 )
 
 var (
-	once = sync.Once{}
-	// managers 每个插件对应的管理
+	once     = sync.Once{}
 	managers = NewManager[*robot.Ctx]("data/manager/plugins.db")
 )
 

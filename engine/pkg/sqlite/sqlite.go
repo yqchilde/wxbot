@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 
@@ -15,12 +16,12 @@ type DB struct {
 func CreateDBFile(dbPath string) error {
 	if _, err := os.Stat(filepath.Dir(dbPath)); os.IsNotExist(err) {
 		if err := os.MkdirAll(filepath.Dir(dbPath), 0755); err != nil {
-			return err
+			return errors.New("创建数据库文件夹失败: " + err.Error())
 		}
 	}
 	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
 		if _, err := os.Create(dbPath); err != nil {
-			return err
+			return errors.New("创建数据库文件失败: " + err.Error())
 		}
 	}
 	return nil

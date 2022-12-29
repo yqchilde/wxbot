@@ -11,7 +11,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.14.0
 	github.com/tidwall/gjson v1.14.4
-	github.com/yqchilde/pkgs v0.0.6
+	github.com/yqchilde/pkgs v0.0.7
 	gorm.io/gorm v1.24.2
 )
 

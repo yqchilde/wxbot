@@ -1,13 +1,16 @@
 package main
 
 import (
+	"time"
+
 	"github.com/spf13/viper"
+	"github.com/yqchilde/pkgs/net"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 	"github.com/yqchilde/wxbot/framework/qianxun"
 	"github.com/yqchilde/wxbot/framework/vlw"
 
-	// 导入插件
+	// 导入插件, 不需要的插件可以注释掉或者删除
 	_ "github.com/yqchilde/wxbot/plugins/baidubaike"   // 百度百科
 	_ "github.com/yqchilde/wxbot/plugins/chatgpt"      // GPT聊天
 	_ "github.com/yqchilde/wxbot/plugins/crazykfc"     // 肯德基疯狂星期四骚话
@@ -21,6 +24,8 @@ import (
 	_ "github.com/yqchilde/wxbot/plugins/zaobao"       // 每日早报
 )
 
+var conf robot.Config
+
 func main() {
 	// 初始化配置
 	v := viper.New()
@@ -28,32 +33,38 @@ func main() {
 	if err := v.ReadInConfig(); err != nil {
 		log.Fatalf("[main] 读取配置文件失败: %s", err.Error())
 	}
-	var c robot.Config
-	if err := v.Unmarshal(&c); err != nil {
+	if err := v.Unmarshal(&conf); err != nil {
 		log.Fatalf("[main] 解析配置文件失败: %s", err.Error())
 	}
 
 	// 初始化机器人
-	if v.GetString("frameworks.name") == "" {
-		log.Fatalf("[main] 未配置机器人框架")
-	}
 	switch v.GetString("frameworks.name") {
-	case "qianxun":
-		c.Framework = robot.IFramework(qianxun.New(
+	case "千寻", "qianxun":
+		conf.Framework = robot.IFramework(qianxun.New(
 			v.GetString("botWxId"),
 			v.GetString("frameworks.apiUrl"),
 			v.GetString("frameworks.apiToken"),
 			v.GetUint("frameworks.servePort"),
 		))
-	case "vlw":
-		c.Framework = robot.IFramework(vlw.New(
+		if ipPort, err := net.CheckoutIpPort(v.GetString("frameworks.apiUrl")); err == nil {
+			if ping := net.PingConn(ipPort, time.Second*20); !ping {
+				log.Fatalf("[main] 无法连接到千寻框架，网络无法Ping通")
+			}
+		}
+	case "VLW", "vlw":
+		conf.Framework = robot.IFramework(vlw.New(
 			v.GetString("botWxId"),
 			v.GetString("frameworks.apiUrl"),
 			v.GetString("frameworks.apiToken"),
 			v.GetUint("frameworks.servePort"),
 		))
+		if ipPort, err := net.CheckoutIpPort(v.GetString("frameworks.apiUrl")); err == nil {
+			if ping := net.PingConn(ipPort, time.Second*20); !ping {
+				log.Fatalf("[main] 无法连接到VLW框架，网络无法Ping通")
+			}
+		}
 	default:
-		log.Fatalf("[main] 未知机器人框架: %s", v.GetString("frameworks.name"))
+		log.Fatalf("[main] 请在配置文件中指定机器人框架后再启动")
 	}
-	robot.Run(&c)
+	robot.Run(&conf)
 }
