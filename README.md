@@ -201,7 +201,14 @@ type IFramework interface {
 
 ### Docker运行
 
-  ```bash
+1. 一键脚本启动
+
+```shell
+bash -c "$(curl -fsSL https://raw.fastgit.org/yqchilde/wxbot/hook/docker/run.sh)"
+```
+
+2. 命令启动，注意提前配置`config.yaml`,否则会报错
+  ```shell
   docker run -d \
       --name="wxbot" \
       -p 9528:9528 \
