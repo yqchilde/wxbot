@@ -73,12 +73,11 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 				Type:    gjson.Get(body, "data.data.msgType").Int(),
 				Content: gjson.Get(body, "data.data.msg").String(),
 			}
-			gjson.Get(body, "data.data.atWxidList").ForEach(func(key, val gjson.Result) bool {
-				if val.String() == event.RobotWxId && !strings.Contains(event.Message.Content, "@所有人") {
+			if gjson.Get(body, fmt.Sprintf("data.data.atWxidList.#(==%s)", event.RobotWxId)).Exists() {
+				if !strings.Contains(event.Message.Content, "@所有人") {
 					event.IsAtMe = true
 				}
-				return true
-			})
+			}
 		case eventFriendVerify:
 			event.Type = robot.EventFriendVerify
 			event.FriendVerify = &robot.FriendVerify{

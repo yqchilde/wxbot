@@ -188,7 +188,7 @@ func registerCronjob() {
 			case c := <-recv:
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				remind := c.Event.Message.Content
+				remind := c.MessageString()
 
 				// 设置定时任务
 				if _, err := AddRemindOfEveryWeek(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
@@ -231,7 +231,7 @@ func registerCronjob() {
 			case c := <-recv:
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				remind := c.Event.Message.Content
+				remind := c.MessageString()
 
 				// 设置定时任务
 				if _, err := AddRemindOfEveryDay(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
@@ -274,7 +274,7 @@ func registerCronjob() {
 			case c := <-recv:
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				remind := c.Event.Message.Content
+				remind := c.MessageString()
 
 				// 设置定时任务
 				if _, err := AddRemindForInterval(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
@@ -317,7 +317,7 @@ func registerCronjob() {
 			case c := <-recv:
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				remind := c.Event.Message.Content
+				remind := c.MessageString()
 
 				// 设置定时任务
 				if _, err := AddRemindForSpecifyTime(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
@@ -360,7 +360,7 @@ func registerCronjob() {
 			case c := <-recv:
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				remind := c.Event.Message.Content
+				remind := c.MessageString()
 
 				// 设置定时任务
 				if _, err := AddRemindForExpression(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {

@@ -59,8 +59,10 @@ func init() {
 				ctx.ReplyTextAndAt("😊检测到您已有5分钟不再提问，那我先主动结束会话咯")
 				return
 			case c := <-recv:
-				msg := c.Event.Message.Content
-				if msg == "结束ChatGPT会话" {
+				msg := c.MessageString()
+				if msg == "" {
+					continue
+				} else if msg == "结束ChatGPT会话" {
 					chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
 					ctx.ReplyText("已结束聊天的上下文语境，您可以重新发起提问")
 					return

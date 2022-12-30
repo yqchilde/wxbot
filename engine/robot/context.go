@@ -23,7 +23,7 @@ func (ctx *Ctx) GetMatcher() *Matcher {
 // MessageString 字符串消息便于Regex
 func (ctx *Ctx) MessageString() string {
 	ctx.once.Do(func() {
-		if ctx.Event != nil {
+		if ctx.Event != nil && ctx.IsText() {
 			ctx.message = ctx.Event.Message.Content
 		}
 	})

@@ -75,14 +75,10 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 				Type:    gjson.Get(body, "content.type").Int(),
 				Content: gjson.Get(body, "content.msg").String(),
 			}
-			if gjson.Get(body, "content.msg_source.atuserlist").Exists() {
-				gjson.Get(body, "content.msg_source.atuserlist").ForEach(func(key, val gjson.Result) bool {
-					if gjson.Get(val.String(), "wxid").String() == event.RobotWxId &&
-						gjson.Get(val.String(), "nickname").String() != "@所有人" {
-						event.IsAtMe = true
-					}
-					return true
-				})
+			if gjson.Get(body, fmt.Sprintf("content.msg_source.atuserlist.#(wxid==%s)", event.RobotWxId)).Exists() {
+				if !gjson.Get(body, "content.msg_source.atuserlist.#(nickname==@所有人)").Exists() {
+					event.IsAtMe = true
+				}
 			}
 		}
 		handler(&event, f)
