@@ -3,11 +3,11 @@ module github.com/yqchilde/wxbot
 go 1.19
 
 require (
-	github.com/PullRequestInc/go-gpt3 v1.1.9
+	github.com/PullRequestInc/go-gpt3 v1.1.10
 	github.com/antchfx/xmlquery v1.3.13
-	github.com/glebarez/sqlite v1.5.0
+	github.com/glebarez/sqlite v1.6.0
 	github.com/go-co-op/gocron v1.18.0
-	github.com/imroc/req/v3 v3.26.3
+	github.com/imroc/req/v3 v3.26.5
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.14.0
 	github.com/tidwall/gjson v1.14.4
@@ -19,7 +19,7 @@ require (
 	github.com/antchfx/xpath v1.2.1 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/glebarez/go-sqlite v1.19.1 // indirect
+	github.com/glebarez/go-sqlite v1.20.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -61,8 +61,8 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	modernc.org/libc v1.19.0 // indirect
+	modernc.org/libc v1.21.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.4.0 // indirect
-	modernc.org/sqlite v1.19.1 // indirect
+	modernc.org/sqlite v1.20.0 // indirect
 )
