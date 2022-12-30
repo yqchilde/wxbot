@@ -48,7 +48,7 @@ func main() {
 		))
 		if ipPort, err := net.CheckoutIpPort(v.GetString("frameworks.apiUrl")); err == nil {
 			if ping := net.PingConn(ipPort, time.Second*20); !ping {
-				log.Fatalf("[main] 无法连接到千寻框架，网络无法Ping通")
+				log.Warn("[main] 无法连接到千寻框架，网络无法Ping通")
 			}
 		}
 	case "VLW", "vlw":
@@ -60,7 +60,7 @@ func main() {
 		))
 		if ipPort, err := net.CheckoutIpPort(v.GetString("frameworks.apiUrl")); err == nil {
 			if ping := net.PingConn(ipPort, time.Second*20); !ping {
-				log.Fatalf("[main] 无法连接到VLW框架，网络无法Ping通")
+				log.Warn("[main] 无法连接到VLW框架，网络无法Ping通")
 			}
 		}
 	default:
