@@ -239,4 +239,4 @@ bash -c "$(curl -fsSL https://raw.fastgit.org/yqchilde/wxbot/hook/docker/run.sh)
 * 非Hook版机器人核心由 [openwechat](https://github.com/eatmoreapple/openwechat) SDK实现，在`nohook`分支，已暂停维护
 * Hook版机器人框架我使用的是 ~~《我的框架》已跑路~~，现在用的是千寻，为hook分支
 
-hook分支大量借鉴了一个十分优秀的项目 `ZeroBot-Plugin` 的设计方案 👍🏻，非常感谢，Thanks♪(･ω･)ﾉ
+hook分支大量借鉴了一个十分优秀的项目`ZeroBot-Plugin`的设计方案 👍🏻，其中很多基础代码来自`ZeroBot-Plugin`，在此基础上扩展了支持`wechat`的方式，非常感谢，Thanks♪(･ω･)ﾉ
