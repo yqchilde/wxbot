@@ -20,6 +20,7 @@ var (
 	chatGPT    ChatGPT
 	gpt3Client gpt3.Client
 	chatCTXMap sync.Map // 群号/私聊:消息上下文
+	chatDone   = make(chan struct{})
 )
 
 func init() {
@@ -27,6 +28,10 @@ func init() {
 		Alias:      "ChatGPT",
 		Help:       "输入 {开始ChatGPT会话} => 进行ChatGPT连续会话",
 		DataFolder: "chatgpt",
+		OnDisable: func(ctx *robot.Ctx) {
+			ctx.ReplyText("禁用成功")
+			chatDone <- struct{}{}
+		},
 	})
 
 	if err := sqlite.Open(engine.GetDataFolder()+"/chatgpt.db", &db); err != nil {
@@ -57,6 +62,10 @@ func init() {
 			case <-time.After(time.Minute * 5):
 				chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
 				ctx.ReplyTextAndAt("😊检测到您已有5分钟不再提问，那我先主动结束会话咯")
+				return
+			case <-chatDone:
+				chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
+				ctx.ReplyText("已退出ChatGPT")
 				return
 			case c := <-recv:
 				msg := c.MessageString()
