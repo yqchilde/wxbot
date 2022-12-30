@@ -131,10 +131,12 @@ func AdminPermission(ctx *Ctx) bool {
 
 // UserOrGroupAdmin 允许用户单独使用或群管使用
 func UserOrGroupAdmin(ctx *Ctx) bool {
-	if ctx.IsEventGroupChat() {
+	if ctx.IsEventPrivateChat() {
+		return true
+	} else if ctx.IsEventGroupChat() {
 		return AdminPermission(ctx)
 	}
-	return true
+	return false
 }
 
 // HasMemePicture 检查消息是否存在表情包图片
