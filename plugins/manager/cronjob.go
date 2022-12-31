@@ -3,6 +3,7 @@ package manager
 import (
 	"fmt"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"time"
 
@@ -115,9 +116,13 @@ func registerCronjob() {
 				// 恢复每天的插件任务
 				if matched := regexp.MustCompile(RegexOfPluginEveryDay).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddPluginOfEveryDay(ctx, cronJob.Tag, matched, func() {
+						defer func() {
+							if err := recover(); err != nil {
+								log.Errorf("执行插件任务失败: %v", string(debug.Stack()))
+							}
+						}()
 						if s, ok := options[cronJob.Service]; ok {
-							ctx.State = make(map[string]interface{})
-							ctx.State["toWxId"] = cronJob.GroupId
+							ctx.Event = &robot.Event{FromUniqueID: cronJob.GroupId}
 							s.Options.OnCronjob(ctx)
 						}
 					}); err != nil {

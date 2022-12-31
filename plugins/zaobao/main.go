@@ -2,6 +2,8 @@ package zaobao
 
 import (
 	"fmt"
+	"sync"
+	"time"
 
 	"github.com/imroc/req/v3"
 
@@ -13,11 +15,13 @@ import (
 
 var (
 	db     sqlite.DB
-	zaobao ZaoBao
+	zaoBao ZaoBao
+	cronMu sync.Mutex
 )
 
 type ZaoBao struct {
 	Token string `gorm:"column:token"`
+	Image string `gorm:"-"`
 }
 
 func init() {
@@ -26,28 +30,41 @@ func init() {
 		Help:       "输入 {每日早报|早报} => 获取每天60s读懂世界",
 		DataFolder: "zaobao",
 		OnCronjob: func(ctx *robot.Ctx) {
-			resp := getZaoBaoImageUrl(zaobao.Token)
-			if wxId, ok := ctx.State["toWxId"]; ok {
-				ctx.SendImage(wxId.(string), resp)
+			wxId := ctx.Event.FromUniqueID
+			cronMu.Lock()
+			defer cronMu.Unlock()
+			if zaoBao.Image == "" {
+				log.Println("没有")
+				zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
 			}
+			ctx.SendImage(wxId, zaoBao.Image)
 		},
 	})
 
 	if err := sqlite.Open(engine.GetDataFolder()+"/zaobao.db", &db); err != nil {
 		log.Fatalf("open sqlite db failed: %v", err)
 	}
-	if err := db.CreateAndFirstOrCreate("zaobao", &zaobao); err != nil {
+	if err := db.CreateAndFirstOrCreate("zaobao", &zaoBao); err != nil {
 		log.Fatalf("create weather table failed: %v", err)
 	}
 
+	go func() {
+		zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
+		ticker := time.NewTicker(1 * time.Hour)
+		for range ticker.C {
+			zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
+		}
+	}()
+
 	engine.OnFullMatchGroup([]string{"早报", "每日早报"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		if zaobao.Token == "" {
+		if zaoBao.Token == "" {
 			ctx.ReplyTextAndAt("请先私聊机器人配置token\n指令：set zaobao token __\n相关秘钥申请地址：https://admin.alapi.cn")
 			return
 		}
-
-		resp := getZaoBaoImageUrl(zaobao.Token)
-		ctx.ReplyImage(resp)
+		if zaoBao.Image == "" {
+			zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
+		}
+		ctx.ReplyImage(zaoBao.Image)
 	})
 
 	engine.OnRegex("set zaobao token ([0-9a-zA-Z]{16})", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
@@ -56,7 +73,7 @@ func init() {
 			ctx.ReplyTextAndAt("token配置失败")
 			return
 		}
-		zaobao.Token = token
+		zaoBao.Token = token
 		ctx.ReplyText("token设置成功")
 	})
 
@@ -75,8 +92,7 @@ func getZaoBaoImageUrl(token string) string {
 		SetQueryParams(map[string]string{
 			"format": "json",
 			"token":  token,
-		}).
-		Do().Into(&data); err != nil {
+		}).Do().Into(&data); err != nil {
 		log.Errorf("Zaobao获取失败: %v", err)
 		return ""
 	}
