@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"runtime/debug"
+	"sync/atomic"
 	"time"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
@@ -11,6 +12,7 @@ import (
 
 var (
 	BotConfig   *Config      // 机器人配置
+	Framework   atomic.Value // 当前机器人框架
 	eventBuffer *EventBuffer // 事件缓冲区
 )
 
@@ -238,11 +240,13 @@ func GetCTX() *Ctx {
 		case <-t.C:
 			log.Fatal("[robot] 获取CTX超时")
 		default:
-			if BotConfig != nil {
-				t.Stop()
-				return &Ctx{framework: BotConfig.Framework}
+			framework := Framework.Load()
+			if framework == nil {
+				time.Sleep(time.Second)
+				continue
 			}
-			time.Sleep(time.Second)
+			t.Stop()
+			return &Ctx{framework: framework.(IFramework)}
 		}
 	}
 }

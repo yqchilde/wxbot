@@ -43,6 +43,7 @@ func New(botWxId, apiUrl, apiToken string, servePort uint) *Framework {
 }
 
 func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
+	robot.Framework.Store(f)
 	http.HandleFunc("/wxbot/callback", func(w http.ResponseWriter, r *http.Request) {
 		recv, err := io.ReadAll(r.Body)
 		if err != nil {
