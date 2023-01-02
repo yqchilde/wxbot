@@ -495,12 +495,12 @@ func registerCronjob() {
 		var jobTags []string
 		if err := db.Orm.Table("cronjob").Where("group_id = ? AND type = ?", ctx.Event.FromUniqueID, JobTypeRemind).Pluck("tag", &jobTags).Error; err != nil {
 			log.Errorf("[CronJob] 删除全部提醒任务失败: %v", err)
-			ctx.ReplyTextAndAt("删除全部任务失败")
+			ctx.ReplyTextAndAt("删除全部提醒任务失败")
 			return
 		}
 		if err := db.Orm.Table("cronjob").Where("group_id = ? AND type = ?", ctx.Event.FromUniqueID, JobTypeRemind).Delete(&CronJob{}).Error; err != nil {
 			log.Errorf("[CronJob] 删除全部提醒任务失败: %v", err)
-			ctx.ReplyTextAndAt("删除全部任务失败")
+			ctx.ReplyTextAndAt("删除全部提醒任务失败")
 			return
 		}
 		if err := job.RemoveByTagsAny(jobTags...); err != nil {
@@ -510,10 +510,30 @@ func registerCronjob() {
 		}
 	})
 
+	// 删除所有插件任务
+	engine.OnFullMatchGroup([]string{"删除全部插件任务", "删除所有插件任务"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		var jobTags []string
+		if err := db.Orm.Table("cronjob").Where("group_id = ? AND type = ?", ctx.Event.FromUniqueID, JobTypePlugin).Pluck("tag", &jobTags).Error; err != nil {
+			log.Errorf("[CronJob] 删除全部插件任务失败: %v", err)
+			ctx.ReplyTextAndAt("删除全部插件任务失败")
+			return
+		}
+		if err := db.Orm.Table("cronjob").Where("group_id = ? AND type = ?", ctx.Event.FromUniqueID, JobTypePlugin).Delete(&CronJob{}).Error; err != nil {
+			log.Errorf("[CronJob] 删除全部插件任务失败: %v", err)
+			ctx.ReplyTextAndAt("删除全部插件任务失败")
+			return
+		}
+		if err := job.RemoveByTagsAny(jobTags...); err != nil {
+			log.Errorf("[CronJob] 删除全部插件任务失败: %v", err)
+		} else {
+			ctx.ReplyTextAndAt("已删除全部插件任务")
+		}
+	})
+
 	// 删除全部任务
 	engine.OnFullMatchGroup([]string{"删除全部任务", "删除所有任务"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var jobTags []string
-		if err := db.Orm.Table("cronjob").Pluck("tag", &jobTags).Error; err != nil {
+		if err := db.Orm.Table("cronjob").Where("group_id = ?", ctx.Event.FromUniqueID).Pluck("tag", &jobTags).Error; err != nil {
 			log.Errorf("[CronJob] 删除全部任务失败: %v", err)
 			ctx.ReplyTextAndAt("删除全部任务失败")
 			return

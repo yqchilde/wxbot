@@ -17,7 +17,7 @@ func AddRemindOfEveryMonth(ctx *robot.Ctx, jobTag string, matched []string, f fu
 	timeSplit := strings.Split(matched[2], ":")
 	hour, minute, second := timeSplit[0], timeSplit[1], timeSplit[2]
 	taskCron := fmt.Sprintf("%s %s %s %s * *", second, minute, hour, matched[1])
-	return job.Tag(jobTag).CronWithSeconds(taskCron).Do(func() { f() })
+	return job.CronWithSeconds(taskCron).Tag(jobTag).Do(func() { f() })
 }
 
 // AddRemindOfEveryWeek 添加每周提醒
@@ -44,7 +44,7 @@ func AddRemindOfEveryWeek(ctx *robot.Ctx, jobTag string, matched []string, f fun
 
 // AddRemindOfEveryDay 添加每天提醒
 func AddRemindOfEveryDay(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
-	return job.Tag(jobTag).Every(1).Day().At(matched[1]).Do(func() { f() })
+	return job.Every(1).Day().At(matched[1]).Tag(jobTag).Do(func() { f() })
 }
 
 // AddRemindForInterval 添加间隔提醒
@@ -73,7 +73,7 @@ func AddRemindForSpecifyTime(ctx *robot.Ctx, jobTag string, matched []string, f 
 	if parseTime.Before(time.Now()) {
 		return nil, fmt.Errorf("请不要设置过去的时间")
 	}
-	return job.Every(1).Tag(jobTag).LimitRunsTo(1).StartAt(parseTime).Do(func() {
+	return job.Every(1).LimitRunsTo(1).StartAt(parseTime).Tag(jobTag).Do(func() {
 		f()
 		db.Orm.Table("cronjob").Where("tag = ?", jobTag).Delete(&CronJob{})
 	})
@@ -81,10 +81,10 @@ func AddRemindForSpecifyTime(ctx *robot.Ctx, jobTag string, matched []string, f 
 
 // AddRemindForExpression 添加表达式提醒
 func AddRemindForExpression(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
-	return job.Tag(jobTag).CronWithSeconds(matched[1]).Do(func() { f() })
+	return job.CronWithSeconds(matched[1]).Tag(jobTag).Do(func() { f() })
 }
 
 // AddPluginOfEveryDay 添加每天执行的插件
 func AddPluginOfEveryDay(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
-	return job.Tag(jobTag).Every(1).Day().At(matched[1]).Do(func() { f() })
+	return job.Every(1).Day().At(matched[1]).Tag(jobTag).Do(func() { f() })
 }
