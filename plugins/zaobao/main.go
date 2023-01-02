@@ -21,7 +21,7 @@ var (
 
 type ZaoBao struct {
 	Token string `gorm:"column:token"`
-	Image string `gorm:"-"`
+	Image string `gorm:"column:image"`
 }
 
 func init() {
@@ -49,7 +49,13 @@ func init() {
 	}
 
 	go func() {
-		zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
+		if zaoBao.Token == "" {
+			return
+		}
+		if zaoBao.Image == "" {
+			zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
+			db.Orm.Table("zaobao").Where("1=1").Update("image", zaoBao.Image)
+		}
 		ticker := time.NewTicker(1 * time.Hour)
 		for range ticker.C {
 			zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
@@ -63,6 +69,7 @@ func init() {
 		}
 		if zaoBao.Image == "" {
 			zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
+			db.Orm.Table("zaobao").Where("1=1").Update("image", zaoBao.Image)
 		}
 		ctx.ReplyImage(zaoBao.Image)
 	})
