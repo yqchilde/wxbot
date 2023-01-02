@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/imroc/req/v3"
+
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 )
 
 type MessageResp struct {
@@ -15,35 +17,33 @@ type MessageResp struct {
 	ReturnInt string `json:"ReturnInt"`
 }
 
-type Client struct {
-	*req.Client
-}
-
-func NewRequest() *Client {
-	c := req.C()
-	c.SetTimeout(10 * time.Second)
-	c.SetCommonError(&MessageResp{})
-	c.OnAfterResponse(func(client *req.Client, resp *req.Response) error {
-		if resp.Err != nil {
-			if dump := resp.Dump(); dump != "" {
-				resp.Err = fmt.Errorf("%s\nraw content:\n%s", resp.Err.Error(), resp.Dump())
+func NewRequest() *req.Client {
+	c := req.C().
+		SetLogger(log.GetLogger()).
+		SetTimeout(10 * time.Second).
+		OnBeforeRequest(func(client *req.Client, req *req.Request) error {
+			if os.Getenv("DEBUG") == "true" {
+				client.DevMode()
 			}
 			return nil
-		}
-		if err, ok := resp.Error().(*MessageResp); ok {
-			if err.Code != 0 {
+		}).
+		OnAfterResponse(func(client *req.Client, resp *req.Response) error {
+			if resp.Err != nil {
+				if dump := resp.Dump(); dump != "" {
+					resp.Err = fmt.Errorf("%s\nraw content:\n%s", resp.Err.Error(), resp.Dump())
+				}
+				return nil
+			}
+			var dataResp MessageResp
+			if err := resp.Into(&dataResp); err != nil {
+				resp.Err = fmt.Errorf("解析Response失败, error: %s", err.Error())
+				return nil
+			}
+			if dataResp.Code != 0 {
 				resp.Err = fmt.Errorf(resp.String())
+				return nil
 			}
 			return nil
-		}
-		if !resp.IsSuccess() {
-			resp.Err = fmt.Errorf("bad response, raw content:\n%s", resp.Dump())
-			return nil
-		}
-		return nil
-	})
-	if os.Getenv("DEBUG") == "true" {
-		c.DevMode()
-	}
-	return &Client{c}
+		})
+	return c
 }

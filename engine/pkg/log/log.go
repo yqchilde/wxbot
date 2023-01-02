@@ -25,14 +25,21 @@ type Formatter struct{}
 func (s *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	timestamp := entry.Time.Format("2006-01-02 15:04:05")
 	level := strings.ToUpper(entry.Level.String())
-	msg := fmt.Sprintf("[%s] [%-5s] [%s:%d] %s\n", timestamp, level, log.callerFile, log.callerLine, entry.Message)
-	return []byte(msg), nil
+	if os.Getenv("DEBUG") == "true" || os.Getenv("DEBUG_LOG") == "true" {
+		return []byte(fmt.Sprintf("[%s] [%s] [%s:%d] %s\n", timestamp, level, log.callerFile, log.callerLine, entry.Message)), nil
+	} else {
+		return []byte(fmt.Sprintf("[%s] [%s] %s\n", timestamp, level, entry.Message)), nil
+	}
 }
 
 func init() {
 	log.l.SetLevel(logrus.TraceLevel)
 	log.l.SetOutput(os.Stdout)
 	log.l.SetFormatter(&Formatter{})
+}
+
+func GetLogger() *logrus.Logger {
+	return log.l
 }
 
 func getCaller() {
