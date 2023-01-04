@@ -21,6 +21,7 @@ var (
 
 type ZaoBao struct {
 	Token string `gorm:"column:token"`
+	Date  string `gorm:"column:date"`
 	Image string `gorm:"column:image"`
 }
 
@@ -29,15 +30,35 @@ func init() {
 		Alias:      "每日早报",
 		Help:       "输入 {每日早报|早报} => 获取每天60s读懂世界",
 		DataFolder: "zaobao",
+		OnEnable: func(ctx *robot.Ctx) {
+			// todo 启动将定时任务加入到定时任务列表
+			ctx.ReplyText("启用成功")
+		},
+		OnDisable: func(ctx *robot.Ctx) {
+			// todo 停止将定时任务从定时任务列表移除
+			ctx.ReplyText("禁用成功")
+		},
 		OnCronjob: func(ctx *robot.Ctx) {
 			wxId := ctx.Event.FromUniqueID
 			cronMu.Lock()
 			defer cronMu.Unlock()
-			if zaoBao.Image == "" {
-				log.Println("没有")
-				zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
+			if zaoBao.Token == "" {
+				log.Debugf("[cronjob] 早报token为空，wxId: %s", wxId)
+				return
 			}
-			ctx.SendImage(wxId, zaoBao.Image)
+
+			go func() {
+				ticker := time.NewTicker(10 * time.Minute)
+				for range ticker.C {
+					if zaoBao.Date != time.Now().Format("2006-01-02") {
+						log.Debugf("[cronjob] 早报数据未更新，wxId: %s, 当前时间: %s，早报时间: %s", wxId, time.Now().Format("2006-01-02"), zaoBao.Date)
+						continue
+					}
+					ticker.Stop()
+					ctx.SendImage(wxId, zaoBao.Image)
+					break
+				}
+			}()
 		},
 	})
 
@@ -50,15 +71,17 @@ func init() {
 
 	go func() {
 		if zaoBao.Token == "" {
+			log.Debug("早报token为空，请先设置token")
 			return
 		}
-		if zaoBao.Image == "" {
-			zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
-			db.Orm.Table("zaobao").Where("1=1").Update("image", zaoBao.Image)
-		}
-		ticker := time.NewTicker(1 * time.Hour)
+		ticker := time.NewTicker(30 * time.Minute)
 		for range ticker.C {
-			zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
+			if zaoBao.Image != "" && zaoBao.Date == time.Now().Format("2006-01-02") {
+				continue
+			}
+			if err := getZaoBao(zaoBao.Token); err != nil {
+				log.Errorf("获取早报失败: %v", err)
+			}
 		}
 	}()
 
@@ -68,8 +91,15 @@ func init() {
 			return
 		}
 		if zaoBao.Image == "" {
-			zaoBao.Image = getZaoBaoImageUrl(zaoBao.Token)
-			db.Orm.Table("zaobao").Where("1=1").Update("image", zaoBao.Image)
+			if err := getZaoBao(zaoBao.Token); err != nil {
+				log.Errorf("获取早报失败: %v", err)
+				return
+			}
+		}
+		if zaoBao.Date != time.Now().Format("2006-01-02") {
+			log.Errorf("早报数据未更新，当前时间: %s, 早报时间: %s", time.Now().Format("2006-01-02"), zaoBao.Date)
+			ctx.ReplyTextAndAt("早报数据未更新，请稍后再试")
+			return
 		}
 		ctx.ReplyImage(zaoBao.Image)
 	})
@@ -93,7 +123,7 @@ func init() {
 	})
 }
 
-func getZaoBaoImageUrl(token string) string {
+func getZaoBao(token string) error {
 	var data zaoBaoJson
 	if err := req.C().Get("https://v2.alapi.cn/api/zaobao").
 		SetQueryParams(map[string]string{
@@ -101,10 +131,17 @@ func getZaoBaoImageUrl(token string) string {
 			"token":  token,
 		}).Do().Into(&data); err != nil {
 		log.Errorf("Zaobao获取失败: %v", err)
-		return ""
+		return err
 	}
 
-	return data.Data.Image
+	if err := db.Orm.Table("zaobao").Where("1=1").Updates(map[string]interface{}{
+		"date":  data.Data.Date,
+		"image": data.Data.Image,
+	}).Error; err == nil {
+		zaoBao.Date = data.Data.Date
+		zaoBao.Image = data.Data.Image
+	}
+	return nil
 }
 
 type zaoBaoJson struct {
