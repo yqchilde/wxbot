@@ -45,7 +45,7 @@ jobs:
         run: |
           export GOPROXY=https://goproxy.cn,direct
           go mod tidy
-          make release version=${{ github.ref }}
+          make release version=${{ github.ref_name }}
 
       - name: Release
         uses: softprops/action-gh-release@v1
