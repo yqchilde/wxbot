@@ -28,6 +28,8 @@ frameworks:
   servePort: 9528
 `
 
+var version string
+
 func init() {
 	// 检查配置文件是否存在
 	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
@@ -37,4 +39,7 @@ func init() {
 		}
 		os.Exit(0)
 	}
+
+	// 打印版本
+	log.Printf("当前运行版本: %s", version)
 }

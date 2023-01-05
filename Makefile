@@ -2,7 +2,7 @@
 
 release: build upx compress
 
-GO_FLAGS += "-ldflags=-s -w"
+GO_FLAGS = -ldflags="-s -w -X github.com/yqchilde/wxbot/engine/robot.version=${version}"
 
 build:
 	@$(MAKE) --no-print-directory \

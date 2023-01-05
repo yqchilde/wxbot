@@ -35,7 +35,19 @@ func (s *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 func init() {
 	log.l.SetLevel(logrus.TraceLevel)
 	log.l.SetOutput(os.Stdout)
-	log.l.SetFormatter(&Formatter{})
+	//log.l.SetFormatter(&Formatter{})
+	log.l.SetReportCaller(true)
+	log.l.SetFormatter(&logrus.TextFormatter{
+		ForceColors:     true,
+		FullTimestamp:   true,
+		TimestampFormat: "2006-01-02 15:04:05",
+		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
+			if os.Getenv("DEBUG") == "true" || os.Getenv("DEBUG_LOG") == "true" {
+				return "", fmt.Sprintf("[%s:%d]", log.callerFile, log.callerLine)
+			}
+			return "", ""
+		},
+	})
 }
 
 func GetLogger() *logrus.Logger {

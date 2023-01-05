@@ -8,7 +8,7 @@ COPY go.sum .
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o ./bin/wxbot
+RUN CGO_ENABLED=0 go build -ldflags="-s -w -X github.com/yqchilde/wxbot/engine/robot.version=${VERSION}" -o ./bin/wxbot
 
 FROM alpine:latest
 LABEL MAINTAINER="yqchilde@gmail.com"

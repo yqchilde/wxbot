@@ -16,7 +16,7 @@ import (
 var (
 	db     sqlite.DB
 	zaoBao ZaoBao
-	cronMu sync.Mutex
+	sendMu sync.Mutex
 )
 
 type ZaoBao struct {
@@ -40,22 +40,28 @@ func init() {
 		},
 		OnCronjob: func(ctx *robot.Ctx) {
 			wxId := ctx.Event.FromUniqueID
-			cronMu.Lock()
-			defer cronMu.Unlock()
 			if zaoBao.Token == "" {
 				log.Debugf("[cronjob] 早报token为空，wxId: %s", wxId)
 				return
 			}
 
 			go func() {
-				ticker := time.NewTicker(10 * time.Minute)
+				if zaoBao.Date == time.Now().Format("2006-01-02") {
+					sendMu.Lock()
+					ctx.SendImage(wxId, zaoBao.Image)
+					sendMu.Unlock()
+					return
+				}
+				ticker := time.NewTicker(1 * time.Minute)
 				for range ticker.C {
 					if zaoBao.Date != time.Now().Format("2006-01-02") {
 						log.Debugf("[cronjob] 早报数据未更新，wxId: %s, 当前时间: %s，早报时间: %s", wxId, time.Now().Format("2006-01-02"), zaoBao.Date)
 						continue
 					}
 					ticker.Stop()
+					sendMu.Lock()
 					ctx.SendImage(wxId, zaoBao.Image)
+					sendMu.Unlock()
 					break
 				}
 			}()
