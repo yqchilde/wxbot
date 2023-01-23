@@ -2,7 +2,6 @@ package zaobao
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/imroc/req/v3"
@@ -16,7 +15,6 @@ import (
 var (
 	db     sqlite.DB
 	zaoBao ZaoBao
-	sendMu sync.Mutex
 )
 
 type ZaoBao struct {
@@ -45,26 +43,23 @@ func init() {
 				return
 			}
 
-			go func() {
+			log.Printf("获取到的微信ID: %s", wxId)
+			go func(wxId string) {
 				if zaoBao.Date == time.Now().Format("2006-01-02") {
-					sendMu.Lock()
 					ctx.SendImage(wxId, zaoBao.Image)
-					sendMu.Unlock()
 					return
 				}
-				ticker := time.NewTicker(1 * time.Minute)
+				ticker := time.NewTicker(10 * time.Minute)
 				for range ticker.C {
 					if zaoBao.Date != time.Now().Format("2006-01-02") {
 						log.Debugf("[cronjob] 早报数据未更新，wxId: %s, 当前时间: %s，早报时间: %s", wxId, time.Now().Format("2006-01-02"), zaoBao.Date)
 						continue
 					}
 					ticker.Stop()
-					sendMu.Lock()
 					ctx.SendImage(wxId, zaoBao.Image)
-					sendMu.Unlock()
 					break
 				}
-			}()
+			}(wxId)
 		},
 	})
 
@@ -96,16 +91,16 @@ func init() {
 			ctx.ReplyTextAndAt("请先私聊机器人配置token\n指令：set zaobao token __\n相关秘钥申请地址：https://admin.alapi.cn")
 			return
 		}
-		if zaoBao.Image == "" {
+		if zaoBao.Date != time.Now().Format("2006-01-02") {
 			if err := getZaoBao(zaoBao.Token); err != nil {
 				log.Errorf("获取早报失败: %v", err)
 				return
 			}
-		}
-		if zaoBao.Date != time.Now().Format("2006-01-02") {
-			log.Errorf("早报数据未更新，当前时间: %s, 早报时间: %s", time.Now().Format("2006-01-02"), zaoBao.Date)
-			ctx.ReplyTextAndAt("早报数据未更新，请稍后再试")
-			return
+			if zaoBao.Date != time.Now().Format("2006-01-02") {
+				log.Errorf("早报数据未更新，当前时间: %s, 早报时间: %s", time.Now().Format("2006-01-02"), zaoBao.Date)
+				ctx.ReplyTextAndAt("早报数据未更新，请稍后再试")
+				return
+			}
 		}
 		ctx.ReplyImage(zaoBao.Image)
 	})

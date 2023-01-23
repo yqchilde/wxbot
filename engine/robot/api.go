@@ -122,6 +122,8 @@ type IFramework interface {
 
 // SendText 发送文本消息到指定好友
 func (ctx *Ctx) SendText(wxId, text string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	if text == "" {
 		return nil
 	}
@@ -130,71 +132,99 @@ func (ctx *Ctx) SendText(wxId, text string) error {
 
 // SendTextAndAt 发送文本消息并@某人到指定群指定用户，仅限群聊
 func (ctx *Ctx) SendTextAndAt(groupWxId, wxId, text string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendTextAndAt(groupWxId, wxId, "", text)
 }
 
 // SendImage 发送图片消息到指定好友
 func (ctx *Ctx) SendImage(wxId, path string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendImage(wxId, path)
 }
 
 // SendShareLink 发送分享链接消息到指定好友
 func (ctx *Ctx) SendShareLink(wxId, title, desc, imageUrl, jumpUrl string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendShareLink(wxId, title, desc, imageUrl, jumpUrl)
 }
 
 // SendFile 发送文件消息到指定好友
 func (ctx *Ctx) SendFile(wxId, path string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendFile(wxId, path)
 }
 
 // SendVideo 发送视频消息到指定好友
 func (ctx *Ctx) SendVideo(wxId, path string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendVideo(wxId, path)
 }
 
 // SendEmoji 发送表情消息到指定好友
 func (ctx *Ctx) SendEmoji(wxId, path string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendEmoji(wxId, path)
 }
 
 // SendMusic 发送音乐消息到指定好友
 func (ctx *Ctx) SendMusic(toWxId, name, author, app, jumpUrl, musicUrl, coverUrl string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendMusic(toWxId, name, author, app, jumpUrl, musicUrl, coverUrl)
 }
 
 // SendMiniProgram 发送小程序消息到指定好友
 func (ctx *Ctx) SendMiniProgram(toWxId, ghId, title, content, imagePath, jumpPath string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendMiniProgram(toWxId, ghId, title, content, imagePath, jumpPath)
 }
 
 // SendMessageRecord 发送消息记录到指定好友
 func (ctx *Ctx) SendMessageRecord(toWxId, title string, dataList []map[string]interface{}) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendMessageRecord(toWxId, title, dataList)
 }
 
 // SendMessageRecordXML 发送消息记录(XML方式)到指定好友
 func (ctx *Ctx) SendMessageRecordXML(toWxId, xmlStr string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendMessageRecordXML(toWxId, xmlStr)
 }
 
 // SendFavorites 发送收藏消息到指定好友
 func (ctx *Ctx) SendFavorites(toWxId, favoritesId string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendFavorites(toWxId, favoritesId)
 }
 
 // SendXML 发送XML消息到指定好友
 func (ctx *Ctx) SendXML(toWxId, xmlStr string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendXML(toWxId, xmlStr)
 }
 
 // SendBusinessCard 发送名片消息到指定好友
 func (ctx *Ctx) SendBusinessCard(toWxId, targetWxId string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendBusinessCard(toWxId, targetWxId)
 }
 
 // ReplyText 回复文本消息
 func (ctx *Ctx) ReplyText(text string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	if text == "" {
 		return nil
 	}
@@ -203,6 +233,8 @@ func (ctx *Ctx) ReplyText(text string) error {
 
 // ReplyTextAndAt 回复文本消息并@某人，如果在私聊中则不会@某人
 func (ctx *Ctx) ReplyTextAndAt(text string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	if ctx.IsEventPrivateChat() {
 		return ctx.framework.SendText(ctx.Event.FromWxId, text)
 	}
@@ -211,71 +243,99 @@ func (ctx *Ctx) ReplyTextAndAt(text string) error {
 
 // ReplyImage 回复图片消息
 func (ctx *Ctx) ReplyImage(path string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendImage(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyShareLink 回复分享链接消息
 func (ctx *Ctx) ReplyShareLink(title, desc, imageUrl, jumpUrl string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendShareLink(ctx.Event.FromUniqueID, title, desc, imageUrl, jumpUrl)
 }
 
 // ReplyFile 回复文件消息
 func (ctx *Ctx) ReplyFile(path string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendFile(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyVideo 回复视频消息
 func (ctx *Ctx) ReplyVideo(path string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendVideo(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyEmoji 回复表情消息
 func (ctx *Ctx) ReplyEmoji(path string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendEmoji(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyMusic 回复音乐消息
 func (ctx *Ctx) ReplyMusic(name, author, app, jumpUrl, musicUrl, coverUrl string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendMusic(ctx.Event.FromUniqueID, name, author, app, jumpUrl, musicUrl, coverUrl)
 }
 
 // ReplyMiniProgram 回复小程序消息
 func (ctx *Ctx) ReplyMiniProgram(ghId, title, content, imagePath, jumpPath string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendMiniProgram(ctx.Event.FromUniqueID, ghId, title, content, imagePath, jumpPath)
 }
 
 // ReplyMessageRecord 回复消息记录
 func (ctx *Ctx) ReplyMessageRecord(title string, dataList []map[string]interface{}) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendMessageRecord(ctx.Event.FromUniqueID, title, dataList)
 }
 
 // ReplyMessageRecordXML 回复消息记录(XML方式)
 func (ctx *Ctx) ReplyMessageRecordXML(xmlStr string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendMessageRecordXML(ctx.Event.FromUniqueID, xmlStr)
 }
 
 // ReplyFavorites 回复收藏消息
 func (ctx *Ctx) ReplyFavorites(favoritesId string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendFavorites(ctx.Event.FromUniqueID, favoritesId)
 }
 
 // ReplyXML 回复XML消息
 func (ctx *Ctx) ReplyXML(xmlStr string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendXML(ctx.Event.FromUniqueID, xmlStr)
 }
 
 // ReplyBusinessCard 回复名片消息
 func (ctx *Ctx) ReplyBusinessCard(targetWxId string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.SendBusinessCard(ctx.Event.FromUniqueID, targetWxId)
 }
 
 // AgreeFriendVerify 同意好友验证
 func (ctx *Ctx) AgreeFriendVerify(v3, v4, scene string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	return ctx.framework.AgreeFriendVerify(v3, v4, scene)
 }
 
 // InviteIntoGroup 邀请好友加入群组; typ:1-直接拉，2-发送邀请链接
 func (ctx *Ctx) InviteIntoGroup(groupWxId, wxId string, typ int) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	if typ != 1 && typ != 2 {
 		return errors.New("类型错误，请参考方法注释")
 	}

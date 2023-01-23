@@ -12,6 +12,7 @@ type Ctx struct {
 
 	// lazy message
 	once    sync.Once
+	mutex   sync.Mutex
 	message string
 }
 
