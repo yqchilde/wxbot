@@ -87,14 +87,14 @@ func init() {
 				answer, err := askChatGPT(question)
 				if err != nil {
 					ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
-					return
+					continue
 				}
 				chatCTXMap.Store(ctx.Event.FromUniqueID, question+"\n"+answer)
 				if r, need := filterReply(answer); need {
 					answer, err := askChatGPT(question + "\n" + answer + r)
 					if err != nil {
 						ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
-						return
+						continue
 					}
 					chatCTXMap.Store(ctx.Event.FromUniqueID, question+"\n"+answer)
 					ctx.ReplyText(answer)
