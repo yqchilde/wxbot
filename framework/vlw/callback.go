@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/tidwall/gjson"
-	"github.com/yqchilde/pkgs/net"
 
+	"github.com/yqchilde/pkgs/net"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
@@ -50,39 +50,9 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 			log.Errorf("[VLW] 接收回调错误, error: %v", err)
 			return
 		}
-		body := string(recv)
-		event := robot.Event{RobotWxId: gjson.Get(body, "content.robot_wxid").String()}
-		switch gjson.Get(body, "Event").String() {
-		case eventPrivateChat:
-			event.Type = robot.EventPrivateChat
-			event.FromUniqueID = gjson.Get(body, "content.from_wxid").String()
-			event.FromWxId = gjson.Get(body, "content.from_wxid").String()
-			event.FromName = gjson.Get(body, "content.from_name").String()
-			event.IsAtMe = true
-			event.Message = &robot.Message{
-				Id:      gjson.Get(body, "content.msg_id").String(),
-				Type:    gjson.Get(body, "content.type").Int(),
-				Content: gjson.Get(body, "content.msg").String(),
-			}
-		case eventGroupChat:
-			event.Type = robot.EventGroupChat
-			event.FromUniqueID = gjson.Get(body, "content.from_group").String()
-			event.FromGroup = gjson.Get(body, "content.from_group").String()
-			event.FromGroupName = gjson.Get(body, "content.from_group_name").String()
-			event.FromWxId = gjson.Get(body, "content.from_wxid").String()
-			event.FromName = gjson.Get(body, "content.from_name").String()
-			event.Message = &robot.Message{
-				Id:      gjson.Get(body, "content.msg_id").String(),
-				Type:    gjson.Get(body, "content.type").Int(),
-				Content: gjson.Get(body, "content.msg").String(),
-			}
-			if gjson.Get(body, fmt.Sprintf("content.msg_source.atuserlist.#(wxid==%s)", event.RobotWxId)).Exists() {
-				if !gjson.Get(body, "content.msg_source.atuserlist.#(nickname==@所有人)").Exists() {
-					event.IsAtMe = true
-				}
-			}
-		}
-		handler(&event, f)
+		resp := string(recv)
+		event := buildEvent(resp)
+		handler(event, f)
 		w.Header().Add("Content-Type", "application/json")
 		w.Write([]byte(`{"code":0}`))
 	})
@@ -95,4 +65,85 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 	if err != nil {
 		log.Fatalf("[VLW] WxBot回调服务启动失败, error: %v", err)
 	}
+}
+
+func buildEvent(resp string) *robot.Event {
+	event := robot.Event{RobotWxId: gjson.Get(resp, "content.robot_wxid").String()}
+	switch gjson.Get(resp, "Event").String() {
+	case eventGroupChat:
+		// 根据消息类型细分多种事件
+		switch gjson.Get(resp, "content.type").Int() {
+		case 10000:
+			event.Type = robot.EventSystem
+			event.Message = &robot.Message{
+				Content: gjson.Get(resp, "content.msg").String(),
+			}
+		default:
+			event.Type = robot.EventGroupChat
+			event.FromUniqueID = gjson.Get(resp, "content.from_group").String()
+			event.FromGroup = gjson.Get(resp, "content.from_group").String()
+			event.FromGroupName = gjson.Get(resp, "content.from_group_name").String()
+			event.FromWxId = gjson.Get(resp, "content.from_wxid").String()
+			event.FromName = gjson.Get(resp, "content.from_name").String()
+			event.Message = &robot.Message{
+				Id:      gjson.Get(resp, "content.msg_id").String(),
+				Type:    gjson.Get(resp, "content.type").Int(),
+				Content: gjson.Get(resp, "content.msg").String(),
+			}
+			if gjson.Get(resp, fmt.Sprintf("content.msg_source.atuserlist.#(wxid==%s)", event.RobotWxId)).Exists() {
+				if !gjson.Get(resp, "content.msg_source.atuserlist.#(nickname==@所有人)").Exists() {
+					event.IsAtMe = true
+				}
+			}
+		}
+	case eventPrivateChat:
+		event.FromUniqueID = gjson.Get(resp, "content.from_wxid").String()
+		event.FromWxId = gjson.Get(resp, "content.from_wxid").String()
+		event.FromName = gjson.Get(resp, "content.from_name").String()
+
+		// 根据消息类型细分多种事件
+		switch gjson.Get(resp, "content.type").Int() {
+		case 2000:
+			event.Type = robot.EventTransfer
+			event.Transfer = &robot.Transfer{
+				FromWxId:   gjson.Get(resp, "content.from_wxid").String(),
+				MsgSource:  gjson.Get(gjson.Get(resp, "content.msg").String(), "paysubtype").Int(),
+				Money:      gjson.Get(gjson.Get(resp, "content.msg").String(), "money").String(),
+				Memo:       gjson.Get(gjson.Get(resp, "content.msg").String(), "pay_momo").String(),
+				TransferId: gjson.Get(gjson.Get(resp, "content.msg").String(), "payer_pay_id").String(),
+			}
+		default:
+			event.Type = robot.EventPrivateChat
+			event.IsAtMe = true
+			event.Message = &robot.Message{
+				Id:      gjson.Get(resp, "content.msg_id").String(),
+				Type:    gjson.Get(resp, "content.type").Int(),
+				Content: gjson.Get(resp, "content.msg").String(),
+			}
+		}
+	case eventDeviceCallback:
+		switch gjson.Get(resp, "content.type").Int() {
+		case 1:
+			event.Type = robot.EventSelfMessage // 可能不准确，待反馈
+			event.Message = &robot.Message{
+				Id:      gjson.Get(resp, "content.msg_id").String(),
+				Type:    gjson.Get(resp, "content.type").Int(),
+				Content: gjson.Get(resp, "content.msg").String(),
+			}
+		}
+	case eventFriendVerify:
+	case eventGroupNameChange:
+		// vlw框架有bug，将通过其他方式实现通知
+	case eventGroupMemberAdd:
+		event.Type = robot.EventGroupMemberIncrease
+		// todo
+	case eventGroupMemberDecrease:
+		event.Type = robot.EventGroupMemberDecrease
+		// todo
+	case eventInvitedInGroup:
+	case eventQRCodePayment:
+	case eventDownloadFile:
+	case eventGroupEstablish:
+	}
+	return &event
 }

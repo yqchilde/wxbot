@@ -3,10 +3,12 @@ package robot
 const (
 	EventGroupChat           = "EventGroupChat"           // 群聊消息事件
 	EventPrivateChat         = "EventPrivateChat"         // 私聊消息事件
+	EventSelfMessage         = "EventSelfMessage"         // 自己发的消息事件
 	EventFriendVerify        = "EventFriendVerify"        // 好友请求事件
+	EventTransfer            = "EventTransfer"            // 好友转账事件
 	EventMessageWithdraw     = "EventMessageWithdraw"     // 消息撤回事件
-	EventGroupNameChange     = "EventGroupNameChange"     // 群名称变动事件
-	EventGroupMemberAdd      = "EventGroupMemberAdd"      // 群成员增加事件
+	EventSystem              = "EventSystem"              // 系统消息事件
+	EventGroupMemberIncrease = "EventGroupMemberIncrease" // 群成员增加事件
 	EventGroupMemberDecrease = "EventGroupMemberDecrease" // 群成员减少事件
 	EventInvitedInGroup      = "EventInvitedInGroup"      // 被邀请入群事件
 )
@@ -97,6 +99,11 @@ func (ctx *Ctx) IsEventPrivateChat() bool {
 // IsEventGroupChat 判断消息是否是群聊消息
 func (ctx *Ctx) IsEventGroupChat() bool {
 	return ctx.Event.Type == EventGroupChat
+}
+
+// IsEventSelfMessage 判断消息是否是机器人自己发出的消息
+func (ctx *Ctx) IsEventSelfMessage() bool {
+	return ctx.Event.Type == EventSelfMessage
 }
 
 // IsEventFriendVerify 判断消息是否是好友请求消息

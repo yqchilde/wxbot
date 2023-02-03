@@ -224,11 +224,27 @@ loop:
 func preProcessMessageEvent(e *Event) {
 	switch e.Type {
 	case EventPrivateChat:
-		log.Println(fmt.Sprintf("收到私聊(%s)消息 ==> %v", e.FromWxId, e.Message.Content))
+		log.Println(fmt.Sprintf("[回调]收到私聊(%s)消息 ==> %v", e.FromWxId, e.Message.Content))
 	case EventGroupChat:
-		log.Println(fmt.Sprintf("收到群聊(%s[%s])消息 ==> %v", e.FromGroup, e.FromWxId, e.Message.Content))
+		log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])消息 ==> %v", e.FromGroup, e.FromWxId, e.Message.Content))
+	case EventSelfMessage:
+		log.Println(fmt.Sprintf("[回调]收到自己发送的消息 ==> %v", e.Message.Content))
 	case EventFriendVerify:
-		log.Println(fmt.Sprintf("收到好友验证消息, wxId:%s, nick:%s, content:%s", e.FriendVerify.WxId, e.FriendVerify.Nick, e.FriendVerify.Content))
+		log.Println(fmt.Sprintf("[回调]收到好友验证消息, wxId:%s, nick:%s, content:%s", e.FriendVerify.WxId, e.FriendVerify.Nick, e.FriendVerify.Content))
+	case EventTransfer:
+		if len(e.Transfer.Memo) > 0 {
+			log.Println(fmt.Sprintf("[回调]收到转账消息, wxId:%s, money:%s, memo:%s", e.Transfer.FromWxId, e.Transfer.Money, e.Transfer.Memo))
+		} else {
+			log.Println(fmt.Sprintf("[回调]收到转账消息, wxId:%s, money:%s", e.Transfer.FromWxId, e.Transfer.Money))
+		}
+	case EventMessageWithdraw:
+		if e.Withdraw.FromType == 1 {
+			log.Println(fmt.Sprintf("[回调]收到撤回私聊(%s)消息 ==> %s", e.Withdraw.FromWxId, e.Withdraw.Msg))
+		} else if e.Withdraw.FromType == 2 {
+			log.Println(fmt.Sprintf("[回调]收到撤回群聊(%s[%s])消息 ==> %s", e.Withdraw.FromGroup, e.Withdraw.FromWxId, e.Withdraw.Msg))
+		}
+	case EventSystem:
+		log.Println(fmt.Sprintf("[回调]收到系统消息 ==> %s", e.Message.Content))
 	}
 }
 
