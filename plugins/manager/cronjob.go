@@ -147,10 +147,10 @@ func registerCronjob() {
 			case <-time.After(20 * time.Second):
 				ctx.ReplyTextAndAt("操作时间太久了，请重新设置")
 				return
-			case c := <-recv:
+			case ctx := <-recv:
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				remind := c.MessageString()
+				remind := ctx.MessageString()
 
 				// 设置定时任务
 				if _, err := AddRemindOfEveryMonth(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
@@ -190,10 +190,10 @@ func registerCronjob() {
 			case <-time.After(20 * time.Second):
 				ctx.ReplyTextAndAt("操作时间太久了，请重新设置")
 				return
-			case c := <-recv:
+			case ctx := <-recv:
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				remind := c.MessageString()
+				remind := ctx.MessageString()
 
 				// 设置定时任务
 				if _, err := AddRemindOfEveryWeek(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
@@ -233,10 +233,10 @@ func registerCronjob() {
 			case <-time.After(20 * time.Second):
 				ctx.ReplyTextAndAt("操作时间太久了，请重新设置")
 				return
-			case c := <-recv:
+			case ctx := <-recv:
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				remind := c.MessageString()
+				remind := ctx.MessageString()
 
 				// 设置定时任务
 				if _, err := AddRemindOfEveryDay(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
@@ -276,10 +276,10 @@ func registerCronjob() {
 			case <-time.After(20 * time.Second):
 				ctx.ReplyTextAndAt("操作时间太久了，请重新设置")
 				return
-			case c := <-recv:
+			case ctx := <-recv:
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				remind := c.MessageString()
+				remind := ctx.MessageString()
 
 				// 设置定时任务
 				if _, err := AddRemindForInterval(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
@@ -319,10 +319,10 @@ func registerCronjob() {
 			case <-time.After(20 * time.Second):
 				ctx.ReplyTextAndAt("操作时间太久了，请重新设置")
 				return
-			case c := <-recv:
+			case ctx := <-recv:
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				remind := c.MessageString()
+				remind := ctx.MessageString()
 
 				// 设置定时任务
 				if _, err := AddRemindForSpecifyTime(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
@@ -362,10 +362,10 @@ func registerCronjob() {
 			case <-time.After(20 * time.Second):
 				ctx.ReplyTextAndAt("操作时间太久了，请重新设置")
 				return
-			case c := <-recv:
+			case ctx := <-recv:
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				remind := c.MessageString()
+				remind := ctx.MessageString()
 
 				// 设置定时任务
 				if _, err := AddRemindForExpression(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
@@ -410,8 +410,8 @@ func registerCronjob() {
 			case <-time.After(20 * time.Second):
 				ctx.ReplyTextAndAt("操作时间太久了，请重新设置")
 				return
-			case c := <-recv:
-				s, ok := options[c.MessageString()]
+			case ctx := <-recv:
+				s, ok := options[ctx.MessageString()]
 				if !ok {
 					ctx.ReplyTextAndAt("没有这个插件服务，请重新设置")
 					continue
@@ -419,10 +419,10 @@ func registerCronjob() {
 
 				jobId := mid.UniqueId()
 				jobTag := strconv.Itoa(int(jobId))
-				service := c.MessageString()
+				service := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddPluginOfEveryDay(ctx, jobTag, matched, func() { s.Options.OnCronjob(c) }); err != nil {
+				if _, err := AddPluginOfEveryDay(ctx, jobTag, matched, func() { s.Options.OnCronjob(ctx) }); err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}

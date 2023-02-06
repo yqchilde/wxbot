@@ -31,7 +31,7 @@ type ApiKey struct {
 func init() {
 	engine := control.Register("chatgpt", &control.Options[*robot.Ctx]{
 		Alias:      "ChatGPT",
-		Help:       "输入 {开始ChatGPT会话} => 进行ChatGPT连续会话",
+		Help:       "输入 {开始会话} => 进行ChatGPT连续会话",
 		DataFolder: "chatgpt",
 		OnDisable: func(ctx *robot.Ctx) {
 			ctx.ReplyText("禁用成功")
@@ -76,8 +76,8 @@ func init() {
 				chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
 				ctx.ReplyText("已退出ChatGPT")
 				return
-			case c := <-recv:
-				msg := c.MessageString()
+			case ctx := <-recv:
+				msg := ctx.MessageString()
 				if msg == "" {
 					continue
 				} else if msg == "结束会话" {
@@ -106,9 +106,9 @@ func init() {
 						continue
 					}
 					chatCTXMap.Store(ctx.Event.FromUniqueID, question+"\n"+answer)
-					ctx.ReplyText(answer)
+					ctx.ReplyTextAndAt(answer)
 				} else {
-					ctx.ReplyText(r)
+					ctx.ReplyTextAndAt(r)
 				}
 			}
 		}

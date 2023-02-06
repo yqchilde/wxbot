@@ -48,7 +48,6 @@ func (n *EventChannel) Next() <-chan *Ctx {
 func (n *EventChannel) Repeat() (recv <-chan *Ctx, cancel func()) {
 	ch, done := make(chan *Ctx, 1), make(chan struct{})
 	go func() {
-		defer close(ch)
 		in := make(chan *Ctx, 1)
 		matcher := StoreMatcher(&Matcher{
 			Block:    n.Block,
@@ -66,11 +65,12 @@ func (n *EventChannel) Repeat() (recv <-chan *Ctx, cancel func()) {
 			case <-done:
 				matcher.Delete()
 				close(in)
+				close(ch)
 				return
 			}
 		}
 	}()
 	return ch, func() {
-		close(done)
+		done <- struct{}{}
 	}
 }
