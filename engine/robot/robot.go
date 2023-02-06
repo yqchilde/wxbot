@@ -120,7 +120,6 @@ loop:
 							t.Reset(maxWait)
 							continue
 						}
-						log.Debug("[robot] preHandler处理达到最大时延, 退出")
 						break loop
 					}
 					break
@@ -144,7 +143,6 @@ loop:
 						t.Reset(maxWait)
 						continue
 					}
-					log.Debug("[robot] rule处理达到最大时延, 退出")
 					break loop
 				}
 				break
@@ -168,7 +166,6 @@ loop:
 							t.Reset(maxWait)
 							continue
 						}
-						log.Debug("[robot] midHandler处理达到最大时延, 退出")
 						break loop
 					}
 					break
@@ -186,7 +183,6 @@ loop:
 						t.Reset(maxWait)
 						continue
 					}
-					log.Debug("[robot] Handler处理达到最大时延, 退出")
 					break loop
 				}
 				break
@@ -207,7 +203,6 @@ loop:
 							t.Reset(maxWait)
 							continue
 						}
-						log.Warn("[robot] postHandler处理达到最大时延, 退出")
 						break loop
 					}
 					break

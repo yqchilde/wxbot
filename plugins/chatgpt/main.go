@@ -2,6 +2,7 @@ package chatgpt
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -64,7 +65,7 @@ func init() {
 
 		recv, cancel := ctx.EventChannel(ctx.CheckGroupSession()).Repeat()
 		defer cancel()
-		ctx.ReplyTextAndAt("收到！已开始ChatGPT会话，输入\"开始会话\"结束会话，或5分钟后自动结束，请开始吧！")
+		ctx.ReplyTextAndAt("收到！已开始ChatGPT会话，输入\"结束会话\"结束会话，或5分钟后自动结束，请开始吧！")
 		chatCTXMap.LoadOrStore(ctx.Event.FromUniqueID, "")
 		for {
 			select {
@@ -74,7 +75,7 @@ func init() {
 				return
 			case <-chatDone:
 				chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
-				ctx.ReplyText("已退出ChatGPT")
+				ctx.ReplyTextAndAt("已退出ChatGPT")
 				return
 			case ctx := <-recv:
 				msg := ctx.MessageString()
@@ -82,8 +83,11 @@ func init() {
 					continue
 				} else if msg == "结束会话" {
 					chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
-					ctx.ReplyText("已结束聊天的上下文语境，您可以重新发起提问")
+					ctx.ReplyTextAndAt("已结束聊天的上下文语境，您可以重新发起提问")
 					return
+				} else if msg == "清空会话" {
+					chatCTXMap.Store(ctx.Event.FromUniqueID, "")
+					ctx.ReplyTextAndAt("已清空会话，您可以继续提问新的问题")
 				}
 				question, answer := msg+"\n", ""
 				if question == "" {
@@ -92,7 +96,7 @@ func init() {
 				if c, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
 					question = c.(string) + question
 				}
-				time.Sleep(3 * time.Second)
+				time.Sleep(2 * time.Second)
 				answer, err := askChatGPT(question)
 				if err != nil {
 					ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
@@ -180,6 +184,14 @@ func askChatGPT(question string) (string, error) {
 			apiKeys = apiKeys[1:]
 			gpt3Client = gpt3.NewClient(apiKeys[0].Key, gpt3.WithTimeout(time.Minute))
 			return askChatGPT(question)
+		} else if strings.Contains(err.Error(), "The server had an error while processing your request") {
+			log.Println("OpenAi服务出现问题，将重试")
+			return askChatGPT(question)
+		} else if strings.Contains(err.Error(), "Client.Timeout exceeded while awaiting headers") {
+			log.Println("OpenAi服务请求超时，将重试")
+			return askChatGPT(question)
+		} else if strings.Contains(err.Error(), "Please reduce your prompt") {
+			return "", errors.New("OpenAi免费上下文长度限制为4097个词组，您的上下文长度已超出限制，请发送\"清空会话\"以清空上下文")
 		} else {
 			return "", err
 		}
