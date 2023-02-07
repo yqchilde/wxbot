@@ -316,7 +316,7 @@ func (f *Framework) GetObjectInfo(wxId string) (*robot.ObjectInfo, error) {
 
 	var dataResp ObjectInfoResp
 	if err := NewRequest().Post(apiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
-		log.Errorf("[千寻] InviteIntoGroup error: %v", err.Error())
+		log.Errorf("[千寻] GetObjectInfo error: %v", err.Error())
 		return nil, err
 	}
 	return &robot.ObjectInfo{
