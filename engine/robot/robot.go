@@ -44,6 +44,7 @@ func Init(c *Config) *Robot {
 	if c.MaxProcessTime == 0 {
 		c.MaxProcessTime = time.Minute * 3
 	}
+	go monitoringWechatData()
 
 	return &Robot{
 		BotConfig: c,
@@ -255,6 +256,19 @@ func preProcessMessageEvent(e *Event) {
 		}
 	case EventSystem:
 		log.Println(fmt.Sprintf("[回调]收到系统消息 ==> %s", e.Message.Content))
+	}
+}
+
+// monitoringWechatData 监控微信数据
+func monitoringWechatData() {
+	ticker := time.NewTicker(5 * time.Minute)
+	for range ticker.C {
+		friendsList, _ := WxBot.Framework.GetFriendsList(true)
+		groupList, _ := WxBot.Framework.GetGroupList(true)
+		subscriptionList, _ := WxBot.Framework.GetSubscriptionList(true)
+		WxBot.FriendsList = friendsList
+		WxBot.GroupList = groupList
+		WxBot.SubscriptionList = subscriptionList
 	}
 }
 

@@ -25,6 +25,7 @@ import (
 )
 
 var conf robot.Config
+var ping = true
 
 func main() {
 	// 初始化配置
@@ -48,7 +49,7 @@ func main() {
 			v.GetUint("frameworks.servePort"),
 		))
 		if ipPort, err := net.CheckoutIpPort(v.GetString("frameworks.apiUrl")); err == nil {
-			if ping := net.PingConn(ipPort, time.Second*20); !ping {
+			if ping = net.PingConn(ipPort, time.Second*20); !ping {
 				log.Warn("[main] 无法连接到千寻框架，网络无法Ping通")
 			}
 		}
@@ -60,7 +61,7 @@ func main() {
 			v.GetUint("frameworks.servePort"),
 		))
 		if ipPort, err := net.CheckoutIpPort(v.GetString("frameworks.apiUrl")); err == nil {
-			if ping := net.PingConn(ipPort, time.Second*20); !ping {
+			if ping = net.PingConn(ipPort, time.Second*20); !ping {
 				log.Warn("[main] 无法连接到VLW框架，网络无法Ping通")
 			}
 		}
@@ -68,29 +69,29 @@ func main() {
 		log.Fatalf("[main] 请在配置文件中指定机器人框架后再启动")
 	}
 
-	bot := robot.Init(&conf)
+	robot.WxBot = robot.Init(&conf)
+	if ping {
+		log.Println("[main] 开始获取账号数据...")
+		friendsList, err := robot.WxBot.Framework.GetFriendsList(true)
+		if err != nil {
+			log.Errorf("[main] 获取好友列表失败，error: %s", err.Error())
+		}
+		groupList, err := robot.WxBot.Framework.GetGroupList(true)
+		if err != nil {
+			log.Errorf("[main] 获取群组列表失败，error: %s", err.Error())
+		}
+		subscriptionList, err := robot.WxBot.Framework.GetSubscriptionList(true)
+		if err != nil {
+			log.Errorf("[main] 获取公众号列表失败，error: %s", err.Error())
+		}
+		robot.WxBot.FriendsList = friendsList
+		robot.WxBot.GroupList = groupList
+		robot.WxBot.SubscriptionList = subscriptionList
+		log.Printf("[main] 共获取到%d个好友", len(friendsList))
+		log.Printf("[main] 共获取到%d个群组", len(groupList))
+		log.Printf("[main] 共获取到%d个公众号", len(subscriptionList))
+	}
 
-	log.Println("[main] 开始获取账号数据...")
-	friendsList, err := bot.Framework.GetFriendsList(true)
-	if err != nil {
-		log.Errorf("[main] 获取好友列表失败，error: %s", err.Error())
-	}
-	groupList, err := bot.Framework.GetGroupList(true)
-	if err != nil {
-		log.Errorf("[main] 获取群组列表失败，error: %s", err.Error())
-	}
-	subscriptionList, err := bot.Framework.GetSubscriptionList(true)
-	if err != nil {
-		log.Errorf("[main] 获取公众号列表失败，error: %s", err.Error())
-	}
-	bot.FriendsList = friendsList
-	bot.GroupList = groupList
-	bot.SubscriptionList = subscriptionList
-	robot.WxBot = bot
-
-	log.Printf("[main] 共获取到%d个好友", len(friendsList))
-	log.Printf("[main] 共获取到%d个群组", len(groupList))
-	log.Printf("[main] 共获取到%d个公众号", len(subscriptionList))
 	log.Printf("[main] 机器人%s开始工作", conf.BotNickname)
-	bot.Run()
+	robot.WxBot.Run()
 }
