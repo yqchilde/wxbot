@@ -315,7 +315,7 @@ func (f *Framework) GetObjectInfo(wxId string) (*robot.ObjectInfo, error) {
 	}
 
 	var dataResp ObjectInfoResp
-	if err := NewRequest().Post(apiUrl).SetBody(payload).SetResult(&dataResp).Do().Err; err != nil {
+	if err := NewRequest().Post(apiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
 		log.Errorf("[千寻] InviteIntoGroup error: %v", err.Error())
 		return nil, err
 	}
@@ -342,4 +342,142 @@ func (f *Framework) GetObjectInfo(wxId string) (*robot.ObjectInfo, error) {
 		Sex:                     dataResp.Result.Sex,
 		MemberNum:               dataResp.Result.MemberNum,
 	}, nil
+}
+
+func (f *Framework) GetFriendsList(isRefresh bool) ([]*robot.FriendInfo, error) {
+	dataType := 1
+	if isRefresh {
+		dataType = 2
+	}
+
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0005",
+		"data": map[string]interface{}{
+			"type": dataType,
+		},
+	}
+
+	var dataResp FriendsListResp
+	if err := NewRequest().Post(apiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[千寻] GetFriendsList error: %v", err.Error())
+		return nil, err
+	}
+	var friendsInfoList []*robot.FriendInfo
+	for i := range dataResp.Result {
+		friendsInfoList = append(friendsInfoList, &robot.FriendInfo{
+			WxId:                    dataResp.Result[i].Wxid,
+			WxNum:                   dataResp.Result[i].WxNum,
+			Nick:                    dataResp.Result[i].Nick,
+			Remark:                  dataResp.Result[i].Remark,
+			NickBrief:               dataResp.Result[i].NickBrief,
+			NickWhole:               dataResp.Result[i].NickWhole,
+			RemarkBrief:             dataResp.Result[i].RemarkBrief,
+			RemarkWhole:             dataResp.Result[i].RemarkWhole,
+			EnBrief:                 dataResp.Result[i].EnBrief,
+			EnWhole:                 dataResp.Result[i].EnWhole,
+			V3:                      dataResp.Result[i].V3,
+			Sign:                    dataResp.Result[i].Sign,
+			Country:                 dataResp.Result[i].Country,
+			Province:                dataResp.Result[i].Province,
+			City:                    dataResp.Result[i].City,
+			MomentsBackgroundImgUrl: dataResp.Result[i].MomentsBackgroudImgUrl,
+			AvatarMinUrl:            dataResp.Result[i].AvatarMinUrl,
+			AvatarMaxUrl:            dataResp.Result[i].AvatarMaxUrl,
+			Sex:                     dataResp.Result[i].Sex,
+			MemberNum:               dataResp.Result[i].MemberNum,
+		})
+	}
+
+	// 过滤系统用户
+	var SystemUserWxId = map[string]struct{}{"medianote": {}, "newsapp": {}, "fmessage": {}, "floatbottle": {}}
+	var filteredFriendInfo []*robot.FriendInfo
+	for i := range friendsInfoList {
+		if _, ok := SystemUserWxId[friendsInfoList[i].WxId]; !ok {
+			filteredFriendInfo = append(filteredFriendInfo, friendsInfoList[i])
+		}
+	}
+	return filteredFriendInfo, nil
+}
+
+func (f *Framework) GetGroupList(isRefresh bool) ([]*robot.GroupInfo, error) {
+	dataType := 1
+	if isRefresh {
+		dataType = 2
+	}
+
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0006",
+		"data": map[string]interface{}{
+			"type": dataType,
+		},
+	}
+
+	var dataResp GroupListResp
+	if err := NewRequest().Post(apiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[千寻] GetGroupList error: %v", err.Error())
+		return nil, err
+	}
+	var groupInfoList []*robot.GroupInfo
+	for i := range dataResp.Result {
+		groupInfoList = append(groupInfoList, &robot.GroupInfo{
+			WxId:        dataResp.Result[i].Wxid,
+			WxNum:       dataResp.Result[i].WxNum,
+			Nick:        dataResp.Result[i].Nick,
+			Remark:      dataResp.Result[i].Remark,
+			NickBrief:   dataResp.Result[i].NickBrief,
+			NickWhole:   dataResp.Result[i].NickWhole,
+			RemarkBrief: dataResp.Result[i].RemarkBrief,
+			RemarkWhole: dataResp.Result[i].RemarkWhole,
+			EnBrief:     dataResp.Result[i].EnBrief,
+			EnWhole:     dataResp.Result[i].EnWhole,
+		})
+	}
+	return groupInfoList, nil
+}
+
+func (f *Framework) GetSubscriptionList(isRefresh bool) ([]*robot.SubscriptionInfo, error) {
+	dataType := 1
+	if isRefresh {
+		dataType = 2
+	}
+
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0007",
+		"data": map[string]interface{}{
+			"type": dataType,
+		},
+	}
+
+	var dataResp SubscriptionListResp
+	if err := NewRequest().Post(apiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[千寻] GetSubscriptionList error: %v", err.Error())
+		return nil, err
+	}
+	var subscriptionInfoList []*robot.SubscriptionInfo
+	for i := range dataResp.Result {
+		subscriptionInfoList = append(subscriptionInfoList, &robot.SubscriptionInfo{
+			WxId:                    dataResp.Result[i].Wxid,
+			WxNum:                   dataResp.Result[i].WxNum,
+			Nick:                    dataResp.Result[i].Nick,
+			Remark:                  dataResp.Result[i].Remark,
+			NickBrief:               dataResp.Result[i].NickBrief,
+			NickWhole:               dataResp.Result[i].NickWhole,
+			RemarkBrief:             dataResp.Result[i].RemarkBrief,
+			RemarkWhole:             dataResp.Result[i].RemarkWhole,
+			EnBrief:                 dataResp.Result[i].EnBrief,
+			EnWhole:                 dataResp.Result[i].EnWhole,
+			V3:                      dataResp.Result[i].V3,
+			Sign:                    dataResp.Result[i].Sign,
+			Country:                 dataResp.Result[i].Country,
+			Province:                dataResp.Result[i].Province,
+			City:                    dataResp.Result[i].City,
+			MomentsBackgroundImgUrl: dataResp.Result[i].MomentsBackgroudImgUrl,
+			AvatarMinUrl:            dataResp.Result[i].AvatarMinUrl,
+			AvatarMaxUrl:            dataResp.Result[i].AvatarMaxUrl,
+		})
+	}
+	return subscriptionInfoList, nil
 }

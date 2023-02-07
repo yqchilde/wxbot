@@ -329,3 +329,15 @@ func (f *Framework) InviteIntoGroup(groupWxId, wxId string, typ int) error {
 func (f *Framework) GetObjectInfo(wxId string) (*robot.ObjectInfo, error) {
 	return nil, nil
 }
+
+func (f *Framework) GetFriendsList(isRefresh bool) ([]*robot.FriendInfo, error) {
+	return nil, nil
+}
+
+func (f *Framework) GetGroupList(isRefresh bool) ([]*robot.GroupInfo, error) {
+	return nil, nil
+}
+
+func (f *Framework) GetSubscriptionList(isRefresh bool) ([]*robot.SubscriptionInfo, error) {
+	return nil, nil
+}

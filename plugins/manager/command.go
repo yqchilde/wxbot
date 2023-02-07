@@ -67,7 +67,7 @@ func registerCommand() {
 				ctx.ReplyTextAndAt("菜单获取失败，请联系管理员")
 				return
 			}
-			ctx.ReplyShareLink(robot.BotConfig.BotNickname, "机器人当前所有的指令都在这里哦！", "https://imgbed.link/file/10160", "https://bot.yqqy.top/menu?wxId="+ctx.Event.FromUniqueID)
+			ctx.ReplyShareLink(robot.WxBot.BotConfig.BotNickname, "机器人当前所有的指令都在这里哦！", "https://imgbed.link/file/10160", "https://bot.yqqy.top/menu?wxId="+ctx.Event.FromUniqueID)
 		default:
 			// 🔔实现方案一(默认方案)：直接输出菜单
 			menus := "当前支持的功能有: \n"

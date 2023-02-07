@@ -53,10 +53,10 @@ func CommandRule(commands ...string) Rule {
 		if !ctx.IsText() {
 			return false
 		}
-		if !strings.HasPrefix(ctx.Event.Message.Content, BotConfig.CommandPrefix) {
+		if !strings.HasPrefix(ctx.Event.Message.Content, WxBot.BotConfig.CommandPrefix) {
 			return false
 		}
-		cmdMessage := ctx.Event.Message.Content[len(BotConfig.CommandPrefix):]
+		cmdMessage := ctx.Event.Message.Content[len(WxBot.BotConfig.CommandPrefix):]
 		for _, command := range commands {
 			if strings.HasPrefix(cmdMessage, command) {
 				ctx.State["command"] = command
@@ -121,7 +121,7 @@ func FullMatchRule(src ...string) Rule {
 
 // AdminPermission 只允许系统配置的管理员使用
 func AdminPermission(ctx *Ctx) bool {
-	for _, su := range BotConfig.SuperUsers {
+	for _, su := range WxBot.BotConfig.SuperUsers {
 		if su == ctx.Event.FromWxId {
 			return true
 		}

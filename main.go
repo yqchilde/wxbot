@@ -38,7 +38,8 @@ func main() {
 	}
 
 	// 初始化机器人
-	switch v.GetString("frameworks.name") {
+	frameworkType := v.GetString("frameworks.name")
+	switch frameworkType {
 	case "千寻", "qianxun":
 		conf.Framework = robot.IFramework(qianxun.New(
 			v.GetString("botWxId"),
@@ -66,5 +67,30 @@ func main() {
 	default:
 		log.Fatalf("[main] 请在配置文件中指定机器人框架后再启动")
 	}
-	robot.Run(&conf)
+
+	bot := robot.Init(&conf)
+
+	log.Println("[main] 开始获取账号数据...")
+	friendsList, err := bot.Framework.GetFriendsList(true)
+	if err != nil {
+		log.Errorf("[main] 获取好友列表失败，error: %s", err.Error())
+	}
+	groupList, err := bot.Framework.GetGroupList(true)
+	if err != nil {
+		log.Errorf("[main] 获取群组列表失败，error: %s", err.Error())
+	}
+	subscriptionList, err := bot.Framework.GetSubscriptionList(true)
+	if err != nil {
+		log.Errorf("[main] 获取公众号列表失败，error: %s", err.Error())
+	}
+	bot.FriendsList = friendsList
+	bot.GroupList = groupList
+	bot.SubscriptionList = subscriptionList
+	robot.WxBot = bot
+
+	log.Printf("[main] 共获取到%d个好友", len(friendsList))
+	log.Printf("[main] 共获取到%d个群组", len(groupList))
+	log.Printf("[main] 共获取到%d个公众号", len(subscriptionList))
+	log.Printf("[main] 机器人%s开始工作", conf.BotNickname)
+	bot.Run()
 }

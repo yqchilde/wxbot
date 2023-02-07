@@ -4,17 +4,23 @@ import (
 	"fmt"
 	"math/rand"
 	"runtime/debug"
-	"sync/atomic"
 	"time"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 )
 
 var (
-	BotConfig   *Config      // 机器人配置
-	Framework   atomic.Value // 当前机器人框架
+	WxBot       *Robot       // 当前机器人
 	eventBuffer *EventBuffer // 事件缓冲区
 )
+
+type Robot struct {
+	BotConfig        *Config
+	Framework        IFramework
+	FriendsList      []*FriendInfo
+	GroupList        []*GroupInfo
+	SubscriptionList []*SubscriptionInfo
+}
 
 type Config struct {
 	BotWxId        string        // 机器人微信ID
@@ -27,8 +33,8 @@ type Config struct {
 	Framework      IFramework    // 接入框架需实现该接口
 }
 
-// Run 主函数，启动机器人
-func Run(c *Config) {
+// Init 初始化机器人
+func Init(c *Config) *Robot {
 	if c.BufferLen == 0 {
 		c.BufferLen = 4096
 	}
@@ -38,11 +44,18 @@ func Run(c *Config) {
 	if c.MaxProcessTime == 0 {
 		c.MaxProcessTime = time.Minute * 3
 	}
-	BotConfig = c
-	eventBuffer = NewEventBuffer(c.BufferLen)
-	eventBuffer.Loop(c.Latency, c.MaxProcessTime, processEventAsync)
-	log.Printf("[robot] 机器人%s开始工作", c.BotNickname)
-	c.Framework.Callback(eventBuffer.ProcessEvent)
+
+	return &Robot{
+		BotConfig: c,
+		Framework: c.Framework,
+	}
+}
+
+// Run 运行并阻塞主线程，等待事件
+func (r *Robot) Run() {
+	eventBuffer = NewEventBuffer(r.BotConfig.BufferLen)
+	eventBuffer.Loop(r.BotConfig.Latency, r.BotConfig.MaxProcessTime, processEventAsync)
+	r.Framework.Callback(eventBuffer.ProcessEvent)
 }
 
 func processEventAsync(event *Event, framework IFramework, maxWait time.Duration) {
@@ -219,9 +232,11 @@ loop:
 func preProcessMessageEvent(e *Event) {
 	switch e.Type {
 	case EventPrivateChat:
-		log.Println(fmt.Sprintf("[回调]收到私聊(%s)消息 ==> %v", e.FromWxId, e.Message.Content))
+		log.Println(fmt.Sprintf("[回调]收到私聊(%s)消息 ==> %v", e.FromName, e.Message.Content))
 	case EventGroupChat:
-		log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])消息 ==> %v", e.FromGroup, e.FromWxId, e.Message.Content))
+		log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])消息 ==> %v", e.FromGroupName, e.FromWxId, e.Message.Content))
+	case EventSubscription:
+		log.Println(fmt.Sprintf("[回调]收到订阅公众号(%s)消息", e.FromWxId))
 	case EventSelfMessage:
 		log.Println(fmt.Sprintf("[回调]收到自己发送的消息 ==> %v", e.Message.Content))
 	case EventFriendVerify:
@@ -251,13 +266,16 @@ func GetCTX() *Ctx {
 		case <-t.C:
 			log.Fatal("[robot] 获取CTX超时")
 		default:
-			framework := Framework.Load()
-			if framework == nil {
+			if WxBot == nil {
+				time.Sleep(time.Second)
+				continue
+			}
+			if WxBot.Framework == nil {
 				time.Sleep(time.Second)
 				continue
 			}
 			t.Stop()
-			return &Ctx{framework: framework.(IFramework)}
+			return &Ctx{framework: WxBot.Framework}
 		}
 	}
 }
