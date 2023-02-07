@@ -14,6 +14,7 @@ import (
 	_ "github.com/yqchilde/wxbot/plugins/baidubaike"   // 百度百科
 	_ "github.com/yqchilde/wxbot/plugins/chatgpt"      // GPT聊天
 	_ "github.com/yqchilde/wxbot/plugins/crazykfc"     // 肯德基疯狂星期四骚话
+	_ "github.com/yqchilde/wxbot/plugins/ghmonitor"    // 公众号消息监控转发
 	_ "github.com/yqchilde/wxbot/plugins/jingdong"     // 京豆上车
 	_ "github.com/yqchilde/wxbot/plugins/manager"      // 群组管理相关
 	_ "github.com/yqchilde/wxbot/plugins/memepicture"  // 表情包原图

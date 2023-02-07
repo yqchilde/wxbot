@@ -111,3 +111,8 @@ func (ctx *Ctx) IsEventSelfMessage() bool {
 func (ctx *Ctx) IsEventFriendVerify() bool {
 	return ctx.Event.Type == EventFriendVerify
 }
+
+// IsEventSubscription 判断消息是否是订阅消息
+func (ctx *Ctx) IsEventSubscription() bool {
+	return ctx.Event.Type == EventSubscription
+}
