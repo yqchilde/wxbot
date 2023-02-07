@@ -327,17 +327,125 @@ func (f *Framework) InviteIntoGroup(groupWxId, wxId string, typ int) error {
 }
 
 func (f *Framework) GetObjectInfo(wxId string) (*robot.ObjectInfo, error) {
-	return nil, nil
+	payload := map[string]interface{}{
+		"api":        "GetFriendlist",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"to_wxid":    wxId,
+	}
+
+	var dataResp ObjectInfoResp
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[VLW] GetObjectInfo error: %v", err.Error())
+		return nil, err
+	}
+	return &robot.ObjectInfo{
+		WxId:         dataResp.ReturnJson.Data.Wxid,
+		WxNum:        dataResp.ReturnJson.Data.Account,
+		Nick:         dataResp.ReturnJson.Data.Nickname,
+		Remark:       dataResp.ReturnJson.Data.Remark,
+		V3:           dataResp.ReturnJson.Data.V1,
+		V4:           dataResp.ReturnJson.Data.V2,
+		Sign:         dataResp.ReturnJson.Data.Signature,
+		Country:      dataResp.ReturnJson.Data.Country,
+		Province:     dataResp.ReturnJson.Data.Province,
+		City:         dataResp.ReturnJson.Data.City,
+		AvatarMinUrl: dataResp.ReturnJson.Data.SmallAvatar,
+		AvatarMaxUrl: dataResp.ReturnJson.Data.Avatar,
+		Sex:          strconv.Itoa(dataResp.ReturnJson.Data.Sex),
+	}, nil
 }
 
 func (f *Framework) GetFriendsList(isRefresh bool) ([]*robot.FriendInfo, error) {
-	return nil, nil
+	dataType := 0
+	if isRefresh {
+		dataType = 1
+	}
+	payload := map[string]interface{}{
+		"api":        "GetFriendlist",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"is_refresh": dataType,
+	}
+
+	var dataResp FriendsListResp
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[VLW] GetFriendsList error: %v", err.Error())
+		return nil, err
+	}
+	var friendsInfoList []*robot.FriendInfo
+	for _, res := range dataResp.ReturnJson {
+		friendsInfoList = append(friendsInfoList, &robot.FriendInfo{
+			WxId:         res.Wxid,
+			WxNum:        res.WxNum,
+			Nick:         res.Nickname,
+			Remark:       res.Note,
+			Country:      res.Country,
+			Province:     res.Province,
+			City:         res.City,
+			AvatarMinUrl: res.Avatar,
+			AvatarMaxUrl: res.Avatar,
+			Sex:          strconv.Itoa(res.Sex),
+		})
+	}
+	return friendsInfoList, nil
 }
 
 func (f *Framework) GetGroupList(isRefresh bool) ([]*robot.GroupInfo, error) {
-	return nil, nil
+	dataType := 0
+	if isRefresh {
+		dataType = 1
+	}
+	payload := map[string]interface{}{
+		"api":        "GetGrouplist",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"is_refresh": dataType,
+	}
+
+	var dataResp GroupListResp
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[VLW] GetGroupList error: %v", err.Error())
+		return nil, err
+	}
+	var groupInfoList []*robot.GroupInfo
+	for _, res := range dataResp.ReturnJson {
+		groupInfoList = append(groupInfoList, &robot.GroupInfo{
+			WxId:         res.Wxid,
+			Nick:         res.Nickname,
+			MemberNum:    res.TotalMember,
+			AvatarMinUrl: res.Avatar,
+			AvatarMaxUrl: res.Avatar,
+		})
+	}
+	return groupInfoList, nil
 }
 
 func (f *Framework) GetSubscriptionList(isRefresh bool) ([]*robot.SubscriptionInfo, error) {
-	return nil, nil
+	dataType := 0
+	if isRefresh {
+		dataType = 1
+	}
+	payload := map[string]interface{}{
+		"api":        "GetSubscriptionlist",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"is_refresh": dataType,
+	}
+
+	var dataResp SubscriptionListResp
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[VLW] GetSubscriptionList error: %v", err.Error())
+		return nil, err
+	}
+	var subscriptionInfoList []*robot.SubscriptionInfo
+	for _, res := range dataResp.ReturnJson {
+		subscriptionInfoList = append(subscriptionInfoList, &robot.SubscriptionInfo{
+			WxId:         res.Wxid,
+			Nick:         res.Nickname,
+			AvatarMinUrl: res.Avatar,
+			AvatarMaxUrl: res.Avatar,
+		})
+	}
+	return subscriptionInfoList, nil
 }

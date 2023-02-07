@@ -364,28 +364,28 @@ func (f *Framework) GetFriendsList(isRefresh bool) ([]*robot.FriendInfo, error) 
 		return nil, err
 	}
 	var friendsInfoList []*robot.FriendInfo
-	for i := range dataResp.Result {
+	for _, res := range dataResp.Result {
 		friendsInfoList = append(friendsInfoList, &robot.FriendInfo{
-			WxId:                    dataResp.Result[i].Wxid,
-			WxNum:                   dataResp.Result[i].WxNum,
-			Nick:                    dataResp.Result[i].Nick,
-			Remark:                  dataResp.Result[i].Remark,
-			NickBrief:               dataResp.Result[i].NickBrief,
-			NickWhole:               dataResp.Result[i].NickWhole,
-			RemarkBrief:             dataResp.Result[i].RemarkBrief,
-			RemarkWhole:             dataResp.Result[i].RemarkWhole,
-			EnBrief:                 dataResp.Result[i].EnBrief,
-			EnWhole:                 dataResp.Result[i].EnWhole,
-			V3:                      dataResp.Result[i].V3,
-			Sign:                    dataResp.Result[i].Sign,
-			Country:                 dataResp.Result[i].Country,
-			Province:                dataResp.Result[i].Province,
-			City:                    dataResp.Result[i].City,
-			MomentsBackgroundImgUrl: dataResp.Result[i].MomentsBackgroudImgUrl,
-			AvatarMinUrl:            dataResp.Result[i].AvatarMinUrl,
-			AvatarMaxUrl:            dataResp.Result[i].AvatarMaxUrl,
-			Sex:                     dataResp.Result[i].Sex,
-			MemberNum:               dataResp.Result[i].MemberNum,
+			WxId:                    res.Wxid,
+			WxNum:                   res.WxNum,
+			Nick:                    res.Nick,
+			Remark:                  res.Remark,
+			NickBrief:               res.NickBrief,
+			NickWhole:               res.NickWhole,
+			RemarkBrief:             res.RemarkBrief,
+			RemarkWhole:             res.RemarkWhole,
+			EnBrief:                 res.EnBrief,
+			EnWhole:                 res.EnWhole,
+			V3:                      res.V3,
+			Sign:                    res.Sign,
+			Country:                 res.Country,
+			Province:                res.Province,
+			City:                    res.City,
+			MomentsBackgroundImgUrl: res.MomentsBackgroudImgUrl,
+			AvatarMinUrl:            res.AvatarMinUrl,
+			AvatarMaxUrl:            res.AvatarMaxUrl,
+			Sex:                     res.Sex,
+			MemberNum:               res.MemberNum,
 		})
 	}
 
@@ -420,18 +420,21 @@ func (f *Framework) GetGroupList(isRefresh bool) ([]*robot.GroupInfo, error) {
 		return nil, err
 	}
 	var groupInfoList []*robot.GroupInfo
-	for i := range dataResp.Result {
+	for _, res := range dataResp.Result {
 		groupInfoList = append(groupInfoList, &robot.GroupInfo{
-			WxId:        dataResp.Result[i].Wxid,
-			WxNum:       dataResp.Result[i].WxNum,
-			Nick:        dataResp.Result[i].Nick,
-			Remark:      dataResp.Result[i].Remark,
-			NickBrief:   dataResp.Result[i].NickBrief,
-			NickWhole:   dataResp.Result[i].NickWhole,
-			RemarkBrief: dataResp.Result[i].RemarkBrief,
-			RemarkWhole: dataResp.Result[i].RemarkWhole,
-			EnBrief:     dataResp.Result[i].EnBrief,
-			EnWhole:     dataResp.Result[i].EnWhole,
+			WxId:         res.Wxid,
+			WxNum:        res.WxNum,
+			Nick:         res.Nick,
+			Remark:       res.Remark,
+			NickBrief:    res.NickBrief,
+			NickWhole:    res.NickWhole,
+			RemarkBrief:  res.RemarkBrief,
+			RemarkWhole:  res.RemarkWhole,
+			EnBrief:      res.EnBrief,
+			EnWhole:      res.EnWhole,
+			MemberNum:    res.MemberNum,
+			AvatarMinUrl: res.AvatarMinUrl,
+			AvatarMaxUrl: res.AvatarMaxUrl,
 		})
 	}
 	return groupInfoList, nil
@@ -457,26 +460,26 @@ func (f *Framework) GetSubscriptionList(isRefresh bool) ([]*robot.SubscriptionIn
 		return nil, err
 	}
 	var subscriptionInfoList []*robot.SubscriptionInfo
-	for i := range dataResp.Result {
+	for _, res := range dataResp.Result {
 		subscriptionInfoList = append(subscriptionInfoList, &robot.SubscriptionInfo{
-			WxId:                    dataResp.Result[i].Wxid,
-			WxNum:                   dataResp.Result[i].WxNum,
-			Nick:                    dataResp.Result[i].Nick,
-			Remark:                  dataResp.Result[i].Remark,
-			NickBrief:               dataResp.Result[i].NickBrief,
-			NickWhole:               dataResp.Result[i].NickWhole,
-			RemarkBrief:             dataResp.Result[i].RemarkBrief,
-			RemarkWhole:             dataResp.Result[i].RemarkWhole,
-			EnBrief:                 dataResp.Result[i].EnBrief,
-			EnWhole:                 dataResp.Result[i].EnWhole,
-			V3:                      dataResp.Result[i].V3,
-			Sign:                    dataResp.Result[i].Sign,
-			Country:                 dataResp.Result[i].Country,
-			Province:                dataResp.Result[i].Province,
-			City:                    dataResp.Result[i].City,
-			MomentsBackgroundImgUrl: dataResp.Result[i].MomentsBackgroudImgUrl,
-			AvatarMinUrl:            dataResp.Result[i].AvatarMinUrl,
-			AvatarMaxUrl:            dataResp.Result[i].AvatarMaxUrl,
+			WxId:                    res.Wxid,
+			WxNum:                   res.WxNum,
+			Nick:                    res.Nick,
+			Remark:                  res.Remark,
+			NickBrief:               res.NickBrief,
+			NickWhole:               res.NickWhole,
+			RemarkBrief:             res.RemarkBrief,
+			RemarkWhole:             res.RemarkWhole,
+			EnBrief:                 res.EnBrief,
+			EnWhole:                 res.EnWhole,
+			V3:                      res.V3,
+			Sign:                    res.Sign,
+			Country:                 res.Country,
+			Province:                res.Province,
+			City:                    res.City,
+			MomentsBackgroundImgUrl: res.MomentsBackgroudImgUrl,
+			AvatarMinUrl:            res.AvatarMinUrl,
+			AvatarMaxUrl:            res.AvatarMaxUrl,
 		})
 	}
 	return subscriptionInfoList, nil

@@ -26,6 +26,7 @@ type ObjectInfo struct {
 	MemberNum               int    `json:"memberNum"`               // 群成员数量，仅当对象是群聊时有效
 }
 
+// FriendInfo 好友信息
 type FriendInfo struct {
 	WxId                    string `json:"wxId"`                    // 微信ID
 	WxNum                   string `json:"wxNum"`                   // 微信号
@@ -49,19 +50,24 @@ type FriendInfo struct {
 	MemberNum               int    `json:"memberNum"`               // 群成员数量，仅当对象是群聊时有效
 }
 
+// GroupInfo 群信息
 type GroupInfo struct {
-	WxId        string `json:"wxId"`        // 微信ID
-	WxNum       string `json:"wxNum"`       // 微信号
-	Nick        string `json:"nick"`        // 昵称
-	Remark      string `json:"remark"`      // 备注
-	NickBrief   string `json:"nickBrief"`   // 昵称简拼
-	NickWhole   string `json:"nickWhole"`   // 昵称全拼
-	RemarkBrief string `json:"remarkBrief"` // 备注简拼
-	RemarkWhole string `json:"remarkWhole"` // 备注全拼
-	EnBrief     string `json:"enBrief"`     // 英文简拼
-	EnWhole     string `json:"enWhole"`     // 英文全拼
+	WxId         string `json:"wxId"`         // 微信ID
+	WxNum        string `json:"wxNum"`        // 微信号
+	Nick         string `json:"nick"`         // 昵称
+	Remark       string `json:"remark"`       // 备注
+	NickBrief    string `json:"nickBrief"`    // 昵称简拼
+	NickWhole    string `json:"nickWhole"`    // 昵称全拼
+	RemarkBrief  string `json:"remarkBrief"`  // 备注简拼
+	RemarkWhole  string `json:"remarkWhole"`  // 备注全拼
+	EnBrief      string `json:"enBrief"`      // 英文简拼
+	EnWhole      string `json:"enWhole"`      // 英文全拼
+	MemberNum    int    `json:"memberNum"`    // 群成员数量，仅当对象是群聊时有效
+	AvatarMinUrl string `json:"avatarMinUrl"` // 头像小图，需要在会话列表中
+	AvatarMaxUrl string `json:"avatarMaxUrl"` // 头像大图，需要在会话列表中
 }
 
+// SubscriptionInfo 订阅公众号信息
 type SubscriptionInfo struct {
 	WxId                    string `json:"wxId"`                    // 微信ID
 	WxNum                   string `json:"wxNum"`                   // 微信号
