@@ -99,9 +99,9 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 					event.IsAtMe = true
 				}
 			}
-			for _, group := range robot.WxBot.GroupList {
-				if group.WxId == event.FromGroup {
-					event.FromGroupName = group.Nick
+			for _, data := range robot.WxBot.GroupList {
+				if data.WxId == event.FromGroup {
+					event.FromGroupName = data.Nick
 					break
 				}
 			}
@@ -114,10 +114,16 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 				FromUniqueID: gjson.Get(resp, "data.data.fromWxid").String(),
 				FromWxId:     gjson.Get(resp, "data.data.fromWxid").String(),
 				FromName:     "",
-				Message: &robot.Message{
+				SubscriptionMessage: &robot.Message{
 					Type:    gjson.Get(resp, "data.data.msgType").Int(),
 					Content: gjson.Get(resp, "data.data.msg").String(),
 				},
+			}
+			for _, data := range robot.WxBot.SubscriptionList {
+				if data.WxId == event.FromWxId {
+					event.FromName = data.Nick
+					break
+				}
 			}
 		} else { // 私聊
 			event = robot.Event{
@@ -131,9 +137,9 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 					Content: gjson.Get(resp, "data.data.msg").String(),
 				},
 			}
-			for _, friend := range robot.WxBot.FriendsList {
-				if friend.WxId == event.FromWxId {
-					event.FromName = friend.Nick
+			for _, data := range robot.WxBot.FriendsList {
+				if data.WxId == event.FromWxId {
+					event.FromName = data.Nick
 					break
 				}
 			}

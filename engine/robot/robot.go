@@ -233,11 +233,11 @@ loop:
 func preProcessMessageEvent(e *Event) {
 	switch e.Type {
 	case EventPrivateChat:
-		log.Println(fmt.Sprintf("[回调]收到私聊(%s)消息 ==> %v", e.FromName, e.Message.Content))
+		log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
 	case EventGroupChat:
-		log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])消息 ==> %v", e.FromGroupName, e.FromWxId, e.Message.Content))
+		log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
 	case EventSubscription:
-		log.Println(fmt.Sprintf("[回调]收到订阅公众号(%s)消息", e.FromWxId))
+		log.Println(fmt.Sprintf("[回调]收到订阅公众号(%s[%s])消息", e.FromName, e.FromWxId))
 	case EventSelfMessage:
 		log.Println(fmt.Sprintf("[回调]收到自己发送的消息 ==> %v", e.Message.Content))
 	case EventFriendVerify:

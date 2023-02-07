@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/tidwall/gjson"
 
@@ -100,7 +101,28 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 		}
 	case eventPrivateChat:
 		contentType := gjson.Get(resp, "content.type").Int()
-		if contentType == 2000 {
+		if contentType == 49 { // 分享卡片
+			// 公众号处理 gh_开头
+			if strings.HasPrefix(gjson.Get(resp, "content.from_wxid").String(), "gh_") {
+				event = robot.Event{
+					Type:         robot.EventSubscription,
+					FromUniqueID: gjson.Get(resp, "content.from_wxid").String(),
+					FromWxId:     gjson.Get(resp, "content.from_wxid").String(),
+					FromName:     gjson.Get(resp, "content.from_name").String(),
+					SubscriptionMessage: &robot.Message{
+						Id:      gjson.Get(resp, "content.msg_id").String(),
+						Type:    gjson.Get(resp, "content.type").Int(),
+						Content: gjson.Get(resp, "content.msg").String(),
+					},
+				}
+				for _, data := range robot.WxBot.SubscriptionList {
+					if data.WxId == event.FromWxId {
+						event.FromName = data.Nick
+						break
+					}
+				}
+			}
+		} else if contentType == 2000 { // 转账
 			event = robot.Event{
 				Type:         robot.EventTransfer,
 				FromUniqueID: gjson.Get(resp, "content.from_wxid").String(),
@@ -114,7 +136,7 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 					TransferId: gjson.Get(gjson.Get(resp, "content.msg").String(), "payer_pay_id").String(),
 				},
 			}
-		} else {
+		} else { // 私聊
 			event = robot.Event{
 				Type:         robot.EventPrivateChat,
 				IsAtMe:       true,

@@ -12,6 +12,7 @@ type Event struct {
 	FromGroupName       string               // 消息来源群名称
 	RawMessage          string               // 原始消息
 	Message             *Message             // 消息内容
+	SubscriptionMessage *Message             // 订阅号消息
 	FriendVerify        *FriendVerify        // 好友验证消息
 	Transfer            *Transfer            // 转账消息
 	Withdraw            *Withdraw            // 撤回消息
