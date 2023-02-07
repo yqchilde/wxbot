@@ -3,6 +3,7 @@ package robot
 const (
 	EventGroupChat           = "EventGroupChat"           // 群聊消息事件
 	EventPrivateChat         = "EventPrivateChat"         // 私聊消息事件
+	EventSubscription        = "EventSubscription"        // 订阅号消息事件
 	EventSelfMessage         = "EventSelfMessage"         // 自己发的消息事件
 	EventFriendVerify        = "EventFriendVerify"        // 好友请求事件
 	EventTransfer            = "EventTransfer"            // 好友转账事件

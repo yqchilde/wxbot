@@ -50,7 +50,7 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 			return
 		}
 		resp := string(recv)
-		event := buildEvent(resp)
+		event := buildEvent(resp, f)
 		handler(event, f)
 		w.Header().Add("Content-Type", "application/json")
 		w.Write([]byte(`{"code":0}`))
@@ -66,28 +66,31 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 	}
 }
 
-func buildEvent(resp string) *robot.Event {
-	event := robot.Event{RobotWxId: gjson.Get(resp, "content.robot_wxid").String()}
+func buildEvent(resp string, f *Framework) *robot.Event {
+	var event robot.Event
 	switch gjson.Get(resp, "Event").String() {
 	case eventGroupChat:
-		// 根据消息类型细分多种事件
-		switch gjson.Get(resp, "content.type").Int() {
-		case 10000:
-			event.Type = robot.EventSystem
-			event.Message = &robot.Message{
-				Content: gjson.Get(resp, "content.msg").String(),
+		contentType := gjson.Get(resp, "content.type").Int()
+		if contentType == 10000 {
+			event = robot.Event{
+				Type: robot.EventSystem,
+				Message: &robot.Message{
+					Content: gjson.Get(resp, "content.msg").String(),
+				},
 			}
-		default:
-			event.Type = robot.EventGroupChat
-			event.FromUniqueID = gjson.Get(resp, "content.from_group").String()
-			event.FromGroup = gjson.Get(resp, "content.from_group").String()
-			event.FromGroupName = gjson.Get(resp, "content.from_group_name").String()
-			event.FromWxId = gjson.Get(resp, "content.from_wxid").String()
-			event.FromName = gjson.Get(resp, "content.from_name").String()
-			event.Message = &robot.Message{
-				Id:      gjson.Get(resp, "content.msg_id").String(),
-				Type:    gjson.Get(resp, "content.type").Int(),
-				Content: gjson.Get(resp, "content.msg").String(),
+		} else {
+			event = robot.Event{
+				Type:          robot.EventGroupChat,
+				FromUniqueID:  gjson.Get(resp, "content.from_group").String(),
+				FromGroup:     gjson.Get(resp, "content.from_group").String(),
+				FromGroupName: gjson.Get(resp, "content.from_group_name").String(),
+				FromWxId:      gjson.Get(resp, "content.from_wxid").String(),
+				FromName:      gjson.Get(resp, "content.from_name").String(),
+				Message: &robot.Message{
+					Id:      gjson.Get(resp, "content.msg_id").String(),
+					Type:    gjson.Get(resp, "content.type").Int(),
+					Content: gjson.Get(resp, "content.msg").String(),
+				},
 			}
 			if gjson.Get(resp, fmt.Sprintf("content.msg_source.atuserlist.#(wxid==%s)", event.RobotWxId)).Exists() {
 				if !gjson.Get(resp, "content.msg_source.atuserlist.#(nickname==@所有人)").Exists() {
@@ -96,38 +99,45 @@ func buildEvent(resp string) *robot.Event {
 			}
 		}
 	case eventPrivateChat:
-		event.FromUniqueID = gjson.Get(resp, "content.from_wxid").String()
-		event.FromWxId = gjson.Get(resp, "content.from_wxid").String()
-		event.FromName = gjson.Get(resp, "content.from_name").String()
-
-		// 根据消息类型细分多种事件
-		switch gjson.Get(resp, "content.type").Int() {
-		case 2000:
-			event.Type = robot.EventTransfer
-			event.Transfer = &robot.Transfer{
-				FromWxId:   gjson.Get(resp, "content.from_wxid").String(),
-				MsgSource:  gjson.Get(gjson.Get(resp, "content.msg").String(), "paysubtype").Int(),
-				Money:      gjson.Get(gjson.Get(resp, "content.msg").String(), "money").String(),
-				Memo:       gjson.Get(gjson.Get(resp, "content.msg").String(), "pay_momo").String(),
-				TransferId: gjson.Get(gjson.Get(resp, "content.msg").String(), "payer_pay_id").String(),
+		contentType := gjson.Get(resp, "content.type").Int()
+		if contentType == 2000 {
+			event = robot.Event{
+				Type:         robot.EventTransfer,
+				FromUniqueID: gjson.Get(resp, "content.from_wxid").String(),
+				FromWxId:     gjson.Get(resp, "content.from_wxid").String(),
+				FromName:     gjson.Get(resp, "content.from_name").String(),
+				Transfer: &robot.Transfer{
+					FromWxId:   gjson.Get(resp, "content.from_wxid").String(),
+					MsgSource:  gjson.Get(gjson.Get(resp, "content.msg").String(), "paysubtype").Int(),
+					Money:      gjson.Get(gjson.Get(resp, "content.msg").String(), "money").String(),
+					Memo:       gjson.Get(gjson.Get(resp, "content.msg").String(), "pay_momo").String(),
+					TransferId: gjson.Get(gjson.Get(resp, "content.msg").String(), "payer_pay_id").String(),
+				},
 			}
-		default:
-			event.Type = robot.EventPrivateChat
-			event.IsAtMe = true
-			event.Message = &robot.Message{
-				Id:      gjson.Get(resp, "content.msg_id").String(),
-				Type:    gjson.Get(resp, "content.type").Int(),
-				Content: gjson.Get(resp, "content.msg").String(),
+		} else {
+			event = robot.Event{
+				Type:         robot.EventPrivateChat,
+				IsAtMe:       true,
+				FromUniqueID: gjson.Get(resp, "content.from_wxid").String(),
+				FromWxId:     gjson.Get(resp, "content.from_wxid").String(),
+				FromName:     gjson.Get(resp, "content.from_name").String(),
+				Message: &robot.Message{
+					Id:      gjson.Get(resp, "content.msg_id").String(),
+					Type:    gjson.Get(resp, "content.type").Int(),
+					Content: gjson.Get(resp, "content.msg").String(),
+				},
 			}
 		}
 	case eventDeviceCallback:
-		switch gjson.Get(resp, "content.type").Int() {
-		case 1:
-			event.Type = robot.EventSelfMessage // 可能不准确，待反馈
-			event.Message = &robot.Message{
-				Id:      gjson.Get(resp, "content.msg_id").String(),
-				Type:    gjson.Get(resp, "content.type").Int(),
-				Content: gjson.Get(resp, "content.msg").String(),
+		contentType := gjson.Get(resp, "content.type").Int()
+		if contentType == 1 {
+			event = robot.Event{
+				Type: robot.EventSelfMessage, // 可能不准确，待反馈
+				Message: &robot.Message{
+					Id:      gjson.Get(resp, "content.msg_id").String(),
+					Type:    gjson.Get(resp, "content.type").Int(),
+					Content: gjson.Get(resp, "content.msg").String(),
+				},
 			}
 		}
 	case eventFriendVerify:
@@ -144,5 +154,8 @@ func buildEvent(resp string) *robot.Event {
 	case eventDownloadFile:
 	case eventGroupEstablish:
 	}
+
+	event.RobotWxId = gjson.Get(resp, "content.robot_wxid").String()
+	event.RawMessage = resp
 	return &event
 }
