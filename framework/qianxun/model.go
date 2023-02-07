@@ -100,6 +100,21 @@ type GroupListResp struct {
 	Timestamp string `json:"timestamp"`
 }
 
+// GroupMemberListResp 获取群成员列表响应
+type GroupMemberListResp struct {
+	Code   int    `json:"code"`
+	Msg    string `json:"msg"`
+	Result []struct {
+		Wxid      string `json:"wxid"`
+		GroupNick string `json:"groupNick"`
+	} `json:"result"`
+	Wxid      string `json:"wxid"`
+	Port      int    `json:"port"`
+	Pid       int    `json:"pid"`
+	Flag      string `json:"flag"`
+	Timestamp string `json:"timestamp"`
+}
+
 // SubscriptionListResp 获取订阅号列表响应
 type SubscriptionListResp struct {
 	Code   int    `json:"code"`

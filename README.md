@@ -149,6 +149,12 @@ type IFramework interface {
 	// return: []*GroupInfo, error
 	GetGroupList(isRefresh bool) ([]*GroupInfo, error)
 
+	// GetGroupMemberList 获取群成员列表
+	// groupWxId: 群ID
+	// isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
+	// return: []*GroupMemberInfo, error
+	GetGroupMemberList(groupWxId string, isRefresh bool) ([]*GroupMemberInfo, error)
+
 	// GetSubscriptionList 获取订阅列表
 	// isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
 	// return: []*SubscriptionInfo, error

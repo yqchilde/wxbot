@@ -200,7 +200,7 @@ func (f *Framework) SendMiniProgram(toWxId, ghId, title, content, imagePath, jum
 }
 
 func (f *Framework) SendMessageRecord(toWxId, title string, dataList []map[string]interface{}) error {
-	log.Errorf("[千寻] SendMessageRecord not support")
+	log.Errorf("[VLW] SendMessageRecord not support")
 	return errors.New("SendMessageRecord not support, please use SendMessageRecordXML")
 }
 
@@ -419,6 +419,42 @@ func (f *Framework) GetGroupList(isRefresh bool) ([]*robot.GroupInfo, error) {
 		})
 	}
 	return groupInfoList, nil
+}
+
+func (f *Framework) GetGroupMemberList(groupWxId string, isRefresh bool) ([]*robot.GroupMemberInfo, error) {
+	dataType := 0
+	if isRefresh {
+		dataType = 1
+	}
+	payload := map[string]interface{}{
+		"api":        "GetGroupMember",
+		"token":      f.ApiToken,
+		"robot_wxid": f.BotWxId,
+		"group_wxid": groupWxId,
+		"is_refresh": dataType,
+	}
+
+	var dataResp GroupMemberListResp
+	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[VLW] GetGroupMemberList error: %v", err.Error())
+		return nil, err
+	}
+	var groupMemberInfoList []*robot.GroupMemberInfo
+	for _, res := range dataResp.ReturnJson.MemberList {
+		groupMemberInfoList = append(groupMemberInfoList, &robot.GroupMemberInfo{
+			WxId:         res.Wxid,
+			WxNum:        res.WxNum,
+			Nick:         res.Nickname,
+			Remark:       res.Remark,
+			Country:      res.Country,
+			Province:     res.Province,
+			City:         res.City,
+			AvatarMinUrl: res.Avatar,
+			AvatarMaxUrl: res.Avatar,
+			Sex:          strconv.Itoa(res.Sex),
+		})
+	}
+	return groupMemberInfoList, nil
 }
 
 func (f *Framework) GetSubscriptionList(isRefresh bool) ([]*robot.SubscriptionInfo, error) {

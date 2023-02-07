@@ -440,6 +440,30 @@ func (f *Framework) GetGroupList(isRefresh bool) ([]*robot.GroupInfo, error) {
 	return groupInfoList, nil
 }
 
+func (f *Framework) GetGroupMemberList(groupWxId string, isRefresh bool) ([]*robot.GroupMemberInfo, error) {
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0008",
+		"data": map[string]interface{}{
+			"wxid": groupWxId,
+		},
+	}
+
+	var dataResp GroupMemberListResp
+	if err := NewRequest().Post(apiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[千寻] GetGroupMemberList error: %v", err.Error())
+		return nil, err
+	}
+	var groupMemberInfoList []*robot.GroupMemberInfo
+	for _, res := range dataResp.Result {
+		groupMemberInfoList = append(groupMemberInfoList, &robot.GroupMemberInfo{
+			WxId: res.Wxid,
+			Nick: res.GroupNick,
+		})
+	}
+	return groupMemberInfoList, nil
+}
+
 func (f *Framework) GetSubscriptionList(isRefresh bool) ([]*robot.SubscriptionInfo, error) {
 	dataType := 1
 	if isRefresh {

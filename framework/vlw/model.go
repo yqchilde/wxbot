@@ -58,6 +58,31 @@ type GroupListResp struct {
 	} `json:"ReturnJson"`
 }
 
+// GroupMemberListResp 获取群成员列表响应
+type GroupMemberListResp struct {
+	Code       int    `json:"Code"`
+	Result     string `json:"Result"`
+	ReturnJson struct {
+		GroupWxid     string `json:"group_wxid"`
+		GroupName     string `json:"group_name"`
+		Count         int    `json:"count"`
+		OwnerWxid     string `json:"owner_wxid"`
+		OwnerNickname string `json:"owner_nickname"`
+		MemberList    []struct {
+			WxNum         string `json:"wx_num"`
+			Avatar        string `json:"avatar"`
+			City          string `json:"city"`
+			Country       string `json:"country"`
+			GroupNickname string `json:"group_nickname"`
+			Nickname      string `json:"nickname"`
+			Province      string `json:"province"`
+			Remark        string `json:"remark"`
+			Sex           int    `json:"sex"`
+			Wxid          string `json:"wxid"`
+		} `json:"member_list"`
+	} `json:"ReturnJson"`
+}
+
 // SubscriptionListResp 获取订阅号列表响应
 type SubscriptionListResp struct {
 	Code       int    `json:"Code"`

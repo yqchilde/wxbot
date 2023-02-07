@@ -67,6 +67,20 @@ type GroupInfo struct {
 	AvatarMaxUrl string `json:"avatarMaxUrl"` // 头像大图，需要在会话列表中
 }
 
+// GroupMemberInfo 群成员信息
+type GroupMemberInfo struct {
+	WxId         string `json:"wxId"`         // 微信ID
+	WxNum        string `json:"wxNum"`        // 微信号
+	Nick         string `json:"nick"`         // 昵称
+	Remark       string `json:"remark"`       // 备注
+	Country      string `json:"country"`      // 国家，需要在会话列表中
+	Province     string `json:"province"`     // 省份，需要在会话列表中
+	City         string `json:"city"`         // 城市，需要在会话列表中
+	AvatarMinUrl string `json:"avatarMinUrl"` // 头像小图，需要在会话列表中
+	AvatarMaxUrl string `json:"avatarMaxUrl"` // 头像大图，需要在会话列表中
+	Sex          string `json:"sex"`          // 性别，1男，2女，0未知
+}
+
 // SubscriptionInfo 订阅公众号信息
 type SubscriptionInfo struct {
 	WxId                    string `json:"wxId"`                    // 微信ID
