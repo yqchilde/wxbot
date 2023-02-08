@@ -204,6 +204,9 @@ type IFramework interface {
         * 设置每天10:00:00的提醒 
         * 设置每隔1小时的提醒 
     * 可以全局监听好友添加邀请拉群等
+* [x] [公众号监控转发-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/ghmonitor)
+    * 用法：发送`监控公众号 (gh_.*) 转发到 (.*)`
+    * 用法：发送`监控公众号关键词 (.*) 转发到 (.*)`
 
 </details>
 
