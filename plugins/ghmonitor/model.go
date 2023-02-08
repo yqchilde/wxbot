@@ -139,3 +139,19 @@ type SubscriptionMsgModel struct {
 		Isforceupdate string `xml:"isforceupdate"`
 	} `xml:"appinfo"`
 }
+
+// SliceUnion 返回切片并集
+func SliceUnion(a, b []string) []string {
+	m := make(map[string]bool)
+	for _, v := range a {
+		m[v] = true
+	}
+	for _, v := range b {
+		m[v] = true
+	}
+	var r []string
+	for k := range m {
+		r = append(r, k)
+	}
+	return r
+}
