@@ -6,7 +6,7 @@
 * 其他命令：
     * `set chatgpt apiKey __(多个key用;符号隔开)` 设置ChatGPT的apiKey，`apiKey`可小写`apikey`
     * `get chatgpt info` 获取ChatGPT的信息
-    * `set chatgpt apiKey __(多个key用;符号隔开)` 删除ChatGPT的apiKey，`apiKey`可小写`apikey`
+    * `del chatgpt apiKey __(多个key用;符号隔开)` 删除ChatGPT的apiKey，`apiKey`可小写`apikey`
 
 ## 预览：
 
