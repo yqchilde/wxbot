@@ -120,29 +120,18 @@ func init() {
 
 	// 设置openai api key
 	engine.OnRegex("set chatgpt apiKey (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		var cacheApiKeys []string
-		if err := db.Orm.Table("apikey").Pluck("key", &cacheApiKeys).Error; err != nil {
-			log.Errorf("设置apiKey失败: %v", err)
-			ctx.ReplyTextAndAt("设置apiKey失败")
-			return
-		}
-
-		matched := strings.Split(ctx.State["regex_matched"].([]string)[1], ";")
-		matchApiKeys := matched
-		for i := range cacheApiKeys {
-			for j := range matched {
-				if cacheApiKeys[i] == matched[j] {
-					matchApiKeys = append(matchApiKeys[:j], matchApiKeys[j+1:]...)
-				}
+		keys := strings.Split(ctx.State["regex_matched"].([]string)[1], ";")
+		failedKeys := make([]string, 0)
+		for i := range keys {
+			data := ApiKey{Key: keys[i]}
+			if err := db.Orm.Table("apikey").Where(&data).FirstOrCreate(&data).Error; err != nil {
+				ctx.ReplyTextAndAt("设置apiKey失败")
+				failedKeys = append(failedKeys, keys[i])
+				continue
 			}
 		}
-
-		var apiKeys []ApiKey
-		for _, key := range matchApiKeys {
-			apiKeys = append(apiKeys, ApiKey{Key: key})
-		}
-		if err := db.Orm.Table("apikey").Create(&apiKeys).Error; err != nil {
-			ctx.ReplyTextAndAt("设置apiKey失败")
+		if len(failedKeys) > 0 {
+			ctx.ReplyText(fmt.Sprintf("以下apiKey设置失败: %v", failedKeys))
 			return
 		}
 		ctx.ReplyText("apiKey设置成功")
