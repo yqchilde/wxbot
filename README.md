@@ -20,6 +20,18 @@
 
 ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/screenshots.jpg)
 
+<details open>
+<summary>🎁 已接入框架，展开看👇</summary>
+
+* [x] [千寻框架](https://gitee.com/qxvxhook/pc-vx-hook-http-api/tree/36018/%E5%8D%83%E5%AF%BB%E6%A1%86%E6%9E%B6)
+    * 具体配置查看 `config.yaml` 文件注释说明
+    * ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/qianxun.png)
+* [x] VLW框架
+    * 具体配置查看 `config.yaml` 文件注释说明
+    * ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/vlw.png)
+
+</details>
+
 <details>
 <summary>🎁 已对接API，展开看👇</summary>
 
@@ -161,18 +173,6 @@ type IFramework interface {
 	GetSubscriptionList(isRefresh bool) ([]*SubscriptionInfo, error)
 }
 ```
-
-</details>
-
-<details>
-<summary>🎁 已接入框架，展开看👇</summary>
-
-* [x] 千寻框架
-    * 具体配置查看 `config.yaml` 文件注释说明
-    * ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/qianxun.png)
-* [x] VLW框架
-    * 具体配置查看 `config.yaml` 文件注释说明
-    * ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/vlw.png)
 
 </details>
 
