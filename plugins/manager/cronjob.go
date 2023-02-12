@@ -38,7 +38,7 @@ type CronJob struct {
 }
 
 func registerCronjob() {
-	engine := control.Register("cronjob", &control.Options[*robot.Ctx]{
+	engine := control.Register("cronjob", &control.Options{
 		Alias:      "定时任务",
 		Help:       "管理员设置定时任务",
 		DataFolder: "manager",

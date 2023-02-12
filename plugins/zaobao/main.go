@@ -24,7 +24,7 @@ type ZaoBao struct {
 }
 
 func init() {
-	engine := control.Register("zaobao", &control.Options[*robot.Ctx]{
+	engine := control.Register("zaobao", &control.Options{
 		Alias:      "每日早报",
 		Help:       "输入 {每日早报|早报} => 获取每天60s读懂世界",
 		DataFolder: "zaobao",

@@ -17,7 +17,7 @@ type Command struct {
 }
 
 func registerCommand() {
-	engine := control.Register("command", &control.Options[*robot.Ctx]{
+	engine := control.Register("command", &control.Options{
 		HideMenu: true,
 	})
 
@@ -37,7 +37,7 @@ func registerCommand() {
 
 	// 菜单输出
 	engine.OnFullMatchGroup([]string{"menu", "菜单"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		c := ctx.State["manager"].(*control.Control[*robot.Ctx])
+		c := ctx.State["manager"].(*control.Control)
 		options := MenuOptions{WxId: ctx.Event.FromUniqueID}
 		for _, m := range c.Manager.M {
 			if m.Options.HideMenu {

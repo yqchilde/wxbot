@@ -16,7 +16,7 @@ var sentence []string
 func init() {
 	go getCrazyKFCSentence()
 	rand.Seed(time.Now().UnixNano())
-	engine := control.Register("kfccrazy", &control.Options[*robot.Ctx]{
+	engine := control.Register("kfccrazy", &control.Options{
 		Alias: "kfc骚话",
 		Help:  "输入 {kfc骚话} => 获取肯德基疯狂星期四骚话",
 	})

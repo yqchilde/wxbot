@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	engine := control.Register("jdbean", &control.Options[*robot.Ctx]{
+	engine := control.Register("jdbean", &control.Options{
 		Alias:            "京豆上车",
 		Help:             "输入 {京东上车} => 快上车和我一起挂京豆",
 		DisableOnDefault: true,

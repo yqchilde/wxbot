@@ -2,7 +2,7 @@ package manager
 
 func registerEvent() {
 	// 该插件按需引入，自行修改
-	//engine := control.Register("event", &control.Options[*robot.Ctx]{
+	//engine := control.Register("event", &control.Options{
 	//	HideMenu: true,
 	//})
 

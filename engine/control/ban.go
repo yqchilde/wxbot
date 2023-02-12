@@ -9,7 +9,7 @@ import (
 var banCache = make(map[string]struct{})
 
 // Ban 禁止某人在某群使用本插件
-func (m *Control[CTX]) Ban(uid, gid string) {
+func (m *Control) Ban(uid, gid string) {
 	var err error
 	if gid != "" {
 		label := fmt.Sprintf("%s_%s_%s", m.Service, uid, gid)
@@ -34,7 +34,7 @@ func (m *Control[CTX]) Ban(uid, gid string) {
 }
 
 // Permit 允许某人在某群使用本插件
-func (m *Control[CTX]) Permit(uid, gid string) {
+func (m *Control) Permit(uid, gid string) {
 	if gid != "" {
 		label := fmt.Sprintf("%s_%s_%s", m.Service, uid, gid)
 		m.Manager.Lock()
@@ -54,7 +54,7 @@ func (m *Control[CTX]) Permit(uid, gid string) {
 }
 
 // IsBannedIn 某人是否在某群被ban
-func (m *Control[CTX]) IsBannedIn(uid, gid string) bool {
+func (m *Control) IsBannedIn(uid, gid string) bool {
 	var b PluginBanConfig
 	var err error
 	if len(gid) != 0 {

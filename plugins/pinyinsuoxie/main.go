@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	engine := control.Register("chasuoxie", &control.Options[*robot.Ctx]{
+	engine := control.Register("chasuoxie", &control.Options{
 		Alias: "查缩写",
 		Help:  "输入 {查缩写 XX} => 获取拼音缩写翻译，Ps:查缩写 yyds",
 	})

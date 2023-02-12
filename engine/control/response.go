@@ -6,11 +6,11 @@ import (
 
 var respCache = make(map[string]bool)
 
-func (manager *Manager[CTX]) initResponse() error {
+func (manager *Manager) initResponse() error {
 	return manager.D.Table("__resp").AutoMigrate(&BotResponseConfig{})
 }
 
-func (manager *Manager[CTX]) Response(gid string) error {
+func (manager *Manager) Response(gid string) error {
 	if manager.CanResponse(gid) {
 		return fmt.Errorf("group-%s is already response", gid)
 	}
@@ -20,7 +20,7 @@ func (manager *Manager[CTX]) Response(gid string) error {
 	return manager.D.Table("__resp").Create(&BotResponseConfig{GroupID: gid}).Error
 }
 
-func (manager *Manager[CTX]) Silence(gid string) error {
+func (manager *Manager) Silence(gid string) error {
 	if !manager.CanResponse(gid) {
 		return fmt.Errorf("group-%s is already silence", gid)
 	}
@@ -30,7 +30,7 @@ func (manager *Manager[CTX]) Silence(gid string) error {
 	return manager.D.Table("__resp").Where("gid = ?", gid).Delete(&BotResponseConfig{}).Error
 }
 
-func (manager *Manager[CTX]) CanResponse(gid string) bool {
+func (manager *Manager) CanResponse(gid string) bool {
 	manager.RLock()
 	isResp, ok := respCache["all"]
 	manager.RUnlock()

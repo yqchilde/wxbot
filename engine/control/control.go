@@ -7,20 +7,20 @@ import (
 )
 
 // Control 插件控制器
-type Control[CTX any] struct {
+type Control struct {
 	Service string          // Service 插件服务名
 	Cache   map[string]bool // Cache 缓存
-	Options Options[CTX]    // Options 插件配置
-	Manager *Manager[CTX]   // Manager 插件管理器
+	Options Options         // Options 插件配置
+	Manager *Manager        // Manager 插件管理器
 }
 
-func (manager *Manager[CTX]) NewControl(service string, o *Options[CTX]) *Control[CTX] {
-	m := &Control[CTX]{
+func (manager *Manager) NewControl(service string, o *Options) *Control {
+	m := &Control{
 		Service: service,
 		Cache:   make(map[string]bool),
-		Options: func() Options[CTX] {
+		Options: func() Options {
 			if o == nil {
-				return Options[CTX]{}
+				return Options{}
 			}
 			return *o
 		}(),
@@ -43,7 +43,7 @@ func (manager *Manager[CTX]) NewControl(service string, o *Options[CTX]) *Contro
 }
 
 // Handler 返回预处理器
-func (m *Control[CTX]) Handler(gid, uid string) bool {
+func (m *Control) Handler(gid, uid string) bool {
 	if m.Manager.IsBlocked(uid) {
 		return false
 	}
@@ -57,7 +57,7 @@ func (m *Control[CTX]) Handler(gid, uid string) bool {
 }
 
 // Enable 使插件在某个群中启用
-func (m *Control[CTX]) Enable(groupID string) error {
+func (m *Control) Enable(groupID string) error {
 	if groupID != "all" {
 		if isEnable, ok := m.IsEnabledAll(true); ok {
 			if isEnable {
@@ -87,7 +87,7 @@ func (m *Control[CTX]) Enable(groupID string) error {
 }
 
 // Disable 使插件在某个群中禁用
-func (m *Control[CTX]) Disable(groupID string) error {
+func (m *Control) Disable(groupID string) error {
 	if groupID != "all" {
 		if isEnable, ok := m.IsEnabledAll(false); ok {
 			if isEnable {
@@ -117,7 +117,7 @@ func (m *Control[CTX]) Disable(groupID string) error {
 }
 
 // CloseGlobalMode 关闭全局模式
-func (m *Control[CTX]) CloseGlobalMode() error {
+func (m *Control) CloseGlobalMode() error {
 	if err := m.Manager.D.Table(m.Service).Delete(&PluginConfig{}, "gid = ?", "all").Error; err != nil {
 		log.Errorf("(plugin) %s close global failed: %v", m.Service, err)
 		return errors.New("关闭失败")
@@ -129,7 +129,7 @@ func (m *Control[CTX]) CloseGlobalMode() error {
 }
 
 // IsEnabledIn 查询开启群组
-func (m *Control[CTX]) IsEnabledIn(gid string) bool {
+func (m *Control) IsEnabledIn(gid string) bool {
 	m.Manager.RLock()
 	isEnable, ok := m.Cache["all"]
 	m.Manager.RUnlock()
@@ -157,7 +157,7 @@ func (m *Control[CTX]) IsEnabledIn(gid string) bool {
 }
 
 // IsEnabledAll 查询是否全局开启
-func (m *Control[CTX]) IsEnabledAll(enable bool) (isEnable bool, ok bool) {
+func (m *Control) IsEnabledAll(enable bool) (isEnable bool, ok bool) {
 	m.Manager.RLock()
 	isEnable, ok = m.Cache["all"]
 	m.Manager.RUnlock()

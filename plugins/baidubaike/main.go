@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	engine := control.Register("baidubaike", &control.Options[*robot.Ctx]{
+	engine := control.Register("baidubaike", &control.Options{
 		Alias: "百度百科",
 		Help: "用法：百度百科 XX\n" +
 			"示例：百度百科 okr",

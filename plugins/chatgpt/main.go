@@ -30,7 +30,7 @@ type ApiKey struct {
 }
 
 func init() {
-	engine := control.Register("chatgpt", &control.Options[*robot.Ctx]{
+	engine := control.Register("chatgpt", &control.Options{
 		Alias:      "ChatGPT",
 		Help:       "输入 {开始会话} => 进行ChatGPT连续会话",
 		DataFolder: "chatgpt",

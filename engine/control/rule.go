@@ -8,10 +8,10 @@ import (
 
 var (
 	once     = sync.Once{}
-	managers = NewManager[*robot.Ctx]("data/manager/plugins.db")
+	managers = NewManager("data/manager/plugins.db")
 )
 
-func newControl(service string, o *Options[*robot.Ctx]) robot.Rule {
+func newControl(service string, o *Options) robot.Rule {
 	c := managers.NewControl(service, o)
 	return func(ctx *robot.Ctx) bool {
 		ctx.State["manager"] = c

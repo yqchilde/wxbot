@@ -17,7 +17,7 @@ var (
 )
 
 func init() {
-	engine := control.Register("plmm", &control.Options[*robot.Ctx]{
+	engine := control.Register("plmm", &control.Options{
 		Alias:            "漂亮妹妹",
 		Help:             "输入 {漂亮妹妹} => 获取漂亮妹妹",
 		DataFolder:       "plmm",

@@ -12,13 +12,13 @@ import (
 	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
 )
 
-type Manager[CTX any] struct {
+type Manager struct {
 	sync.RWMutex
-	M map[string]*Control[CTX]
+	M map[string]*Control
 	D *gorm.DB
 }
 
-func NewManager[CTX any](dbpath string) (m Manager[CTX]) {
+func NewManager(dbpath string) (m Manager) {
 	i := strings.LastIndex(dbpath, "/")
 	if i > 0 {
 		if err := os.MkdirAll(dbpath[:i], 0755); err != nil {
@@ -29,8 +29,8 @@ func NewManager[CTX any](dbpath string) (m Manager[CTX]) {
 	if err := sqlite.Open(dbpath, &db, &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)}); err != nil {
 		log.Fatal("open plugins database failed: ", err)
 	}
-	m = Manager[CTX]{
-		M: map[string]*Control[CTX]{},
+	m = Manager{
+		M: map[string]*Control{},
 		D: db.Orm,
 	}
 	if err := m.initBlock(); err != nil {
@@ -43,7 +43,7 @@ func NewManager[CTX any](dbpath string) (m Manager[CTX]) {
 }
 
 // Lookup 查找插件管理器
-func (manager *Manager[CTX]) Lookup(service string) (*Control[CTX], bool) {
+func (manager *Manager) Lookup(service string) (*Control, bool) {
 	manager.RLock()
 	m, ok := manager.M[service]
 	manager.RUnlock()
@@ -51,6 +51,6 @@ func (manager *Manager[CTX]) Lookup(service string) (*Control[CTX], bool) {
 }
 
 // LookupAll 查找全部插件管理器
-func (manager *Manager[CTX]) LookupAll() map[string]*Control[CTX] {
+func (manager *Manager) LookupAll() map[string]*Control {
 	return manager.M
 }

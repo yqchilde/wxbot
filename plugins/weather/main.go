@@ -19,7 +19,7 @@ var (
 )
 
 func init() {
-	engine := control.Register("weather", &control.Options[*robot.Ctx]{
+	engine := control.Register("weather", &control.Options{
 		Alias:      "天气查询",
 		Help:       "输入 {XX天气} => 获取天气数据，Ps:济南天气、北京-朝阳天气",
 		DataFolder: "weather",

@@ -4,7 +4,6 @@ import (
 	"sync/atomic"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
-	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 var (
@@ -13,7 +12,7 @@ var (
 )
 
 // Register 注册插件控制器
-func Register(service string, o *Options[*robot.Ctx]) *Engine {
+func Register(service string, o *Options) *Engine {
 	atomic.AddUint64(&priority, 10)
 	s, ok := priorityMap[priority]
 	if ok {
@@ -25,10 +24,10 @@ func Register(service string, o *Options[*robot.Ctx]) *Engine {
 }
 
 // GetOptionsOnCronjob 获取定时任务插件控制器配置
-func GetOptionsOnCronjob() map[string]*Control[*robot.Ctx] {
+func GetOptionsOnCronjob() map[string]*Control {
 	var (
 		services      = managers.LookupAll()
-		servicesClone = make(map[string]*Control[*robot.Ctx])
+		servicesClone = make(map[string]*Control)
 	)
 
 	for i := range services {

@@ -1,16 +1,18 @@
 package control
 
-type Options[CTX any] struct {
-	Alias            string    // 插件别名
-	Help             string    // 插件帮助信息
-	Priority         uint64    // 优先级,只读
-	DisableOnDefault bool      // 默认禁用状态
-	HideMenu         bool      // 是否隐藏在菜单中，默认显示，可用于隐藏一些不希望展示的插件
-	CacheFolder      string    // 缓存文件夹
-	DataFolder       string    // 数据文件夹
-	OnEnable         func(CTX) // 自定义启用插件后执行的操作
-	OnDisable        func(CTX) // 自定义禁用插件后执行的操作
-	OnCronjob        func(CTX) // 自定义定时任务，用于被定时调用
+import "github.com/yqchilde/wxbot/engine/robot"
+
+type Options struct {
+	Alias            string               // 插件别名
+	Help             string               // 插件帮助信息
+	Priority         uint64               // 优先级,只读
+	DisableOnDefault bool                 // 默认禁用状态
+	HideMenu         bool                 // 是否隐藏在菜单中，默认显示，可用于隐藏一些不希望展示的插件
+	CacheFolder      string               // 缓存文件夹
+	DataFolder       string               // 数据文件夹
+	OnEnable         func(ctx *robot.Ctx) // 自定义启用插件后执行的操作
+	OnDisable        func(ctx *robot.Ctx) // 自定义禁用插件后执行的操作
+	OnCronjob        func(ctx *robot.Ctx) // 自定义定时任务，用于被定时调用
 }
 
 // PluginConfig 插件配置表

@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	engine := control.Register("moyu", &control.Options[*robot.Ctx]{
+	engine := control.Register("moyu", &control.Options{
 		Alias: "摸鱼日历",
 		Help:  "输入 {摸鱼日历|摸鱼} => 获取摸鱼办日历",
 	})

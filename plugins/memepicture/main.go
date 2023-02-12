@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	engine := control.Register("memepicture", &control.Options[*robot.Ctx]{
+	engine := control.Register("memepicture", &control.Options{
 		Alias: "表情原图",
 		Help:  "输入 {表情原图} => 30s内发送表情获取表情原图",
 	})

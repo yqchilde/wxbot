@@ -18,7 +18,7 @@ type Engine struct {
 var dataFolderFilter = make(map[string]string)
 var cacheFolderFilter = make(map[string]string)
 
-func newEngine(service string, o *Options[*robot.Ctx]) (e *Engine) {
+func newEngine(service string, o *Options) (e *Engine) {
 	e = &Engine{
 		en:       robot.New(),
 		priority: priority,
