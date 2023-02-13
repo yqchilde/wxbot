@@ -1,8 +1,11 @@
-.PHONY: release build
+.PHONY: plugins release build
 
-release: build upx compress
+release: plugins build upx compress
 
 GO_FLAGS = -ldflags="-s -w -X github.com/yqchilde/wxbot/engine/robot.version=${version}"
+
+plugins:
+	go generate -tags plugins ./engine/plugins && go mod tidy
 
 build:
 	@$(MAKE) --no-print-directory \
