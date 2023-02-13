@@ -15,7 +15,11 @@ superUsers:
   - "wxid_5cvtxuwufytd21"
 # 管理员命令前缀
 commandPrefix: "/"
-# 框架配置
+# 本项目运行时的HTTP端口，用于在接入框架里配置回调地址
+# 在所接入的VX框架中设置回调地址可写成 http://ip:9528/wxbot/callback，本地测试ip可写localhost
+serverPort: 9528
+
+# 接入框架配置
 frameworks:
   # 框架选择，可选 千寻、VLW
   name: "千寻"
@@ -23,9 +27,6 @@ frameworks:
   apiUrl: "http://192.168.31.8:9527"
   # VX框架HTTP鉴权Token (千寻目前没有，vlw需要)
   apiToken: ""
-  # wxbot运行时的端口，用于在VX框架里设置(回调地址/转发地址/通知地址)叫法不一样，理解就行
-  # 在VX框架中设置回调地址可写成 http://ip:9528/wxbot/callback，IP记得改为运行wxbot的机器IP
-  servePort: 9528
 `
 
 var version string

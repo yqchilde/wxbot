@@ -15,7 +15,7 @@ var (
 )
 
 type Robot struct {
-	BotConfig        *Config
+	Config           *Config
 	Framework        IFramework
 	FriendsList      []*FriendInfo
 	GroupList        []*GroupInfo
@@ -23,18 +23,23 @@ type Robot struct {
 }
 
 type Config struct {
-	BotWxId        string        // 机器人微信ID
-	BotNickname    string        // 机器人名称
-	SuperUsers     []string      // 超级用户(管理员)
-	CommandPrefix  string        // 管理员触发命令
-	BufferLen      uint          // 事件缓冲区长度, 默认4096
-	Latency        time.Duration // 事件处理延迟 (延迟 latency + (0~100ms) 再处理事件) (默认1s)
-	MaxProcessTime time.Duration // 事件最大处理时间 (默认3min)
-	Framework      IFramework    // 接入框架需实现该接口
+	BotWxId        string        `mapstructure:"botWxId"`       // 机器人微信ID
+	BotNickname    string        `mapstructure:"botNickname"`   // 机器人名称
+	SuperUsers     []string      `mapstructure:"superUsers"`    // 超级用户(管理员)
+	CommandPrefix  string        `mapstructure:"commandPrefix"` // 管理员触发命令
+	ServerPort     uint          `mapstructure:"serverPort"`    // 启动HTTP服务端口
+	BufferLen      uint          `mapstructure:"-"`             // 事件缓冲区长度, 默认4096
+	Latency        time.Duration `mapstructure:"-"`             // 事件处理延迟 (延迟 latency + (0~100ms) 再处理事件) (默认1s)
+	MaxProcessTime time.Duration `mapstructure:"-"`             // 事件最大处理时间 (默认3min)
+	Framework      struct {
+		Name     string `mapstructure:"name"`     // 接入框架名称
+		ApiUrl   string `mapstructure:"apiUrl"`   // 接入框架API地址
+		ApiToken string `mapstructure:"apiToken"` // 接入框架API Token
+	} `mapstructure:"framework"`
 }
 
 // Init 初始化机器人
-func Init(c *Config) *Robot {
+func Init(c *Config, f IFramework) *Robot {
 	if c.BufferLen == 0 {
 		c.BufferLen = 4096
 	}
@@ -47,16 +52,36 @@ func Init(c *Config) *Robot {
 	go monitoringWechatData()
 
 	return &Robot{
-		BotConfig: c,
-		Framework: c.Framework,
+		Config:    c,
+		Framework: f,
 	}
 }
 
 // Run 运行并阻塞主线程，等待事件
-func (r *Robot) Run() {
-	eventBuffer = NewEventBuffer(r.BotConfig.BufferLen)
-	eventBuffer.Loop(r.BotConfig.Latency, r.BotConfig.MaxProcessTime, processEventAsync)
-	r.Framework.Callback(eventBuffer.ProcessEvent)
+func (b *Robot) Run() {
+	eventBuffer = NewEventBuffer(b.Config.BufferLen)
+	eventBuffer.Loop(b.Config.Latency, b.Config.MaxProcessTime, processEventAsync)
+	b.Framework.Callback(eventBuffer.ProcessEvent)
+}
+
+// GetBotNick 获取机器人昵称
+func (b *Robot) GetBotNick() string {
+	return b.Config.BotNickname
+}
+
+// GetBotWxId 获取机器人微信ID
+func (b *Robot) GetBotWxId() string {
+	return b.Config.BotWxId
+}
+
+// GetSuperUsers 获取超级用户
+func (b *Robot) GetSuperUsers() []string {
+	return b.Config.SuperUsers
+}
+
+// GetCommandPrefix 获取命令前缀
+func (b *Robot) GetCommandPrefix() string {
+	return b.Config.CommandPrefix
 }
 
 func processEventAsync(event *Event, framework IFramework, maxWait time.Duration) {

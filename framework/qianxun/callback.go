@@ -25,18 +25,18 @@ const (
 )
 
 type Framework struct {
-	BotWxId   string // 机器人微信ID
-	ApiUrl    string // http api地址
-	ApiToken  string // http api鉴权token
-	ServePort uint   // 本地服务端口，用于接收回调
+	ServerPort uint   // 本地服务端口，用于接收回调
+	BotWxId    string // 机器人微信ID
+	ApiUrl     string // http api地址
+	ApiToken   string // http api鉴权token
 }
 
-func New(botWxId, apiUrl, apiToken string, servePort uint) *Framework {
+func New(serverPort uint, botWxId, apiUrl, apiToken string) *Framework {
 	return &Framework{
-		BotWxId:   botWxId,
-		ApiUrl:    apiUrl,
-		ApiToken:  apiToken,
-		ServePort: servePort,
+		ServerPort: serverPort,
+		BotWxId:    botWxId,
+		ApiUrl:     apiUrl,
+		ApiToken:   apiToken,
 	}
 }
 
@@ -53,16 +53,16 @@ func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Write([]byte(`{"code":0}`))
 	})
-	if f.ServePort == 0 {
-		f.ServePort = 9528
+	if f.ServerPort == 0 {
+		f.ServerPort = 9528
 	}
 
 	if ip, err := net.GetIPWithLocal(); err != nil {
-		log.Printf("[千寻] WxBot回调地址: http://%s:%d/wxbot/callback", "127.0.0.1", f.ServePort)
+		log.Printf("[千寻] WxBot回调地址: http://%s:%d/wxbot/callback", "127.0.0.1", f.ServerPort)
 	} else {
-		log.Printf("[千寻] WxBot回调地址: http://%s:%d/wxbot/callback", ip, f.ServePort)
+		log.Printf("[千寻] WxBot回调地址: http://%s:%d/wxbot/callback", ip, f.ServerPort)
 	}
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", f.ServePort), nil); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", f.ServerPort), nil); err != nil {
 		log.Fatalf("[千寻] WxBot回调服务启动失败, error: %v", err)
 	}
 }
