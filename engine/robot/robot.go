@@ -61,7 +61,7 @@ func processEventAsync(event *Event, framework IFramework, maxWait time.Duration
 		hasMatcherListChanged = false
 	}
 	matcherLock.Unlock()
-	preProcessMessageEvent(event)
+	preProcessMessageEvent(ctx, event)
 	go match(ctx, matcherListForRanging, maxWait)
 }
 
@@ -219,12 +219,20 @@ loop:
 }
 
 // preProcessMessageEvent 预处理消息事件
-func preProcessMessageEvent(e *Event) {
+func preProcessMessageEvent(ctx *Ctx, e *Event) {
 	switch e.Type {
 	case EventPrivateChat:
-		log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
+		if ctx.IsMemePictures() {
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])动态表情消息", e.FromName, e.FromWxId))
+		} else {
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
+		}
 	case EventGroupChat:
-		log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
+		if ctx.IsMemePictures() {
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])动态表情消息", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId))
+		} else {
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
+		}
 	case EventMPChat:
 		log.Println(fmt.Sprintf("[回调]收到订阅公众号(%s[%s])消息", e.FromName, e.FromWxId))
 	case EventSelfMessage:

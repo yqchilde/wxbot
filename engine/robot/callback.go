@@ -50,7 +50,12 @@ func (ctx *Ctx) IsVideo() bool {
 }
 
 // IsMemePictures 判断消息类型是否为表情包
-func (ctx *Ctx) IsMemePictures() (string, bool) {
+func (ctx *Ctx) IsMemePictures() bool {
+	return ctx.Event.Message != nil && ctx.Event.Message.Type == MsgTypeMemePicture
+}
+
+// GetMemePictures 获取表情包图片地址
+func (ctx *Ctx) GetMemePictures() (string, bool) {
 	if ctx.Event.Message != nil && ctx.Event.Message.Type != MsgTypeMemePicture {
 		return "", false
 	}

@@ -141,7 +141,7 @@ func UserOrGroupAdmin(ctx *Ctx) bool {
 
 // HasMemePicture 检查消息是否存在表情包图片
 func HasMemePicture(ctx *Ctx) bool {
-	url, has := ctx.IsMemePictures()
+	url, has := ctx.GetMemePictures()
 	if has {
 		ctx.State["image_url"] = url
 		return true
