@@ -53,7 +53,7 @@ func registerCronjob() {
 		if err := db.Orm.Table("cronjob").Find(&cronJobs).Error; err != nil {
 			return
 		}
-		ctx := robot.GetCTX()
+		ctx := robot.GetCtx()
 		options := control.GetOptionsOnCronjob()
 		for i := range cronJobs {
 			cronJob := cronJobs[i]

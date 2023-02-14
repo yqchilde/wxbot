@@ -6,6 +6,7 @@ import (
 
 type Ctx struct {
 	matcher   *Matcher
+	Bot       *Bot
 	Event     *Event
 	State     State
 	framework IFramework

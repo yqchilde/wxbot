@@ -326,7 +326,7 @@ func (f *Framework) InviteIntoGroup(groupWxId, wxId string, typ int) error {
 	return nil
 }
 
-func (f *Framework) GetObjectInfo(wxId string) (*robot.ObjectInfo, error) {
+func (f *Framework) GetObjectInfo(wxId string) (*robot.User, error) {
 	payload := map[string]interface{}{
 		"api":        "GetFriendlist",
 		"token":      f.ApiToken,
@@ -339,7 +339,7 @@ func (f *Framework) GetObjectInfo(wxId string) (*robot.ObjectInfo, error) {
 		log.Errorf("[VLW] GetObjectInfo error: %v", err.Error())
 		return nil, err
 	}
-	return &robot.ObjectInfo{
+	return &robot.User{
 		WxId:         dataResp.ReturnJson.Data.Wxid,
 		WxNum:        dataResp.ReturnJson.Data.Account,
 		Nick:         dataResp.ReturnJson.Data.Nickname,
@@ -356,7 +356,7 @@ func (f *Framework) GetObjectInfo(wxId string) (*robot.ObjectInfo, error) {
 	}, nil
 }
 
-func (f *Framework) GetFriendsList(isRefresh bool) ([]*robot.FriendInfo, error) {
+func (f *Framework) GetFriends(isRefresh bool) ([]*robot.User, error) {
 	dataType := 0
 	if isRefresh {
 		dataType = 1
@@ -370,12 +370,12 @@ func (f *Framework) GetFriendsList(isRefresh bool) ([]*robot.FriendInfo, error) 
 
 	var dataResp FriendsListResp
 	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
-		log.Errorf("[VLW] GetFriendsList error: %v", err.Error())
+		log.Errorf("[VLW] GetFriends error: %v", err.Error())
 		return nil, err
 	}
-	var friendsInfoList []*robot.FriendInfo
+	var friendsInfoList []*robot.User
 	for _, res := range dataResp.ReturnJson {
-		friendsInfoList = append(friendsInfoList, &robot.FriendInfo{
+		friendsInfoList = append(friendsInfoList, &robot.User{
 			WxId:         res.Wxid,
 			WxNum:        res.WxNum,
 			Nick:         res.Nickname,
@@ -391,7 +391,7 @@ func (f *Framework) GetFriendsList(isRefresh bool) ([]*robot.FriendInfo, error) 
 	return friendsInfoList, nil
 }
 
-func (f *Framework) GetGroupList(isRefresh bool) ([]*robot.GroupInfo, error) {
+func (f *Framework) GetGroups(isRefresh bool) ([]*robot.User, error) {
 	dataType := 0
 	if isRefresh {
 		dataType = 1
@@ -405,12 +405,12 @@ func (f *Framework) GetGroupList(isRefresh bool) ([]*robot.GroupInfo, error) {
 
 	var dataResp GroupListResp
 	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
-		log.Errorf("[VLW] GetGroupList error: %v", err.Error())
+		log.Errorf("[VLW] GetGroups error: %v", err.Error())
 		return nil, err
 	}
-	var groupInfoList []*robot.GroupInfo
+	var groupInfoList []*robot.User
 	for _, res := range dataResp.ReturnJson {
-		groupInfoList = append(groupInfoList, &robot.GroupInfo{
+		groupInfoList = append(groupInfoList, &robot.User{
 			WxId:         res.Wxid,
 			Nick:         res.Nickname,
 			MemberNum:    res.TotalMember,
@@ -421,7 +421,7 @@ func (f *Framework) GetGroupList(isRefresh bool) ([]*robot.GroupInfo, error) {
 	return groupInfoList, nil
 }
 
-func (f *Framework) GetGroupMemberList(groupWxId string, isRefresh bool) ([]*robot.GroupMemberInfo, error) {
+func (f *Framework) GetGroupMembers(groupWxId string, isRefresh bool) ([]*robot.User, error) {
 	dataType := 0
 	if isRefresh {
 		dataType = 1
@@ -436,12 +436,12 @@ func (f *Framework) GetGroupMemberList(groupWxId string, isRefresh bool) ([]*rob
 
 	var dataResp GroupMemberListResp
 	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
-		log.Errorf("[VLW] GetGroupMemberList error: %v", err.Error())
+		log.Errorf("[VLW] GetGroupMembers error: %v", err.Error())
 		return nil, err
 	}
-	var groupMemberInfoList []*robot.GroupMemberInfo
+	var groupMemberInfoList []*robot.User
 	for _, res := range dataResp.ReturnJson.MemberList {
-		groupMemberInfoList = append(groupMemberInfoList, &robot.GroupMemberInfo{
+		groupMemberInfoList = append(groupMemberInfoList, &robot.User{
 			WxId:         res.Wxid,
 			WxNum:        res.WxNum,
 			Nick:         res.Nickname,
@@ -457,7 +457,7 @@ func (f *Framework) GetGroupMemberList(groupWxId string, isRefresh bool) ([]*rob
 	return groupMemberInfoList, nil
 }
 
-func (f *Framework) GetSubscriptionList(isRefresh bool) ([]*robot.SubscriptionInfo, error) {
+func (f *Framework) GetMPs(isRefresh bool) ([]*robot.User, error) {
 	dataType := 0
 	if isRefresh {
 		dataType = 1
@@ -471,12 +471,12 @@ func (f *Framework) GetSubscriptionList(isRefresh bool) ([]*robot.SubscriptionIn
 
 	var dataResp SubscriptionListResp
 	if err := NewRequest().Post(f.ApiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
-		log.Errorf("[VLW] GetSubscriptionList error: %v", err.Error())
+		log.Errorf("[VLW] GetMPs error: %v", err.Error())
 		return nil, err
 	}
-	var subscriptionInfoList []*robot.SubscriptionInfo
+	var subscriptionInfoList []*robot.User
 	for _, res := range dataResp.ReturnJson {
-		subscriptionInfoList = append(subscriptionInfoList, &robot.SubscriptionInfo{
+		subscriptionInfoList = append(subscriptionInfoList, &robot.User{
 			WxId:         res.Wxid,
 			Nick:         res.Nickname,
 			AvatarMinUrl: res.Avatar,

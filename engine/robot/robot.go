@@ -1,6 +1,7 @@
 package robot
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"runtime/debug"
@@ -10,36 +11,18 @@ import (
 )
 
 var (
-	WxBot       *Robot       // 当前机器人
+	bot         *Bot         // 当前机器人
 	eventBuffer *EventBuffer // 事件缓冲区
 )
 
-type Robot struct {
-	Config           *Config
-	Framework        IFramework
-	FriendsList      []*FriendInfo
-	GroupList        []*GroupInfo
-	SubscriptionList []*SubscriptionInfo
+type Bot struct {
+	self      *Self
+	config    *Config
+	framework IFramework
 }
 
-type Config struct {
-	BotWxId        string        `mapstructure:"botWxId"`       // 机器人微信ID
-	BotNickname    string        `mapstructure:"botNickname"`   // 机器人名称
-	SuperUsers     []string      `mapstructure:"superUsers"`    // 超级用户(管理员)
-	CommandPrefix  string        `mapstructure:"commandPrefix"` // 管理员触发命令
-	ServerPort     uint          `mapstructure:"serverPort"`    // 启动HTTP服务端口
-	BufferLen      uint          `mapstructure:"-"`             // 事件缓冲区长度, 默认4096
-	Latency        time.Duration `mapstructure:"-"`             // 事件处理延迟 (延迟 latency + (0~100ms) 再处理事件) (默认1s)
-	MaxProcessTime time.Duration `mapstructure:"-"`             // 事件最大处理时间 (默认3min)
-	Framework      struct {
-		Name     string `mapstructure:"name"`     // 接入框架名称
-		ApiUrl   string `mapstructure:"apiUrl"`   // 接入框架API地址
-		ApiToken string `mapstructure:"apiToken"` // 接入框架API Token
-	} `mapstructure:"framework"`
-}
-
-// Init 初始化机器人
-func Init(c *Config, f IFramework) *Robot {
+// Run 运行并阻塞主线程，等待事件
+func Run(c *Config, f IFramework) {
 	if c.BufferLen == 0 {
 		c.BufferLen = 4096
 	}
@@ -49,43 +32,24 @@ func Init(c *Config, f IFramework) *Robot {
 	if c.MaxProcessTime == 0 {
 		c.MaxProcessTime = time.Minute * 3
 	}
-	go monitoringWechatData()
 
-	return &Robot{
-		Config:    c,
-		Framework: f,
-	}
-}
+	bot = &Bot{config: c, framework: f}
+	bot.self = &Self{bot: bot}
+	bot.self.Init()
 
-// Run 运行并阻塞主线程，等待事件
-func (b *Robot) Run() {
-	eventBuffer = NewEventBuffer(b.Config.BufferLen)
-	eventBuffer.Loop(b.Config.Latency, b.Config.MaxProcessTime, processEventAsync)
-	b.Framework.Callback(eventBuffer.ProcessEvent)
-}
+	log.Printf("[robot] 共获取到%d个好友", len(bot.FriendsFromCache()))
+	log.Printf("[robot] 共获取到%d个群组", len(bot.GroupsFromCache()))
+	log.Printf("[robot] 共获取到%d个公众号", len(bot.MPsFromCache()))
+	log.Printf("[robot] 机器人%s开始工作", c.BotNickname)
 
-// GetBotNick 获取机器人昵称
-func (b *Robot) GetBotNick() string {
-	return b.Config.BotNickname
-}
-
-// GetBotWxId 获取机器人微信ID
-func (b *Robot) GetBotWxId() string {
-	return b.Config.BotWxId
-}
-
-// GetSuperUsers 获取超级用户
-func (b *Robot) GetSuperUsers() []string {
-	return b.Config.SuperUsers
-}
-
-// GetCommandPrefix 获取命令前缀
-func (b *Robot) GetCommandPrefix() string {
-	return b.Config.CommandPrefix
+	eventBuffer = NewEventBuffer(bot.config.BufferLen)
+	eventBuffer.Loop(bot.config.Latency, bot.config.MaxProcessTime, processEventAsync)
+	bot.framework.Callback(eventBuffer.ProcessEvent)
 }
 
 func processEventAsync(event *Event, framework IFramework, maxWait time.Duration) {
 	ctx := &Ctx{
+		Bot:       bot,
 		State:     State{},
 		Event:     event,
 		framework: framework,
@@ -261,7 +225,7 @@ func preProcessMessageEvent(e *Event) {
 		log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
 	case EventGroupChat:
 		log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
-	case EventSubscription:
+	case EventMPChat:
 		log.Println(fmt.Sprintf("[回调]收到订阅公众号(%s[%s])消息", e.FromName, e.FromWxId))
 	case EventSelfMessage:
 		log.Println(fmt.Sprintf("[回调]收到自己发送的消息 ==> %v", e.Message.Content))
@@ -284,37 +248,72 @@ func preProcessMessageEvent(e *Event) {
 	}
 }
 
-// monitoringWechatData 监控微信数据
-func monitoringWechatData() {
-	ticker := time.NewTicker(5 * time.Minute)
-	for range ticker.C {
-		friendsList, _ := WxBot.Framework.GetFriendsList(true)
-		groupList, _ := WxBot.Framework.GetGroupList(true)
-		subscriptionList, _ := WxBot.Framework.GetSubscriptionList(true)
-		WxBot.FriendsList = friendsList
-		WxBot.GroupList = groupList
-		WxBot.SubscriptionList = subscriptionList
-	}
-}
-
-// GetCTX 获取当前系统中的CTX
-func GetCTX() *Ctx {
+// GetCtx 获取当前系统中的CTX
+func GetCtx() *Ctx {
 	t := time.NewTimer(3 * time.Minute)
 	for {
 		select {
 		case <-t.C:
 			log.Fatal("[robot] 获取CTX超时")
 		default:
-			if WxBot == nil {
+			if bot == nil {
 				time.Sleep(time.Second)
 				continue
 			}
-			if WxBot.Framework == nil {
+			if bot.framework == nil {
 				time.Sleep(time.Second)
 				continue
 			}
 			t.Stop()
-			return &Ctx{framework: WxBot.Framework}
+			return &Ctx{framework: bot.framework}
 		}
 	}
+}
+
+// GetBot 获取机器人本身
+func GetBot() *Bot {
+	return bot
+}
+
+// GetBotNick 获取机器人昵称
+func (b *Bot) GetBotNick() string {
+	return b.config.BotNickname
+}
+
+// GetBotWxId 获取机器人微信ID
+func (b *Bot) GetBotWxId() string {
+	return b.config.BotWxId
+}
+
+// GetSuperUsers 获取超级用户
+func (b *Bot) GetSuperUsers() []string {
+	return b.config.SuperUsers
+}
+
+// GetCommandPrefix 获取命令前缀
+func (b *Bot) GetCommandPrefix() string {
+	return b.config.CommandPrefix
+}
+
+// FriendsFromCache 从缓存中获取好友列表
+func (b *Bot) FriendsFromCache() Friends {
+	return b.self.friends
+}
+
+// GroupsFromCache 从缓存中获取群列表
+func (b *Bot) GroupsFromCache() Groups {
+	return b.self.groups
+}
+
+// MPsFromCache 从缓存中获取公众号列表
+func (b *Bot) MPsFromCache() MPs {
+	return b.self.mps
+}
+
+// GetSelf 获取Self对象，Self对象包含了对用户、群、公众号的包装
+func (b *Bot) GetSelf() (*Self, error) {
+	if b.self == nil {
+		return nil, errors.New("bot self is nil")
+	}
+	return b.self, nil
 }

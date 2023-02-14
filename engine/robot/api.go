@@ -116,29 +116,29 @@ type IFramework interface {
 
 	// GetObjectInfo 获取对象信息
 	// wxId: 好友ID/群ID/公众号ID
-	// return: ObjectInfo, error
-	GetObjectInfo(wxId string) (*ObjectInfo, error)
+	// return: User, error
+	GetObjectInfo(wxId string) (*User, error)
 
-	// GetFriendsList 获取好友列表
+	// GetFriends 获取好友列表
 	// isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
-	// return: []*FriendInfo, error
-	GetFriendsList(isRefresh bool) ([]*FriendInfo, error)
+	// return: []*User, error
+	GetFriends(isRefresh bool) ([]*User, error)
 
-	// GetGroupList 获取群组列表
+	// GetGroups 获取群组列表
 	// isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
-	// return: []*GroupInfo, error
-	GetGroupList(isRefresh bool) ([]*GroupInfo, error)
+	// return: []*User, error
+	GetGroups(isRefresh bool) ([]*User, error)
 
-	// GetGroupMemberList 获取群成员列表
+	// GetGroupMembers 获取群成员列表
 	// groupWxId: 群ID
 	// isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
-	// return: []*GroupMemberInfo, error
-	GetGroupMemberList(groupWxId string, isRefresh bool) ([]*GroupMemberInfo, error)
+	// return: []*User, error
+	GetGroupMembers(groupWxId string, isRefresh bool) ([]*User, error)
 
-	// GetSubscriptionList 获取订阅列表
+	// GetMPs 获取公众号订阅列表
 	// isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
-	// return: []*SubscriptionInfo, error
-	GetSubscriptionList(isRefresh bool) ([]*SubscriptionInfo, error)
+	// return: []*User, error
+	GetMPs(isRefresh bool) ([]*User, error)
 }
 
 // SendText 发送文本消息到指定好友
@@ -361,31 +361,4 @@ func (ctx *Ctx) InviteIntoGroup(groupWxId, wxId string, typ int) error {
 		return errors.New("类型错误，请参考方法注释")
 	}
 	return ctx.framework.InviteIntoGroup(groupWxId, wxId, typ)
-}
-
-// GetFriendsList 获取好友列表 isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
-func (ctx *Ctx) GetFriendsList(isRefresh bool) ([]*FriendInfo, error) {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	data, err := ctx.framework.GetFriendsList(isRefresh)
-	WxBot.FriendsList = data
-	return data, err
-}
-
-// GetGroupList 获取群组列表 isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
-func (ctx *Ctx) GetGroupList(isRefresh bool) ([]*GroupInfo, error) {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	data, err := ctx.framework.GetGroupList(isRefresh)
-	WxBot.GroupList = data
-	return data, err
-}
-
-// GetSubscriptionList 获取订阅号列表 isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
-func (ctx *Ctx) GetSubscriptionList(isRefresh bool) ([]*SubscriptionInfo, error) {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	data, err := ctx.framework.GetSubscriptionList(isRefresh)
-	WxBot.SubscriptionList = data
-	return data, err
 }

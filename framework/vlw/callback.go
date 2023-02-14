@@ -109,7 +109,7 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 			// 公众号处理 gh_开头
 			if strings.HasPrefix(gjson.Get(resp, "content.from_wxid").String(), "gh_") {
 				event = robot.Event{
-					Type:         robot.EventSubscription,
+					Type:         robot.EventMPChat,
 					FromUniqueID: gjson.Get(resp, "content.from_wxid").String(),
 					FromWxId:     gjson.Get(resp, "content.from_wxid").String(),
 					FromName:     gjson.Get(resp, "content.from_name").String(),
@@ -119,7 +119,7 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 						Content: gjson.Get(resp, "content.msg").String(),
 					},
 				}
-				for _, data := range robot.WxBot.SubscriptionList {
+				for _, data := range robot.GetBot().MPsFromCache() {
 					if data.WxId == event.FromWxId {
 						event.FromName = data.Nick
 						break

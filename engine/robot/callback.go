@@ -3,7 +3,7 @@ package robot
 const (
 	EventGroupChat           = "EventGroupChat"           // 群聊消息事件
 	EventPrivateChat         = "EventPrivateChat"         // 私聊消息事件
-	EventSubscription        = "EventSubscription"        // 订阅号消息事件
+	EventMPChat              = "EventMPChat"              // 公众号消息事件
 	EventSelfMessage         = "EventSelfMessage"         // 自己发的消息事件
 	EventFriendVerify        = "EventFriendVerify"        // 好友请求事件
 	EventTransfer            = "EventTransfer"            // 好友转账事件
@@ -114,5 +114,5 @@ func (ctx *Ctx) IsEventFriendVerify() bool {
 
 // IsEventSubscription 判断消息是否是订阅消息
 func (ctx *Ctx) IsEventSubscription() bool {
-	return ctx.Event.Type == EventSubscription
+	return ctx.Event.Type == EventMPChat
 }
