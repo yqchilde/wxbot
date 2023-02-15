@@ -39,4 +39,7 @@ import (
 
 	// 每日早报
 	_ "github.com/yqchilde/wxbot/plugins/zaobao"       
+
+	// 聊天热词
+	_ "github.com/yqchilde/wxbot/plugins/wordcloud"    
 )
