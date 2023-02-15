@@ -1,3 +1,19 @@
+# WxBot
+
+* [What's this?](#What's this)
+    * [已对接框架](#已对接框架)
+    * [已对接API](#已对接API)
+    * [已有插件](#已有插件)
+* [How to use?](#How to use)
+    * [本地运行](#本地运行)
+    * [Docker运行](#Docker运行)
+    * [Actions编译](#Actions编译)
+* [How to develop?](#How to develop)
+    * [调试-环境变量](#调试-环境变量) 
+* [Feature](#Feature)
+* [Thanks](#Thanks)
+* [License](#License)
+
 ## What's this?
 
 一个还算有意思的wechat robot项目，理想将其设计成一个多功能的机器人助手 😈
@@ -20,17 +36,21 @@
 
 ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/screenshots.jpg)
 
+### 已对接框架
+
 <details open>
 <summary>🎁 已接入框架，展开看👇</summary>
 
-* [x] [千寻框架](https://gitee.com/qxvxhook/pc-vx-hook-http-api/tree/36018/%E5%8D%83%E5%AF%BB%E6%A1%86%E6%9E%B6)
+* [x] [千寻框架](https://gitee.com/qxvxhook/pc-vx-hook-http-api/tree/36018/%E5%8D%83%E5%AF%BB%E6%A1%86%E6%9E%B6) | [👉对接说明文档👀](https://github.com/yqchilde/wxbot/blob/hook/docs/qianxun.md)
     * 具体配置查看 `config.yaml` 文件注释说明
     * ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/qianxun.png)
-* [x] VLW框架
+* [x] [VLW框架](https://github.com/yqchilde/wxbot)
     * 具体配置查看 `config.yaml` 文件注释说明
     * ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/vlw.png)
 
 </details>
+
+### 已对接API
 
 <details>
 <summary>🎁 已对接API，展开看👇</summary>
@@ -148,65 +168,63 @@ type IFramework interface {
 
 	// GetObjectInfo 获取对象信息
 	// wxId: 好友ID/群ID/公众号ID
-	// return: ObjectInfo, error
-	GetObjectInfo(wxId string) (*ObjectInfo, error)
+	// return: User, error
+	GetObjectInfo(wxId string) (*User, error)
 
-	// GetFriendsList 获取好友列表
+	// GetFriends 获取好友列表
 	// isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
-	// return: []*FriendInfo, error
-	GetFriendsList(isRefresh bool) ([]*FriendInfo, error)
+	// return: []*User, error
+	GetFriends(isRefresh bool) ([]*User, error)
 
-	// GetGroupList 获取群组列表
+	// GetGroups 获取群组列表
 	// isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
-	// return: []*GroupInfo, error
-	GetGroupList(isRefresh bool) ([]*GroupInfo, error)
+	// return: []*User, error
+	GetGroups(isRefresh bool) ([]*User, error)
 
-	// GetGroupMemberList 获取群成员列表
+	// GetGroupMembers 获取群成员列表
 	// groupWxId: 群ID
 	// isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
-	// return: []*GroupMemberInfo, error
-	GetGroupMemberList(groupWxId string, isRefresh bool) ([]*GroupMemberInfo, error)
+	// return: []*User, error
+	GetGroupMembers(groupWxId string, isRefresh bool) ([]*User, error)
 
-	// GetSubscriptionList 获取订阅列表
+	// GetMPs 获取公众号订阅列表
 	// isRefresh: 是否刷新 false-从缓存中获取，true-重新遍历二叉树并刷新缓存
-	// return: []*SubscriptionInfo, error
-	GetSubscriptionList(isRefresh bool) ([]*SubscriptionInfo, error)
+	// return: []*User, error
+	GetMPs(isRefresh bool) ([]*User, error)
 }
 ```
 
 </details>
 
+### 已有插件
+
 <details open>
 <summary>🎁 已有插件 👇</summary>
 
-* [x] [百度百科-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/baidubaike)
-    * 用法：发送`百度百科 你要查的词`，例如：`百度百科 OCR`
-* [x] [ChatGPT聊天-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/chatgpt)
-    * 用法：发送`开始ChatGPT会话`，然后就可以和机器人连续对话聊天了
-* [x] [KFC疯狂星期四骚话-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/crazykfc)
-    * 用法：发送`kfc骚话`，获取一条v50骚话
-* [x] [获取表情原图-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/memepicture)
-    * 用法：发送`表情原图`后30秒内发送一张表情包(迷因图)，即可获取原图
-* [x] [摸鱼办-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/moyuban)
-    * 用法：发送`摸鱼`或`摸鱼办`，即可获取一张摸鱼办图片
-* [x] [查拼音缩写-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/pinyinsuoxie)
-    * 用法：发送`查缩写 你要查的词`，即可获取拼音缩写含义
-* [x] [获取美女图片-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/plmm)
-    * 用法：发送`漂亮妹妹`，即可获取一张美女图片
-* [x] [查天气-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/weather)
-    * 用法：发送`XX天气`，即可获取XX地区的天气情况，例如：`济南天气`
-* [x] [获取每日早报-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/zaobao)
-    * 用法：发送`早报`或`每日早报`，即可获取每日早报
-* [x] [管理相关-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/manager)
-    * 可以全局设置定时任务
-        * 设置每月8号10:00:00的提醒 
-        * 设置每周三10:00:00的提醒 
-        * 设置每天10:00:00的提醒 
-        * 设置每隔1小时的提醒 
-    * 可以全局监听好友添加邀请拉群等
-* [x] [公众号监控转发-点击查看详情](https://github.com/yqchilde/wxbot/tree/hook/plugins/ghmonitor)
-    * 用法：发送`监控公众号 (gh_.*) 转发到 (.*)`
-    * 用法：发送`监控公众号关键词 (.*) 转发到 (.*)`
+* [x] [百度百科-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/baidubaike)
+    * `import _ "github.com/yqchilde/wxbot/plugins/baidubaike"`
+* [x] [ChatGPT聊天-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/chatgpt)
+    * `import _ "github.com/yqchilde/wxbot/plugins/chatgpt"`
+* [x] [KFC疯狂星期四骚话-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/crazykfc)
+    * `import _ "github.com/yqchilde/wxbot/plugins/crazykfc"`
+* [x] [获取表情原图-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/memepicture)
+    * `import _ "github.com/yqchilde/wxbot/plugins/memepicture"`
+* [x] [摸鱼办-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/moyuban)
+    * `import _ "github.com/yqchilde/wxbot/plugins/moyuban"`
+* [x] [查拼音缩写-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/pinyinsuoxie)
+    * `import _ "github.com/yqchilde/wxbot/plugins/pinyinsuoxie"`
+* [x] [获取美女图片-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/plmm)
+    * `import _ "github.com/yqchilde/wxbot/plugins/plmm"`
+* [x] [查天气-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/weather)
+    * `import _ "github.com/yqchilde/wxbot/plugins/weather"`
+* [x] [获取每日早报-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/zaobao)
+    * `import _ "github.com/yqchilde/wxbot/plugins/zaobao"`
+* [x] [管理相关-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/manager)
+    * `import _ "github.com/yqchilde/wxbot/plugins/manager"`
+* [x] [公众号监控转发-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/ghmonitor)
+    * `import _ "github.com/yqchilde/wxbot/plugins/ghmonitor"`
+* [x] [聊天热词云-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/ghmonitor)
+    * `import _ "github.com/yqchilde/wxbot/plugins/wordcloud"`
 
 </details>
 
@@ -214,33 +232,43 @@ type IFramework interface {
 
 ### 本地运行
 
-1. 拷贝代码
+1. 克隆代码
 
-    ```bash
-    git clone https://github.com/yqchilde/wxbot.git
-    ```
+```bash
+git clone https://github.com/yqchilde/wxbot.git
+```
 
 2. 配置`config.yaml`
 
-3. `go run main.go` 或自行build
+3. 调试运行或编译
+   * 调试运行执行 `go run main.go`
+   * 编译执行 `make release`
 
 ### Docker运行
 
-1. 一键脚本启动
+1. 方式一：一键脚本启动
 
 ```shell
 bash -c "$(curl -fsSL https://raw.fastgit.org/yqchilde/wxbot/hook/docker/run.sh)"
 ```
 
-2. 命令启动，注意提前配置`config.yaml`,否则会报错
-  ```shell
-  docker run -d \
-      --name="wxbot" \
-      -p 9528:9528 \
-      -v $(pwd)/config.yaml:/app/config.yaml \
-      -v $(pwd)/data:/app/data \
-      yqchilde/wxbot:latest
-  ```
+2. 方式二：命令启动，注意提前配置`config.yaml`,否则会报错
+```shell
+docker run -d \
+  --name="wxbot" \
+  -p 9528:9528 \
+  -v $(pwd)/config.yaml:/app/config.yaml \
+  -v $(pwd)/data:/app/data \
+  yqchilde/wxbot:latest
+```
+
+### Actions编译
+
+1. 先`fork`本项目
+2. 在 [https://github.com/settings/tokens](https://github.com/settings/tokens) 这里获取一个token用于给actions使用
+3. 给项目添加一个秘钥，名字为`WXBOT_TOKEN`，值为上面获取的token
+4. 自行创建一个tag，如`v1.0.0`，然后等待actions编译完成，编译完成后会在`release`中生成对应的`wxbot`文件
+
 
 ## How to develop?
 
@@ -248,108 +276,22 @@ bash -c "$(curl -fsSL https://raw.fastgit.org/yqchilde/wxbot/hook/docker/run.sh)
 
 🤔如果您想要扩展其他框架，可以参考`frameworks`目录下的框架
 
-🤔如果您有不想要的插件，可在 `main.go` 上方代码中去掉对应插件的导入(不打算做成动态插件)
+🤔如果您需要增减插件，可编辑 [plugins.yaml](https://github.com/yqchilde/wxbot/blob/hook/plugins.yaml) 中代码中去掉对应插件的导入或者添加对应插件的导入，照猫画虎即可
 
-```go
-package main
-
-import (
-	"time"
-
-	"github.com/spf13/viper"
-	"github.com/yqchilde/pkgs/net"
-	"github.com/yqchilde/wxbot/engine/pkg/log"
-	"github.com/yqchilde/wxbot/engine/robot"
-	"github.com/yqchilde/wxbot/framework/qianxun"
-	"github.com/yqchilde/wxbot/framework/vlw"
-
-	// 导入插件, 不需要的插件可以注释掉或者删除
-	_ "github.com/yqchilde/wxbot/plugins/baidubaike"   // 百度百科
-	_ "github.com/yqchilde/wxbot/plugins/chatgpt"      // GPT聊天
-	_ "github.com/yqchilde/wxbot/plugins/crazykfc"     // 肯德基疯狂星期四骚话
-	_ "github.com/yqchilde/wxbot/plugins/ghmonitor"    // 公众号消息监控转发
-	_ "github.com/yqchilde/wxbot/plugins/jingdong"     // 京豆上车
-	_ "github.com/yqchilde/wxbot/plugins/manager"      // 群组管理相关
-	_ "github.com/yqchilde/wxbot/plugins/memepicture"  // 表情包原图
-	_ "github.com/yqchilde/wxbot/plugins/moyuban"      // 摸鱼办
-	_ "github.com/yqchilde/wxbot/plugins/pinyinsuoxie" // 拼音缩写翻译
-	_ "github.com/yqchilde/wxbot/plugins/plmm"         // 漂亮妹妹
-	_ "github.com/yqchilde/wxbot/plugins/weather"      // 天气查询
-	_ "github.com/yqchilde/wxbot/plugins/zaobao"       // 每日早报
-)
-
-var conf robot.Config
-var ping = true
-
-func main() {
-	// 初始化配置
-	v := viper.New()
-	v.SetConfigFile("config.yaml")
-	if err := v.ReadInConfig(); err != nil {
-		log.Fatalf("[main] 读取配置文件失败: %s", err.Error())
-	}
-	if err := v.Unmarshal(&conf); err != nil {
-		log.Fatalf("[main] 解析配置文件失败: %s", err.Error())
-	}
-
-	// 初始化机器人
-	frameworkType := v.GetString("frameworks.name")
-	switch frameworkType {
-	case "千寻", "qianxun":
-		conf.Framework = robot.IFramework(qianxun.New(
-			v.GetString("botWxId"),
-			v.GetString("frameworks.apiUrl"),
-			v.GetString("frameworks.apiToken"),
-			v.GetUint("frameworks.servePort"),
-		))
-		if ipPort, err := net.CheckoutIpPort(v.GetString("frameworks.apiUrl")); err == nil {
-			if ping = net.PingConn(ipPort, time.Second*20); !ping {
-				log.Warn("[main] 无法连接到千寻框架，网络无法Ping通")
-			}
-		}
-	case "VLW", "vlw":
-		conf.Framework = robot.IFramework(vlw.New(
-			v.GetString("botWxId"),
-			v.GetString("frameworks.apiUrl"),
-			v.GetString("frameworks.apiToken"),
-			v.GetUint("frameworks.servePort"),
-		))
-		if ipPort, err := net.CheckoutIpPort(v.GetString("frameworks.apiUrl")); err == nil {
-			if ping = net.PingConn(ipPort, time.Second*20); !ping {
-				log.Warn("[main] 无法连接到VLW框架，网络无法Ping通")
-			}
-		}
-	default:
-		log.Fatalf("[main] 请在配置文件中指定机器人框架后再启动")
-	}
-
-	robot.WxBot = robot.Init(&conf)
-	if ping {
-		log.Println("[main] 开始获取账号数据...")
-		friendsList, err := robot.WxBot.Framework.GetFriendsList(true)
-		if err != nil {
-			log.Errorf("[main] 获取好友列表失败，error: %s", err.Error())
-		}
-		groupList, err := robot.WxBot.Framework.GetGroupList(true)
-		if err != nil {
-			log.Errorf("[main] 获取群组列表失败，error: %s", err.Error())
-		}
-		subscriptionList, err := robot.WxBot.Framework.GetSubscriptionList(true)
-		if err != nil {
-			log.Errorf("[main] 获取公众号列表失败，error: %s", err.Error())
-		}
-		robot.WxBot.FriendsList = friendsList
-		robot.WxBot.GroupList = groupList
-		robot.WxBot.SubscriptionList = subscriptionList
-		log.Printf("[main] 共获取到%d个好友", len(friendsList))
-		log.Printf("[main] 共获取到%d个群组", len(groupList))
-		log.Printf("[main] 共获取到%d个公众号", len(subscriptionList))
-	}
-
-	log.Printf("[main] 机器人%s开始工作", conf.BotNickname)
-	robot.WxBot.Run()
-}
-
+```yaml
+- "github.com/yqchilde/wxbot/plugins/baidubaike"   # 百度百科
+- "github.com/yqchilde/wxbot/plugins/chatgpt"      # GPT聊天
+- "github.com/yqchilde/wxbot/plugins/crazykfc"     # 肯德基疯狂星期四骚话
+- "github.com/yqchilde/wxbot/plugins/ghmonitor"    # 公众号消息监控转发
+- "github.com/yqchilde/wxbot/plugins/jingdong"     # 京豆上车
+- "github.com/yqchilde/wxbot/plugins/manager"      # 群组管理相关
+- "github.com/yqchilde/wxbot/plugins/memepicture"  # 表情包原图
+- "github.com/yqchilde/wxbot/plugins/moyuban"      # 摸鱼办
+- "github.com/yqchilde/wxbot/plugins/pinyinsuoxie" # 拼音缩写翻译
+- "github.com/yqchilde/wxbot/plugins/plmm"         # 漂亮妹妹
+- "github.com/yqchilde/wxbot/plugins/weather"      # 天气查询
+- "github.com/yqchilde/wxbot/plugins/zaobao"       # 每日早报
+- "github.com/yqchilde/wxbot/plugins/wordcloud"    # 聊天热词
 ```
 
 ### 调试-环境变量
