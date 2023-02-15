@@ -222,16 +222,44 @@ loop:
 func preProcessMessageEvent(ctx *Ctx, e *Event) {
 	switch e.Type {
 	case EventPrivateChat:
-		if ctx.IsMemePictures() {
+		if ctx.IsText() {
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])文本消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
+		} else if ctx.IsImage() {
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s]图片消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
+		} else if ctx.IsVoice() {
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])语音消息", e.FromName, e.FromWxId))
+		} else if ctx.IsShareCard() {
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])名片消息", e.FromName, e.FromWxId))
+		} else if ctx.IsVideo() {
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])视频消息", e.FromName, e.FromWxId))
+		} else if ctx.IsMemePictures() {
 			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])动态表情消息", e.FromName, e.FromWxId))
+		} else if ctx.IsLocation() {
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])地理位置消息", e.FromName, e.FromWxId))
+		} else if ctx.IsApp() {
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])应用消息", e.FromName, e.FromWxId))
 		} else {
-			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])未整理消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
 		}
 	case EventGroupChat:
-		if ctx.IsMemePictures() {
+		if ctx.IsText() {
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])文本消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
+		} else if ctx.IsImage() {
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])图片消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
+		} else if ctx.IsVoice() {
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])语音消息", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId))
+		} else if ctx.IsShareCard() {
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])名片消息", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId))
+		} else if ctx.IsVideo() {
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])视频消息", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId))
+		} else if ctx.IsMemePictures() {
 			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])动态表情消息", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId))
+		} else if ctx.IsLocation() {
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])地理位置消息", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId))
+		} else if ctx.IsApp() {
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])应用消息", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId))
 		} else {
-			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])未整理消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
 		}
 	case EventMPChat:
 		log.Println(fmt.Sprintf("[回调]收到订阅公众号(%s[%s])消息", e.FromName, e.FromWxId))
