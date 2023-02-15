@@ -85,12 +85,13 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 			}
 		} else {
 			event = robot.Event{
-				Type:          robot.EventGroupChat,
-				FromUniqueID:  gjson.Get(resp, "content.from_group").String(),
-				FromGroup:     gjson.Get(resp, "content.from_group").String(),
-				FromGroupName: gjson.Get(resp, "content.from_group_name").String(),
-				FromWxId:      gjson.Get(resp, "content.from_wxid").String(),
-				FromName:      gjson.Get(resp, "content.from_name").String(),
+				Type:           robot.EventGroupChat,
+				FromUniqueID:   gjson.Get(resp, "content.from_group").String(),
+				FromUniqueName: gjson.Get(resp, "content.from_group_name").String(),
+				FromGroup:      gjson.Get(resp, "content.from_group").String(),
+				FromGroupName:  gjson.Get(resp, "content.from_group_name").String(),
+				FromWxId:       gjson.Get(resp, "content.from_wxid").String(),
+				FromName:       gjson.Get(resp, "content.from_name").String(),
 				Message: &robot.Message{
 					Id:      gjson.Get(resp, "content.msg_id").String(),
 					Type:    gjson.Get(resp, "content.type").Int(),
@@ -109,10 +110,11 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 			// 公众号处理 gh_开头
 			if strings.HasPrefix(gjson.Get(resp, "content.from_wxid").String(), "gh_") {
 				event = robot.Event{
-					Type:         robot.EventMPChat,
-					FromUniqueID: gjson.Get(resp, "content.from_wxid").String(),
-					FromWxId:     gjson.Get(resp, "content.from_wxid").String(),
-					FromName:     gjson.Get(resp, "content.from_name").String(),
+					Type:           robot.EventMPChat,
+					FromUniqueID:   gjson.Get(resp, "content.from_wxid").String(),
+					FromUniqueName: gjson.Get(resp, "content.from_name").String(),
+					FromWxId:       gjson.Get(resp, "content.from_wxid").String(),
+					FromName:       gjson.Get(resp, "content.from_name").String(),
 					SubscriptionMessage: &robot.Message{
 						Id:      gjson.Get(resp, "content.msg_id").String(),
 						Type:    gjson.Get(resp, "content.type").Int(),
@@ -142,11 +144,12 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 			}
 		} else { // 私聊
 			event = robot.Event{
-				Type:         robot.EventPrivateChat,
-				IsAtMe:       true,
-				FromUniqueID: gjson.Get(resp, "content.from_wxid").String(),
-				FromWxId:     gjson.Get(resp, "content.from_wxid").String(),
-				FromName:     gjson.Get(resp, "content.from_name").String(),
+				Type:           robot.EventPrivateChat,
+				IsAtMe:         true,
+				FromUniqueID:   gjson.Get(resp, "content.from_wxid").String(),
+				FromUniqueName: gjson.Get(resp, "content.from_name").String(),
+				FromWxId:       gjson.Get(resp, "content.from_wxid").String(),
+				FromName:       gjson.Get(resp, "content.from_name").String(),
 				Message: &robot.Message{
 					Id:      gjson.Get(resp, "content.msg_id").String(),
 					Type:    gjson.Get(resp, "content.type").Int(),

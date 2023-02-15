@@ -56,6 +56,12 @@ func (e *Engine) On(rules ...Rule) *Matcher {
 	return StoreMatcher(matcher)
 }
 
+// OnMessage 消息触发器
+func OnMessage(rules ...Rule) *Matcher { return On(rules...) }
+
+// OnMessage 消息触发器
+func (e *Engine) OnMessage(rules ...Rule) *Matcher { return e.On(rules...) }
+
 // OnPrefix 前缀触发器
 func OnPrefix(prefix string, rules ...Rule) *Matcher { return defaultEngine.OnPrefix(prefix, rules...) }
 

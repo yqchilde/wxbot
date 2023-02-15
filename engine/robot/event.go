@@ -6,6 +6,7 @@ type Event struct {
 	RobotWxId           string               // 机器人微信id
 	IsAtMe              bool                 // 机器人是否被@了，@所有人不算
 	FromUniqueID        string               // 消息来源唯一id, 私聊为发送者微信id, 群聊为群id
+	FromUniqueName      string               // 消息来源唯一名称, 私聊为发送者昵称, 群聊为群名称
 	FromWxId            string               // 消息来源微信id
 	FromName            string               // 消息来源昵称
 	FromGroup           string               // 消息来源群id

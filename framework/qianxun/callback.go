@@ -102,6 +102,7 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 			for _, data := range robot.GetBot().GroupsFromCache() {
 				if data.WxId == event.FromGroup {
 					event.FromGroupName = data.Nick
+					event.FromUniqueName = data.Nick
 					break
 				}
 			}
@@ -122,6 +123,7 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 			for _, data := range robot.GetBot().MPsFromCache() {
 				if data.WxId == event.FromWxId {
 					event.FromName = data.Nick
+					event.FromUniqueName = data.Nick
 					break
 				}
 			}
@@ -140,6 +142,7 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 			for _, data := range robot.GetBot().FriendsFromCache() {
 				if data.WxId == event.FromWxId {
 					event.FromName = data.Nick
+					event.FromUniqueName = data.Nick
 					break
 				}
 			}

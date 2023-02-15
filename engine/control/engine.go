@@ -8,15 +8,13 @@ import (
 )
 
 type Engine struct {
-	en          *robot.Engine // robot engine
-	priority    uint64        // 优先级
-	service     string        // 插件服务名
-	dataFolder  string        // 数据目录
-	cacheFolder string        // 缓存目录
+	en         *robot.Engine // robot engine
+	priority   uint64        // 优先级
+	service    string        // 插件服务名
+	dataFolder string        // 数据目录
 }
 
 var dataFolderFilter = make(map[string]string)
-var cacheFolderFilter = make(map[string]string)
 
 func newEngine(service string, o *Options) (e *Engine) {
 	e = &Engine{
@@ -37,27 +35,12 @@ func newEngine(service string, o *Options) (e *Engine) {
 			log.Fatalf("[%s]插件数据目录 %s 创建失败: %v", service, e.dataFolder, err)
 		}
 	}
-	if o.CacheFolder != "" {
-		e.cacheFolder = "data/cache/" + o.CacheFolder
-		if s, ok := cacheFolderFilter[e.cacheFolder]; ok {
-			log.Fatalf("[%s]插件缓存目录 %s 已被 %s 占用", service, e.cacheFolder, s)
-		}
-		cacheFolderFilter[e.cacheFolder] = service
-		if err := utils.CheckFolderExists(e.cacheFolder); err != nil {
-			log.Fatalf("[%s]插件缓存目录 %s 创建失败: %v", service, e.cacheFolder, err)
-		}
-	}
 	return
 }
 
 // GetDataFolder 获取插件数据目录
 func (e *Engine) GetDataFolder() string {
 	return e.dataFolder
-}
-
-// GetCacheFolder 获取插件缓存目录
-func (e *Engine) GetCacheFolder() string {
-	return e.cacheFolder
 }
 
 // OnMessage 消息触发器

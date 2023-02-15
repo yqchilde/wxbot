@@ -18,10 +18,9 @@ var (
 
 func init() {
 	engine := control.Register("plmm", &control.Options{
-		Alias:            "漂亮妹妹",
-		Help:             "输入 {漂亮妹妹} => 获取漂亮妹妹",
-		DataFolder:       "plmm",
-		DisableOnDefault: true,
+		Alias:      "漂亮妹妹",
+		Help:       "输入 {漂亮妹妹} => 获取漂亮妹妹",
+		DataFolder: "plmm",
 	})
 
 	if err := sqlite.Open(engine.GetDataFolder()+"/plmm.db", &db); err != nil {

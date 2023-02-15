@@ -3,6 +3,7 @@ package control
 import (
 	"sync"
 
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
@@ -21,6 +22,38 @@ func newControl(service string, o *Options) robot.Rule {
 
 func init() {
 	once.Do(func() {
+		if err := managers.D.Table("__message").AutoMigrate(&MessageRecord{}); err != nil {
+			log.Fatal(err)
+		}
+
+		// 记录聊天文本消息
+		robot.OnMessage().SetBlock(false).Handle(func(ctx *robot.Ctx) {
+			if !ctx.IsText() {
+				return
+			}
+			var msgType string
+			if ctx.IsEventGroupChat() {
+				msgType = "group"
+			} else if ctx.IsEventPrivateChat() {
+				msgType = "private"
+			} else {
+				return
+			}
+
+			if err := managers.D.Table("__message").Create(&MessageRecord{
+				&robot.MessageRecord{
+					Type:       msgType,
+					FromWxId:   ctx.Event.FromUniqueID,
+					FromNick:   ctx.Event.FromUniqueName,
+					SenderWxId: ctx.Event.FromWxId,
+					SenderNick: ctx.Event.FromName,
+					Content:    ctx.Event.Message.Content,
+				},
+			}).Error; err != nil {
+				log.Errorf("记录消息失败: %v", err)
+			}
+		})
+
 		// 启用、禁用某个插件在某个群或某个私聊
 		robot.OnCommandGroup([]string{"启用", "禁用"}, robot.UserOrGroupAdmin).SetBlock(true).FirstPriority().Handle(func(ctx *robot.Ctx) {
 			args := ctx.State["args"].(string)
