@@ -6,7 +6,7 @@
 
 ### 框架设置
 
-![img](https://github.com/yqchilde/wxbot/blob/hook/docs/qianxun_doc1.jpg)
+![img](qianxun_doc1.jpg)
 
 * 步骤1，2可以点击右侧`?`符号识别，也可以自行修改
 * 步骤3，4，5可默认不修改，也可自行修改
@@ -17,7 +17,7 @@
 
 ### 添加微信
 
-![img](https://github.com/yqchilde/wxbot/blob/hook/docs/qianxun_doc2.jpg)
+![img](qianxun_doc2.jpg)
 
 右键添加微信，指定端口和随机端口都可以，然后就可以唤醒微信了
 
@@ -25,4 +25,4 @@
 
 看到如下日志就可以了，此外日志中输出的回调地址也可复制粘贴到千寻框架设置中，仅供参考
 
-![img](https://github.com/yqchilde/wxbot/blob/hook/docs/qianxun_doc3.jpg)
+![img](qianxun_doc3.jpg)

@@ -34,19 +34,19 @@
 
 **功能示例：**
 
-![img](https://github.com/yqchilde/wxbot/blob/hook/docs/screenshots.jpg)
+![img](docs/screenshots.jpg)
 
 ### 已对接框架
 
 <details open>
 <summary>🎁 已接入框架，展开看👇</summary>
 
-* [x] [千寻框架](https://gitee.com/qxvxhook/pc-vx-hook-http-api/tree/36018/%E5%8D%83%E5%AF%BB%E6%A1%86%E6%9E%B6) | [👉对接说明文档👀](https://github.com/yqchilde/wxbot/blob/hook/docs/qianxun.md)
+* [x] [千寻框架](https://gitee.com/qxvxhook/pc-vx-hook-http-api/tree/36018/%E5%8D%83%E5%AF%BB%E6%A1%86%E6%9E%B6) | [👉对接说明文档👀](docs/qianxun.md)
     * 具体配置查看 `config.yaml` 文件注释说明
-    * ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/qianxun.png)
+    * ![img](docs/qianxun.png)
 * [x] [VLW框架](https://github.com/yqchilde/wxbot)
     * 具体配置查看 `config.yaml` 文件注释说明
-    * ![img](https://github.com/yqchilde/wxbot/blob/hook/docs/vlw.png)
+    * ![img](docs/vlw.png)
 
 </details>
 
@@ -201,29 +201,29 @@ type IFramework interface {
 <details open>
 <summary>🎁 已有插件 👇</summary>
 
-* [x] [百度百科-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/baidubaike)
+* [x] [百度百科-点击查看使用说明](plugins/baidubaike)
     * `import _ "github.com/yqchilde/wxbot/plugins/baidubaike"`
-* [x] [ChatGPT聊天-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/chatgpt)
+* [x] [ChatGPT聊天-点击查看使用说明](plugins/chatgpt)
     * `import _ "github.com/yqchilde/wxbot/plugins/chatgpt"`
-* [x] [KFC疯狂星期四骚话-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/crazykfc)
+* [x] [KFC疯狂星期四骚话-点击查看使用说明](plugins/crazykfc)
     * `import _ "github.com/yqchilde/wxbot/plugins/crazykfc"`
-* [x] [获取表情原图-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/memepicture)
+* [x] [获取表情原图-点击查看使用说明](plugins/memepicture)
     * `import _ "github.com/yqchilde/wxbot/plugins/memepicture"`
-* [x] [摸鱼办-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/moyuban)
+* [x] [摸鱼办-点击查看使用说明](plugins/moyuban)
     * `import _ "github.com/yqchilde/wxbot/plugins/moyuban"`
-* [x] [查拼音缩写-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/pinyinsuoxie)
+* [x] [查拼音缩写-点击查看使用说明](plugins/pinyinsuoxie)
     * `import _ "github.com/yqchilde/wxbot/plugins/pinyinsuoxie"`
-* [x] [获取美女图片-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/plmm)
+* [x] [获取美女图片-点击查看使用说明](plugins/plmm)
     * `import _ "github.com/yqchilde/wxbot/plugins/plmm"`
-* [x] [查天气-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/weather)
+* [x] [查天气-点击查看使用说明](plugins/weather)
     * `import _ "github.com/yqchilde/wxbot/plugins/weather"`
-* [x] [获取每日早报-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/zaobao)
+* [x] [获取每日早报-点击查看使用说明](plugins/zaobao)
     * `import _ "github.com/yqchilde/wxbot/plugins/zaobao"`
-* [x] [管理相关-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/manager)
+* [x] [管理相关-点击查看使用说明](plugins/manager)
     * `import _ "github.com/yqchilde/wxbot/plugins/manager"`
-* [x] [公众号监控转发-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/ghmonitor)
+* [x] [公众号监控转发-点击查看使用说明](plugins/ghmonitor)
     * `import _ "github.com/yqchilde/wxbot/plugins/ghmonitor"`
-* [x] [聊天热词云-点击查看使用说明](https://github.com/yqchilde/wxbot/tree/hook/plugins/ghmonitor)
+* [x] [聊天热词云-点击查看使用说明](plugins/ghmonitor)
     * `import _ "github.com/yqchilde/wxbot/plugins/wordcloud"`
 
 </details>
@@ -276,7 +276,7 @@ docker run -d \
 
 🤔如果您想要扩展其他框架，可以参考`frameworks`目录下的框架
 
-🤔如果您需要增减插件，可编辑 [plugins.yaml](https://github.com/yqchilde/wxbot/blob/hook/plugins.yaml) 中代码中去掉对应插件的导入或者添加对应插件的导入，照猫画虎即可
+🤔如果您需要增减插件，可编辑 [plugins.yaml](plugins.yaml) 中代码中去掉对应插件的导入或者添加对应插件的导入，照猫画虎即可
 
 ```yaml
 - "github.com/yqchilde/wxbot/plugins/baidubaike"   # 百度百科
@@ -294,6 +294,10 @@ docker run -d \
 - "github.com/yqchilde/wxbot/plugins/wordcloud"    # 聊天热词
 ```
 
+### 参考案例
+
+[查看更多使用案例](examples)
+
 ### 调试-环境变量
 
 | 环境变量名 | 变量类型 | 说明                                                         |
@@ -309,7 +313,7 @@ docker run -d \
 
 如果您有疑惑可以加Q群讨论
 
-<img src="https://github.com/yqchilde/wxbot/blob/hook/docs/qq.jpg" width=30%>
+<img src="docs/qq.jpg" width=30%>
 
 ## Thanks
 
