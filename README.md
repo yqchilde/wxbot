@@ -1,18 +1,18 @@
 # WxBot
 
-* [What's this?](#What's this)
+* [What's this?](#whats-this)
     * [已对接框架](#已对接框架)
-    * [已对接API](#已对接API)
+    * [已对接API](#已对接api)
     * [已有插件](#已有插件)
-* [How to use?](#How to use)
+* [How to use?](#how-to-use)
     * [本地运行](#本地运行)
-    * [Docker运行](#Docker运行)
-    * [Actions编译](#Actions编译)
-* [How to develop?](#How to develop)
+    * [Docker运行](#docker运行)
+    * [Actions编译](#actions编译)
+* [How to develop?](#how-to-develop)
     * [调试-环境变量](#调试-环境变量) 
-* [Feature](#Feature)
-* [Thanks](#Thanks)
-* [License](#License)
+* [Feature](#feature)
+* [Thanks](#thanks)
+* [License](#license)
 
 ## What's this?
 
