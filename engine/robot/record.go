@@ -50,3 +50,16 @@ func (ctx *Ctx) GetHistoryByWxId(wxId string) ([]MessageRecord, error) {
 	}
 	return msgRecord, nil
 }
+
+// GetHistoryByWxIdAndDate 根据wxId和日期获取消息记录
+func (ctx *Ctx) GetHistoryByWxIdAndDate(wxId, date string) ([]MessageRecord, error) {
+	if err := initMessageRecordDB(); err != nil {
+		return nil, err
+	}
+
+	var msgRecord []MessageRecord
+	if err := db.Orm.Table("__message").Where("from_wxid = ? AND STRFTIME('%Y-%m-%d', created_at, 'localtime') = ?", wxId, date).Find(&msgRecord).Error; err != nil {
+		return nil, err
+	}
+	return msgRecord, nil
+}

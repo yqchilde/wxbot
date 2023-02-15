@@ -49,7 +49,7 @@ func init() {
 		}
 
 		// 获取历史记录-文本消息
-		record, err := ctx.GetHistoryByWxId(id)
+		record, err := ctx.GetHistoryByWxIdAndDate(id, time.Now().Local().Format("2006-01-02"))
 		if err != nil {
 			log.Errorf("获取[%s]热词失败: %v", id, err)
 			ctx.ReplyText("获取热词失败")
