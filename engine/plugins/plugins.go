@@ -16,9 +16,6 @@ import (
 	// 公众号消息监控转发
 	_ "github.com/yqchilde/wxbot/plugins/ghmonitor"    
 
-	// 京豆上车
-	_ "github.com/yqchilde/wxbot/plugins/jingdong"     
-
 	// 群组管理相关
 	_ "github.com/yqchilde/wxbot/plugins/manager"      
 
