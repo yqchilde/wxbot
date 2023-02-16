@@ -4,6 +4,7 @@
     * [已对接框架](#已对接框架)
     * [已对接API](#已对接api)
     * [已有插件](#已有插件)
+    * [指令大全](#指令大全)
 * [How to use?](#how-to-use)
     * [本地运行](#本地运行)
     * [Docker运行](#docker运行)
@@ -227,6 +228,10 @@ type IFramework interface {
     * `import _ "github.com/yqchilde/wxbot/plugins/wordcloud"`
 
 </details>
+
+### 指令大全
+
+[点击查看机器人有哪些指令](docs/command.md)
 
 ## How to use?
 

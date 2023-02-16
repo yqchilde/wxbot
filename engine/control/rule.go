@@ -1,6 +1,7 @@
 package control
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
@@ -51,6 +52,28 @@ func init() {
 				},
 			}).Error; err != nil {
 				log.Errorf("记录消息失败: %v", err)
+			}
+		})
+
+		// 响应或沉默某个群或某个私聊，沉默后在该群或私聊中的消息不会被机器人响应
+		robot.OnCommandGroup([]string{"响应", "沉默"}, robot.UserOrGroupAdmin).SetBlock(true).FirstPriority().Handle(func(ctx *robot.Ctx) {
+			args := ctx.State["args"].(string)
+			if args == "" {
+				args = ctx.Event.FromUniqueID
+			}
+			switch ctx.State["command"].(string) {
+			case "响应":
+				if err := managers.Response(args); err != nil {
+					ctx.ReplyTextAndAt("ERROR: " + err.Error())
+				} else {
+					ctx.ReplyTextAndAt(fmt.Sprintf("开始响应[%s]消息啦~", args))
+				}
+			case "沉默":
+				if err := managers.Silence(args); err != nil {
+					ctx.ReplyTextAndAt("ERROR: " + err.Error())
+				} else {
+					ctx.ReplyTextAndAt(fmt.Sprintf("已经沉默[%s]消息啦!", args))
+				}
 			}
 		})
 
