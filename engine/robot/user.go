@@ -1,5 +1,10 @@
 package robot
 
+import (
+	"regexp"
+	"strings"
+)
+
 // User 抽象用户对象，对象可以是好友、群组、公众号
 type User struct {
 	WxId                    string `json:"wxId"`                    // 微信ID
@@ -27,6 +32,60 @@ type User struct {
 	self *Self
 }
 
+// IsFriend 判断当前对象是否是好友
+func (u *User) IsFriend() bool {
+	return strings.HasPrefix(u.WxId, "wxid_")
+}
+
+// IsGroup 判断当前对象是否是群聊
+func (u *User) IsGroup() bool {
+	return regexp.MustCompile(`\d+@chatroom`).MatchString(u.WxId)
+}
+
+// IsMP 判断当前对象是否是公众号
+func (u *User) IsMP() bool {
+	return strings.HasPrefix(u.WxId, "gh_")
+}
+
+// AsFriend 将当前对象转换为好友对象
+func (u *User) AsFriend() (*Friend, bool) {
+	if u.IsFriend() {
+		return &Friend{User: u}, true
+	}
+	return nil, false
+}
+
+// MustAsFriend 转换为好友对象，Must表示确定当前对象一定是好友对象，如果不是可能会出错
+func (u *User) MustAsFriend() *Friend {
+	return &Friend{User: u}
+}
+
+// AsGroup 将当前对象转换为群聊对象
+func (u *User) AsGroup() (*Group, bool) {
+	if u.IsGroup() {
+		return &Group{User: u}, true
+	}
+	return nil, false
+}
+
+// MustAsGroup 转换为群聊对象，Must表示确定当前对象一定是群聊对象，如果不是可能会出错
+func (u *User) MustAsGroup() *Group {
+	return &Group{User: u}
+}
+
+// AsMP 将当前对象转换为公众号对象
+func (u *User) AsMP() (*MP, bool) {
+	if u.IsMP() {
+		return &MP{User: u}, true
+	}
+	return nil, false
+}
+
+// MustAsMP 转换为公众号对象，Must表示确定当前对象一定是公众号对象，如果不是可能会出错
+func (u *User) MustAsMP() *MP {
+	return &MP{User: u}
+}
+
 // Self 包装了关于bot、好友、群组、公众号的操作
 type Self struct {
 	bot     *Bot
@@ -35,6 +94,7 @@ type Self struct {
 	mps     MPs
 }
 
+// CheckUserObjNil 检查好友、群、公众号列表是否为空
 func (s *Self) CheckUserObjNil() bool {
 	return s.friends == nil && s.groups == nil && s.mps == nil
 }
@@ -83,6 +143,21 @@ func (s *Self) Groups(update ...bool) (Groups, error) {
 		}
 	}
 	return s.groups, nil
+}
+
+// GroupMembers 获取所有的群成员
+func (s *Self) GroupMembers(groupWxId string, update ...bool) (GroupMembers, error) {
+	groupMembers := make(GroupMembers, 0)
+	if len(update) > 0 && update[0] {
+		if groupMemberList, err := s.bot.framework.GetGroupMembers(groupWxId, true); err != nil {
+			return nil, err
+		} else {
+			for _, groupMember := range groupMemberList {
+				groupMembers = append(groupMembers, groupMember)
+			}
+		}
+	}
+	return groupMembers, nil
 }
 
 // MPs 获取所有的公众号

@@ -37,9 +37,9 @@ func Run(c *Config, f IFramework) {
 	bot.self = &Self{bot: bot}
 	bot.self.Init()
 
-	log.Printf("[robot] 共获取到%d个好友", len(bot.FriendsFromCache()))
-	log.Printf("[robot] 共获取到%d个群组", len(bot.GroupsFromCache()))
-	log.Printf("[robot] 共获取到%d个公众号", len(bot.MPsFromCache()))
+	log.Printf("[robot] 共获取到%d个好友", bot.self.friends.Count())
+	log.Printf("[robot] 共获取到%d个群组", bot.self.groups.Count())
+	log.Printf("[robot] 共获取到%d个公众号", bot.self.mps.Count())
 	log.Printf("[robot] 机器人%s开始工作", c.BotNickname)
 
 	eventBuffer = NewEventBuffer(bot.config.BufferLen)
@@ -331,18 +331,18 @@ func (b *Bot) GetCommandPrefix() string {
 	return b.config.CommandPrefix
 }
 
-// FriendsFromCache 从缓存中获取好友列表
-func (b *Bot) FriendsFromCache() Friends {
+// Friends 从缓存中获取好友列表
+func (b *Bot) Friends() Friends {
 	return b.self.friends
 }
 
-// GroupsFromCache 从缓存中获取群列表
-func (b *Bot) GroupsFromCache() Groups {
+// Groups 从缓存中获取群列表
+func (b *Bot) Groups() Groups {
 	return b.self.groups
 }
 
-// MPsFromCache 从缓存中获取公众号列表
-func (b *Bot) MPsFromCache() MPs {
+// MPs 从缓存中获取公众号列表
+func (b *Bot) MPs() MPs {
 	return b.self.mps
 }
 

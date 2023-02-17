@@ -99,7 +99,7 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 					event.IsAtMe = true
 				}
 			}
-			for _, data := range robot.GetBot().GroupsFromCache() {
+			for _, data := range robot.GetBot().Groups() {
 				if data.WxId == event.FromGroup {
 					event.FromGroupName = data.Nick
 					event.FromUniqueName = data.Nick
@@ -120,7 +120,7 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 					Content: gjson.Get(resp, "data.data.msg").String(),
 				},
 			}
-			for _, data := range robot.GetBot().MPsFromCache() {
+			for _, data := range robot.GetBot().MPs() {
 				if data.WxId == event.FromWxId {
 					event.FromName = data.Nick
 					event.FromUniqueName = data.Nick
@@ -139,7 +139,7 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 					Content: gjson.Get(resp, "data.data.msg").String(),
 				},
 			}
-			for _, data := range robot.GetBot().FriendsFromCache() {
+			for _, data := range robot.GetBot().Friends() {
 				if data.WxId == event.FromWxId {
 					event.FromName = data.Nick
 					event.FromUniqueName = data.Nick
