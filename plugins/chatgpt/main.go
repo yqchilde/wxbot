@@ -32,7 +32,7 @@ type ApiKey struct {
 func init() {
 	engine := control.Register("chatgpt", &control.Options{
 		Alias:      "ChatGPT",
-		Help:       "输入 {开始会话} => 进行ChatGPT连续会话\n输入 {# 问题} => 可以单独提问，没有上下文",
+		Help:       "输入 {开始会话} => 进行ChatGPT连续会话\n输入 {提问 [问题]} => 可以单独提问，没有上下文",
 		DataFolder: "chatgpt",
 		OnDisable: func(ctx *robot.Ctx) {
 			ctx.ReplyText("禁用成功")
@@ -119,20 +119,19 @@ func init() {
 	})
 
 	// 单独提问，没有上下文，#开头
-	engine.OnPrefix("#").SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		if err := db.Orm.Table("apikey").Find(&apiKeys).Error; err != nil {
+	engine.OnRegex(`^提问 (.*)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		question := ctx.State["regex_matched"].([]string)[1]
+		if question == "" {
 			return
 		}
-		if len(apiKeys) == 0 {
+
+		if err := db.Orm.Table("apikey").Find(&apiKeys).Error; err != nil {
+			return
+		} else if len(apiKeys) == 0 {
 			return
 		}
 		gpt3Client = gpt3.NewClient(apiKeys[0].Key, gpt3.WithTimeout(time.Minute))
-		msg := ctx.MessageString()
-		if msg == "" {
-			return
-		}
-		question, answer := msg+"\n", ""
-		time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
 
 		answer, err := askChatGPT(question)
 		if err != nil {
@@ -144,10 +143,10 @@ func init() {
 				log.Errorf("ChatGPT出错了, err: %s", err.Error())
 				return
 			} else {
-				ctx.ReplyTextAndAt(answer)
+				ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", question, answer))
 			}
 		} else {
-			ctx.ReplyTextAndAt(r)
+			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", question, r))
 		}
 	})
 
