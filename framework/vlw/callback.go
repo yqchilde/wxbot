@@ -121,7 +121,7 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 						Content: gjson.Get(resp, "content.msg").String(),
 					},
 				}
-				for _, data := range robot.GetBot().MPsFromCache() {
+				for _, data := range robot.GetBot().MPs() {
 					if data.WxId == event.FromWxId {
 						event.FromName = data.Nick
 						break

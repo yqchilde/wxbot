@@ -362,3 +362,31 @@ func (ctx *Ctx) InviteIntoGroup(groupWxId, wxId string, typ int) error {
 	}
 	return ctx.framework.InviteIntoGroup(groupWxId, wxId, typ)
 }
+
+// GetFriends 获取好友列表
+func (ctx *Ctx) GetFriends(isRefresh ...bool) (Friends, error) {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	return ctx.Bot.self.Friends(isRefresh...)
+}
+
+// GetGroups 获取群组列表
+func (ctx *Ctx) GetGroups(isRefresh ...bool) (Groups, error) {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	return ctx.Bot.self.Groups(isRefresh...)
+}
+
+// GetGroupMembers 获取群组成员列表
+func (ctx *Ctx) GetGroupMembers(groupWxId string, isRefresh ...bool) (GroupMembers, error) {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	return ctx.Bot.self.GroupMembers(groupWxId, isRefresh...)
+}
+
+// GetMPs 获取公众号列表
+func (ctx *Ctx) GetMPs(isRefresh ...bool) (MPs, error) {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	return ctx.Bot.self.MPs(isRefresh...)
+}
