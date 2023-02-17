@@ -3,14 +3,13 @@ package qianxun
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"strings"
 	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
-
-	"github.com/antchfx/xmlquery"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
@@ -41,15 +40,11 @@ func (f *Framework) msgFormat(msg string) string {
 }
 
 func (f *Framework) GetMemePictures(msg *robot.Message) string {
-	doc, err := xmlquery.Parse(strings.NewReader(msg.Content))
-	if err != nil {
+	var emoji EmojiXML
+	if err := xml.Unmarshal([]byte(msg.Content), &emoji); err != nil {
 		return ""
 	}
-	node, err := xmlquery.Query(doc, "//emoji")
-	if err != nil {
-		return ""
-	}
-	return node.SelectAttr("cdnurl")
+	return emoji.Emoji.Cdnurl
 }
 
 func (f *Framework) SendText(toWxId, text string) error {

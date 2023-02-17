@@ -4,7 +4,6 @@ go 1.19
 
 require (
 	github.com/PullRequestInc/go-gpt3 v1.1.11
-	github.com/antchfx/xmlquery v1.3.15
 	github.com/glebarez/sqlite v1.6.0
 	github.com/go-co-op/gocron v1.18.0
 	github.com/imroc/req/v3 v3.31.2
@@ -16,13 +15,11 @@ require (
 )
 
 require (
-	github.com/antchfx/xpath v1.2.3 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/glebarez/go-sqlite v1.20.3 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/pprof v0.0.0-20230131232505-5a9e8f65f08f // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
