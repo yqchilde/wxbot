@@ -390,3 +390,14 @@ func (ctx *Ctx) GetMPs(isRefresh ...bool) (MPs, error) {
 	defer ctx.mutex.Unlock()
 	return ctx.Bot.self.MPs(isRefresh...)
 }
+
+// FuzzyGetByRemarkOrNick 模糊查询好友、群组、公众号
+func (ctx *Ctx) FuzzyGetByRemarkOrNick(remarkOrNick string) []*User {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	var users []*User
+	friends := ctx.Bot.self.friends.FuzzyGetByRemarkOrNick(remarkOrNick).AsUsers()
+	groups := ctx.Bot.self.groups.FuzzyGetByRemarkOrNick(remarkOrNick).AsUsers()
+	mps := ctx.Bot.self.mps.FuzzyGetByRemarkOrNick(remarkOrNick).AsUsers()
+	return append(append(append(users, friends...), groups...), mps...)
+}

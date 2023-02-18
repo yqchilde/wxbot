@@ -10,3 +10,4 @@
 - "github.com/yqchilde/wxbot/plugins/weather"      # 天气查询
 - "github.com/yqchilde/wxbot/plugins/zaobao"       # 每日早报
 - "github.com/yqchilde/wxbot/plugins/wordcloud"    # 聊天热词
+- "github.com/yqchilde/wxbot/plugins/chaid"        # 查wxId

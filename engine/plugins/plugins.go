@@ -39,4 +39,7 @@ import (
 
 	// 聊天热词
 	_ "github.com/yqchilde/wxbot/plugins/wordcloud"    
+
+	// 查wxId
+	_ "github.com/yqchilde/wxbot/plugins/chaid"        
 )
