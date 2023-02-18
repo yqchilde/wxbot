@@ -226,6 +226,8 @@ type IFramework interface {
     * `import _ "github.com/yqchilde/wxbot/plugins/ghmonitor"`
 * [x] [聊天热词云-点击查看使用说明](plugins/ghmonitor)
     * `import _ "github.com/yqchilde/wxbot/plugins/wordcloud"`
+* [x] [查ID-点击查看使用说明](plugins/chaid)
+  * `import _ "github.com/yqchilde/wxbot/plugins/chaid"`
 
 </details>
 
@@ -288,7 +290,6 @@ docker run -d \
 - "github.com/yqchilde/wxbot/plugins/chatgpt"      # GPT聊天
 - "github.com/yqchilde/wxbot/plugins/crazykfc"     # 肯德基疯狂星期四骚话
 - "github.com/yqchilde/wxbot/plugins/ghmonitor"    # 公众号消息监控转发
-- "github.com/yqchilde/wxbot/plugins/jingdong"     # 京豆上车
 - "github.com/yqchilde/wxbot/plugins/manager"      # 群组管理相关
 - "github.com/yqchilde/wxbot/plugins/memepicture"  # 表情包原图
 - "github.com/yqchilde/wxbot/plugins/moyuban"      # 摸鱼办
@@ -297,6 +298,7 @@ docker run -d \
 - "github.com/yqchilde/wxbot/plugins/weather"      # 天气查询
 - "github.com/yqchilde/wxbot/plugins/zaobao"       # 每日早报
 - "github.com/yqchilde/wxbot/plugins/wordcloud"    # 聊天热词
+- "github.com/yqchilde/wxbot/plugins/chaid"        # 查wxId
 ```
 
 ### 参考案例
