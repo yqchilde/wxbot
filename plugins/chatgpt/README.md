@@ -2,7 +2,7 @@
 
 ### 连续会话
 * 插件名：ChatGPT聊天
-* 用法：发送`开始会话`即可进行连续会话，发送`结束会话`即可结束会话，或5分钟没新的提问自动结束
+* 用法：发送 <font color="gray">~~开始ChatGPT会话~~</font> `开始会话`即可进行连续会话，发送`结束会话`即可结束会话，或5分钟没新的提问自动结束
 * 说明：需要获取apiKey，请到 [https://beta.openai.com](https://beta.openai.com) 获取
 * 其他命令：
     * `set chatgpt apiKey __(多个key用;符号隔开)` 设置ChatGPT的apiKey，`apiKey`可小写`apikey`

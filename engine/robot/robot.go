@@ -37,6 +37,12 @@ func Run(c *Config, f IFramework) {
 	bot.self = &Self{bot: bot}
 	bot.self.Init()
 
+	for i := range c.SuperUsers {
+		if bot.self.friends.GetByWxId(c.SuperUsers[i]) == nil {
+			log.Warnf("[robot] 您设置的管理员[%s]并不是您的好友，请修改config.yaml", c.SuperUsers[i])
+		}
+	}
+
 	log.Printf("[robot] 共获取到%d个好友", bot.self.friends.Count())
 	log.Printf("[robot] 共获取到%d个群组", bot.self.groups.Count())
 	log.Printf("[robot] 共获取到%d个公众号", bot.self.mps.Count())
