@@ -1,6 +1,9 @@
 package robot
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 // Friend 好友对象
 type Friend struct{ *User }
@@ -81,6 +84,15 @@ type Friends []*Friend
 // Count 获取好友的数量
 func (f Friends) Count() int {
 	return len(f)
+}
+
+// AsUsers 将好友列表转换为User列表
+func (f Friends) AsUsers() []*User {
+	var users []*User
+	for _, friend := range f {
+		users = append(users, friend.User)
+	}
+	return users
 }
 
 // GetByWxId 根据微信ID获取好友
@@ -182,6 +194,17 @@ func (f Friends) GetByRemarkOrNicks(remarkOrNicks []string) Friends {
 	var result Friends
 	for _, remarkOrNick := range remarkOrNicks {
 		if friend := f.GetByRemarkOrNick(remarkOrNick); friend != nil {
+			result = append(result, friend)
+		}
+	}
+	return result
+}
+
+// FuzzyGetByRemarkOrNick 根据备注或昵称模糊匹配好友列表
+func (f Friends) FuzzyGetByRemarkOrNick(remarkOrNick string) Friends {
+	var result Friends
+	for _, friend := range f {
+		if strings.Contains(friend.Remark, remarkOrNick) || strings.Contains(friend.Nick, remarkOrNick) {
 			result = append(result, friend)
 		}
 	}
@@ -464,6 +487,15 @@ func (g Groups) Count() int {
 	return len(g)
 }
 
+// AsUsers 将群组列表转换为User列表
+func (g Groups) AsUsers() []*User {
+	users := make([]*User, len(g))
+	for i, group := range g {
+		users[i] = group.AsUser()
+	}
+	return users
+}
+
 // GetByWxId 根据微信ID获取群组
 func (g Groups) GetByWxId(wxId string) *Group {
 	for _, group := range g {
@@ -563,6 +595,17 @@ func (g Groups) GetByRemarkOrNicks(remarkOrNicks []string) Groups {
 	var result Groups
 	for _, remarkOrNick := range remarkOrNicks {
 		if group := g.GetByRemarkOrNick(remarkOrNick); group != nil {
+			result = append(result, group)
+		}
+	}
+	return result
+}
+
+// FuzzyGetByRemarkOrNick 根据备注或昵称模糊匹配好友列表
+func (g Groups) FuzzyGetByRemarkOrNick(remarkOrNick string) Groups {
+	var result Groups
+	for _, group := range g {
+		if strings.Contains(group.Remark, remarkOrNick) || strings.Contains(group.Nick, remarkOrNick) {
 			result = append(result, group)
 		}
 	}
@@ -854,6 +897,15 @@ func (m MPs) Count() int {
 	return len(m)
 }
 
+// AsUsers 将当前对象转换为User对象
+func (m MPs) AsUsers() []*User {
+	var users []*User
+	for _, mp := range m {
+		users = append(users, mp.AsUser())
+	}
+	return users
+}
+
 // GetByWxId 根据微信ID获取公众号
 func (m MPs) GetByWxId(wxId string) *MP {
 	for _, mp := range m {
@@ -953,6 +1005,17 @@ func (m MPs) GetByRemarkOrNicks(remarkOrNicks []string) MPs {
 	var result MPs
 	for _, remarkOrNick := range remarkOrNicks {
 		if mp := m.GetByRemarkOrNick(remarkOrNick); mp != nil {
+			result = append(result, mp)
+		}
+	}
+	return result
+}
+
+// FuzzyGetByRemarkOrNick 根据备注或昵称模糊匹配好友列表
+func (m MPs) FuzzyGetByRemarkOrNick(remarkOrNick string) MPs {
+	var result MPs
+	for _, mp := range m {
+		if strings.Contains(mp.Remark, remarkOrNick) || strings.Contains(mp.Nick, remarkOrNick) {
 			result = append(result, mp)
 		}
 	}
