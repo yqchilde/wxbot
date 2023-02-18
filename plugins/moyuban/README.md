@@ -1,9 +1,11 @@
 ## 介绍
 
 * 插件名：摸鱼办
-* 用法：`摸鱼` `摸鱼办`
-* 用法：`摸鱼办`
+* 权限：所有好友和群聊
+* 指令：
+  * [x] `摸鱼`
+  * [x] `摸鱼办`
 
 ## 预览：
 
-![img](https://github.com/yqchilde/wxbot/blob/hook/plugins/moyuban/preview.jpg)
+![img](preview.jpg)

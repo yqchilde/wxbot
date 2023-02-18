@@ -1,13 +1,15 @@
 ## 介绍
 
 * 插件名：获取每日早报
-* 用法：`早报` `每日早报`
-* 示例：`早报`
-* 说明：需要申请apiKey，相关秘钥申请地址 https://admin.alapi.cn
-* 其他命令：
-    * `set zaobao token __` 设置api token
-    * `get zaobao info` 获取当前插件信息
+* 权限：所有好友和群聊
+* 数据来源：https://admin.alapi.cn
+* 注意：请先私聊机器人配置`token`，相关秘钥申请地址点上面链接
+* 指令：
+    * [x] `早报`
+    * [x] `每日早报`
+    * [x] `set zaobao token [token]` 设置api token
+    * [x] `get zaobao info` 获取当前插件信息
 
 ## 预览：
 
-![img](https://github.com/yqchilde/wxbot/blob/hook/plugins/zaobao/preview.jpg)
+![img](preview.jpg)

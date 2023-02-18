@@ -25,7 +25,7 @@ func registerCommand() {
 		log.Fatalf("create command table failed: %v", err)
 	}
 
-	engine.OnRegex(`设置菜单模式([1-2])`, robot.UserOrGroupAdmin).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(`设置菜单模式([1-2])`, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		menuMode := ctx.State["regex_matched"].([]string)[1]
 		if err := db.Orm.Table("command").Where("1=1").Update("menu_mode", menuMode).Error; err != nil {
 			ctx.ReplyTextAndAt("设置菜单模式失败")

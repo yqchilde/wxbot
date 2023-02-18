@@ -13,9 +13,6 @@ func init() {
 		log.Fatalf("open sqlite db failed: %v", err)
 	}
 
-	// 注册事件监听插件
-	registerEvent()
-
 	// 注册定时任务插件
 	registerCronjob()
 
