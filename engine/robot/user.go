@@ -34,7 +34,7 @@ type User struct {
 
 // IsFriend 判断当前对象是否是好友
 func (u *User) IsFriend() bool {
-	return strings.HasPrefix(u.WxId, "wxid_")
+	return strings.HasPrefix(u.WxId, "wxid_") || !u.IsGroup() && !u.IsMP()
 }
 
 // IsGroup 判断当前对象是否是群聊
