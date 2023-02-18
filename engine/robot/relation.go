@@ -83,6 +83,111 @@ func (f Friends) Count() int {
 	return len(f)
 }
 
+// GetByWxId 根据微信ID获取好友
+func (f Friends) GetByWxId(wxId string) *Friend {
+	for _, friend := range f {
+		if friend.WxId == wxId {
+			return friend
+		}
+	}
+	return nil
+}
+
+// GetByWxNum 根据微信号获取好友
+func (f Friends) GetByWxNum(wxNum string) *Friend {
+	for _, friend := range f {
+		if friend.WxNum == wxNum {
+			return friend
+		}
+	}
+	return nil
+}
+
+// GetByNick 根据昵称获取好友
+func (f Friends) GetByNick(nick string) *Friend {
+	for _, friend := range f {
+		if friend.Nick == nick {
+			return friend
+		}
+	}
+	return nil
+}
+
+// GetByRemark 根据备注获取好友
+func (f Friends) GetByRemark(remark string) *Friend {
+	for _, friend := range f {
+		if friend.Remark == remark {
+			return friend
+		}
+	}
+	return nil
+}
+
+// GetByRemarkOrNick 根据备注或昵称获取好友
+func (f Friends) GetByRemarkOrNick(remarkOrNick string) *Friend {
+	for _, friend := range f {
+		if friend.Remark == remarkOrNick || friend.Nick == remarkOrNick {
+			return friend
+		}
+	}
+	return nil
+}
+
+// GetByWxIds 根据微信ID列表获取好友列表
+func (f Friends) GetByWxIds(wxIds []string) Friends {
+	var result Friends
+	for _, wxId := range wxIds {
+		if friend := f.GetByWxId(wxId); friend != nil {
+			result = append(result, friend)
+		}
+	}
+	return result
+}
+
+// GetByWxNums 根据微信号列表获取好友列表
+func (f Friends) GetByWxNums(wxNums []string) Friends {
+	var result Friends
+	for _, wxNum := range wxNums {
+		if friend := f.GetByWxNum(wxNum); friend != nil {
+			result = append(result, friend)
+		}
+	}
+	return result
+}
+
+// GetByNicks 根据昵称列表获取好友列表
+func (f Friends) GetByNicks(nicks []string) Friends {
+	var result Friends
+	for _, nick := range nicks {
+		if friend := f.GetByNick(nick); friend != nil {
+			result = append(result, friend)
+		}
+	}
+	return result
+}
+
+// GetByRemarks 根据备注列表获取好友列表
+func (f Friends) GetByRemarks(remarks []string) Friends {
+	var result Friends
+	for _, remark := range remarks {
+		if friend := f.GetByRemark(remark); friend != nil {
+			result = append(result, friend)
+		}
+	}
+	return result
+}
+
+// GetByRemarkOrNicks 根据备注或昵称列表获取好友列表
+func (f Friends) GetByRemarkOrNicks(remarkOrNicks []string) Friends {
+	var result Friends
+	for _, remarkOrNick := range remarkOrNicks {
+		if friend := f.GetByRemarkOrNick(remarkOrNick); friend != nil {
+			result = append(result, friend)
+		}
+	}
+	return result
+}
+
 // SendText 依次发送文本消息, delays为每个好友发送消息的间隔时间, 默认为1秒, 为0时不间隔
 func (f Friends) SendText(content string, delays ...time.Duration) error {
 	for _, friend := range f {
@@ -357,6 +462,111 @@ type Groups []*Group
 // Count 获取群组的数量
 func (g Groups) Count() int {
 	return len(g)
+}
+
+// GetByWxId 根据微信ID获取群组
+func (g Groups) GetByWxId(wxId string) *Group {
+	for _, group := range g {
+		if group.WxId == wxId {
+			return group
+		}
+	}
+	return nil
+}
+
+// GetByWxNum 根据微信号获取群组
+func (g Groups) GetByWxNum(wxNum string) *Group {
+	for _, group := range g {
+		if group.WxNum == wxNum {
+			return group
+		}
+	}
+	return nil
+}
+
+// GetByNick 根据昵称获取群组
+func (g Groups) GetByNick(nick string) *Group {
+	for _, group := range g {
+		if group.Nick == nick {
+			return group
+		}
+	}
+	return nil
+}
+
+// GetByRemark 根据备注获取群组
+func (g Groups) GetByRemark(remark string) *Group {
+	for _, group := range g {
+		if group.Remark == remark {
+			return group
+		}
+	}
+	return nil
+}
+
+// GetByRemarkOrNick 根据备注或昵称获取群组
+func (g Groups) GetByRemarkOrNick(remarkOrNick string) *Group {
+	for _, group := range g {
+		if group.Remark == remarkOrNick || group.Nick == remarkOrNick {
+			return group
+		}
+	}
+	return nil
+}
+
+// GetByWxIds 根据微信ID列表获取群组列表
+func (g Groups) GetByWxIds(wxIds []string) Groups {
+	var result Groups
+	for _, wxId := range wxIds {
+		if group := g.GetByWxId(wxId); group != nil {
+			result = append(result, group)
+		}
+	}
+	return result
+}
+
+// GetByWxNums 根据微信号列表获取群组列表
+func (g Groups) GetByWxNums(wxNums []string) Groups {
+	var result Groups
+	for _, wxNum := range wxNums {
+		if group := g.GetByWxNum(wxNum); group != nil {
+			result = append(result, group)
+		}
+	}
+	return result
+}
+
+// GetByNicks 根据昵称列表获取群组列表
+func (g Groups) GetByNicks(nicks []string) Groups {
+	var result Groups
+	for _, nick := range nicks {
+		if group := g.GetByNick(nick); group != nil {
+			result = append(result, group)
+		}
+	}
+	return result
+}
+
+// GetByRemarks 根据备注列表获取群组列表
+func (g Groups) GetByRemarks(remarks []string) Groups {
+	var result Groups
+	for _, remark := range remarks {
+		if group := g.GetByRemark(remark); group != nil {
+			result = append(result, group)
+		}
+	}
+	return result
+}
+
+// GetByRemarkOrNicks 根据备注或昵称列表获取群组列表
+func (g Groups) GetByRemarkOrNicks(remarkOrNicks []string) Groups {
+	var result Groups
+	for _, remarkOrNick := range remarkOrNicks {
+		if group := g.GetByRemarkOrNick(remarkOrNick); group != nil {
+			result = append(result, group)
+		}
+	}
+	return result
 }
 
 // SendText 依次发送文本消息, delays为每个好友发送消息的间隔时间, 默认为1秒, 为0时不间隔
@@ -642,6 +852,111 @@ type MPs []*MP
 // Count 获取公众号的数量
 func (m MPs) Count() int {
 	return len(m)
+}
+
+// GetByWxId 根据微信ID获取公众号
+func (m MPs) GetByWxId(wxId string) *MP {
+	for _, mp := range m {
+		if mp.WxId == wxId {
+			return mp
+		}
+	}
+	return nil
+}
+
+// GetByWxNum 根据微信号获取公众号
+func (m MPs) GetByWxNum(wxNum string) *MP {
+	for _, mp := range m {
+		if mp.WxNum == wxNum {
+			return mp
+		}
+	}
+	return nil
+}
+
+// GetByNick 根据昵称获取公众号
+func (m MPs) GetByNick(nick string) *MP {
+	for _, mp := range m {
+		if mp.Nick == nick {
+			return mp
+		}
+	}
+	return nil
+}
+
+// GetByRemark 根据备注获取公众号
+func (m MPs) GetByRemark(remark string) *MP {
+	for _, mp := range m {
+		if mp.Remark == remark {
+			return mp
+		}
+	}
+	return nil
+}
+
+// GetByRemarkOrNick 根据备注或昵称获取公众号
+func (m MPs) GetByRemarkOrNick(remarkOrNick string) *MP {
+	for _, mp := range m {
+		if mp.Remark == remarkOrNick || mp.Nick == remarkOrNick {
+			return mp
+		}
+	}
+	return nil
+}
+
+// GetByWxIds 根据微信ID列表获取公众号列表
+func (m MPs) GetByWxIds(wxIds []string) MPs {
+	var result MPs
+	for _, wxId := range wxIds {
+		if mp := m.GetByWxId(wxId); mp != nil {
+			result = append(result, mp)
+		}
+	}
+	return result
+}
+
+// GetByWxNums 根据微信号列表获取公众号列表
+func (m MPs) GetByWxNums(wxNums []string) MPs {
+	var result MPs
+	for _, wxNum := range wxNums {
+		if mp := m.GetByWxNum(wxNum); mp != nil {
+			result = append(result, mp)
+		}
+	}
+	return result
+}
+
+// GetByNicks 根据昵称列表获取公众号列表
+func (m MPs) GetByNicks(nicks []string) MPs {
+	var result MPs
+	for _, nick := range nicks {
+		if mp := m.GetByNick(nick); mp != nil {
+			result = append(result, mp)
+		}
+	}
+	return result
+}
+
+// GetByRemarks 根据备注列表获取公众号列表
+func (m MPs) GetByRemarks(remarks []string) MPs {
+	var result MPs
+	for _, remark := range remarks {
+		if mp := m.GetByRemark(remark); mp != nil {
+			result = append(result, mp)
+		}
+	}
+	return result
+}
+
+// GetByRemarkOrNicks 根据备注或昵称列表获取公众号列表
+func (m MPs) GetByRemarkOrNicks(remarkOrNicks []string) MPs {
+	var result MPs
+	for _, remarkOrNick := range remarkOrNicks {
+		if mp := m.GetByRemarkOrNick(remarkOrNick); mp != nil {
+			result = append(result, mp)
+		}
+	}
+	return result
 }
 
 // SendText 依次发送文本消息, delays为每个好友发送消息的间隔时间, 默认为1秒, 为0时不间隔
