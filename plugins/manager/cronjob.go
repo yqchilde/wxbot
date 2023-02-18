@@ -136,7 +136,7 @@ func registerCronjob() {
 
 	// 设置每个月的提醒任务
 	// Ps: 设置每月8号10:00:00的提醒
-	engine.OnRegex(RegexOfRemindEveryMonth, robot.UserOrGroupAdmin).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(RegexOfRemindEveryMonth, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		matched := ctx.State["regex_matched"].([]string)
 		jobDesc := ctx.MessageString()
 		recv, cancel := ctx.EventChannel(ctx.CheckUserSession()).Repeat()
@@ -179,7 +179,7 @@ func registerCronjob() {
 
 	// 设置每周的提醒任务
 	// 设置每周六20:00:00的提醒
-	engine.OnRegex(RegexOfRemindEveryWeek, robot.UserOrGroupAdmin).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(RegexOfRemindEveryWeek, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		matched := ctx.State["regex_matched"].([]string)
 		jobDesc := ctx.MessageString()
 		recv, cancel := ctx.EventChannel(ctx.CheckUserSession()).Repeat()
@@ -222,7 +222,7 @@ func registerCronjob() {
 
 	// 设置每天的提醒任务
 	// 设置每天10:15:00的提醒
-	engine.OnRegex(RegexOfRemindEveryDay, robot.UserOrGroupAdmin).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(RegexOfRemindEveryDay, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		matched := ctx.State["regex_matched"].([]string)
 		jobDesc := ctx.MessageString()
 		recv, cancel := ctx.EventChannel(ctx.CheckUserSession()).Repeat()
@@ -265,7 +265,7 @@ func registerCronjob() {
 
 	// 设置每隔多久的提醒任务
 	// 设置每隔1小时的提醒
-	engine.OnRegex(RegexOfRemindInterval, robot.UserOrGroupAdmin).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(RegexOfRemindInterval, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		matched := ctx.State["regex_matched"].([]string)
 		jobDesc := ctx.MessageString()
 		recv, cancel := ctx.EventChannel(ctx.CheckUserSession()).Repeat()
@@ -308,7 +308,7 @@ func registerCronjob() {
 
 	// 设置指定时间的一次性提醒任务
 	// 设置2023-01-01 15:00:00的提醒
-	engine.OnRegex(RegexOfRemindSpecifyTime, robot.UserOrGroupAdmin).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(RegexOfRemindSpecifyTime, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		matched := ctx.State["regex_matched"].([]string)
 		jobDesc := ctx.MessageString()
 		recv, cancel := ctx.EventChannel(ctx.CheckUserSession()).Repeat()
@@ -351,7 +351,7 @@ func registerCronjob() {
 
 	// 设置自定义cron表达式的提醒任务(6位带秒)
 	// 设置表达式(*/10 * * * * *)的提醒
-	engine.OnRegex(RegexOfRemindExpression, robot.UserOrGroupAdmin).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(RegexOfRemindExpression, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		matched := ctx.State["regex_matched"].([]string)
 		jobDesc := ctx.MessageString()
 		recv, cancel := ctx.EventChannel(ctx.CheckUserSession()).Repeat()
@@ -394,7 +394,7 @@ func registerCronjob() {
 
 	// 设置每天的执行插件任务
 	// 设置每天08:00:00执行插件
-	engine.OnRegex(RegexOfPluginEveryDay, robot.UserOrGroupAdmin).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(RegexOfPluginEveryDay, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		matched := ctx.State["regex_matched"].([]string)
 		jobDesc := ctx.MessageString()
 		recv, cancel := ctx.EventChannel(ctx.CheckUserSession()).Repeat()
