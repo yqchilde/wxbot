@@ -281,9 +281,9 @@ func preProcessMessageEvent(ctx *Ctx, e *Event) {
 		}
 	case EventMessageWithdraw:
 		if e.Withdraw.FromType == 1 {
-			log.Println(fmt.Sprintf("[回调]收到撤回私聊(%s)消息 ==> %s", e.Withdraw.FromWxId, e.Withdraw.Msg))
+			log.Println(fmt.Sprintf("[回调]收到撤回私聊(%s)消息", e.Withdraw.FromWxId))
 		} else if e.Withdraw.FromType == 2 {
-			log.Println(fmt.Sprintf("[回调]收到撤回群聊(%s[%s])消息 ==> %s", e.Withdraw.FromGroup, e.Withdraw.FromWxId, e.Withdraw.Msg))
+			log.Println(fmt.Sprintf("[回调]收到撤回群聊(%s[%s])消息", e.Withdraw.FromGroup, e.Withdraw.FromWxId))
 		}
 	case EventSystem:
 		log.Println(fmt.Sprintf("[回调]收到系统消息 ==> %s", e.Message.Content))
