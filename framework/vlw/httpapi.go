@@ -40,6 +40,15 @@ func (f *Framework) msgFormat(msg string) string {
 	return buff.String()
 }
 
+func (f *Framework) GetRobotInfo() (*robot.User, error) {
+	info, err := f.GetObjectInfo(f.BotWxId)
+	if err != nil {
+		log.Errorf("[VLW] GetRobotInfo error: %v", err.Error())
+		return nil, err
+	}
+	return info, nil
+}
+
 func (f *Framework) GetMemePictures(msg *robot.Message) string {
 	// 获取图片base64
 	path := msg.Content[5 : len(msg.Content)-1]
@@ -328,7 +337,7 @@ func (f *Framework) InviteIntoGroup(groupWxId, wxId string, typ int) error {
 
 func (f *Framework) GetObjectInfo(wxId string) (*robot.User, error) {
 	payload := map[string]interface{}{
-		"api":        "GetFriendlist",
+		"api":        "GetInfoByWxid",
 		"token":      f.ApiToken,
 		"robot_wxid": f.BotWxId,
 		"to_wxid":    wxId,

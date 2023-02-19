@@ -88,6 +88,7 @@ func (u *User) MustAsMP() *MP {
 
 // Self 包装了关于bot、好友、群组、公众号的操作
 type Self struct {
+	*User
 	bot     *Bot
 	friends Friends
 	groups  Groups
@@ -101,6 +102,9 @@ func (s *Self) CheckUserObjNil() bool {
 
 // Init 初始化获取好友、群、公众号列表
 func (s *Self) Init() error {
+	if _, err := s.Self(); err != nil {
+		return err
+	}
 	if _, err := s.Friends(true); err != nil {
 		return err
 	}
@@ -111,6 +115,16 @@ func (s *Self) Init() error {
 		return err
 	}
 	return nil
+}
+
+// Self 获取机器人自己的信息
+func (s *Self) Self() (*User, error) {
+	botInfo, err := s.bot.framework.GetRobotInfo()
+	if err != nil {
+		return nil, err
+	}
+	s.User = botInfo
+	return s.User, nil
 }
 
 // Friends 获取所有的好友

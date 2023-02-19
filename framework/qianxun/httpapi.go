@@ -39,6 +39,30 @@ func (f *Framework) msgFormat(msg string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(buff.String(), "\r\n", "\r"), "\n", "\r")
 }
 
+func (f *Framework) GetRobotInfo() (*robot.User, error) {
+	apiUrl := fmt.Sprintf("%s/DaenWxHook/httpapi/?wxid=%s", f.ApiUrl, f.BotWxId)
+	payload := map[string]interface{}{
+		"type": "Q0003",
+		"data": map[string]interface{}{},
+	}
+
+	var dataResp RobotInfoResp
+	if err := NewRequest().Post(apiUrl).SetBody(payload).SetSuccessResult(&dataResp).Do().Err; err != nil {
+		log.Errorf("[千寻] GetRobotInfo error: %v", err.Error())
+		return nil, err
+	}
+	return &robot.User{
+		WxId:         dataResp.Result.Wxid,
+		WxNum:        dataResp.Result.WxNum,
+		Nick:         dataResp.Result.Nick,
+		Country:      dataResp.Result.Country,
+		Province:     dataResp.Result.Province,
+		City:         dataResp.Result.City,
+		AvatarMinUrl: dataResp.Result.AvatarUrl,
+		AvatarMaxUrl: dataResp.Result.AvatarUrl,
+	}, nil
+}
+
 func (f *Framework) GetMemePictures(msg *robot.Message) string {
 	var emoji EmojiXML
 	if err := xml.Unmarshal([]byte(msg.Content), &emoji); err != nil {

@@ -9,6 +9,10 @@ type IFramework interface {
 	// Callback 这是消息回调方法，vx框架回调消息转发给该Server
 	Callback(func(*Event, IFramework))
 
+	// GetRobotInfo 获取机器人信息
+	// return: User, error
+	GetRobotInfo() (*User, error)
+
 	// GetMemePictures 获取表情包图片地址(迷因图)
 	// return: 图片链接(网络URL或图片base64)
 	GetMemePictures(message *Message) string
@@ -361,6 +365,20 @@ func (ctx *Ctx) InviteIntoGroup(groupWxId, wxId string, typ int) error {
 		return errors.New("类型错误，请参考方法注释")
 	}
 	return ctx.framework.InviteIntoGroup(groupWxId, wxId, typ)
+}
+
+// GetRobotInfo 获取机器人信息
+func (ctx *Ctx) GetRobotInfo() (*User, error) {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	return ctx.framework.GetRobotInfo()
+}
+
+// GetObjectInfo 获取对象信息，wxId: 好友ID/群ID/公众号ID
+func (ctx *Ctx) GetObjectInfo(wxId string) (*User, error) {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	return ctx.framework.GetObjectInfo(wxId)
 }
 
 // GetFriends 获取好友列表

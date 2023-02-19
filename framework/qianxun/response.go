@@ -1,5 +1,28 @@
 package qianxun
 
+type RobotInfoResp struct {
+	Code   int    `json:"code"`
+	Msg    string `json:"msg"`
+	Result struct {
+		Wxid      string `json:"wxid"`
+		WxNum     string `json:"wxNum"`
+		Nick      string `json:"nick"`
+		Device    string `json:"device"`
+		Phone     string `json:"phone"`
+		AvatarUrl string `json:"avatarUrl"`
+		Country   string `json:"country"`
+		Province  string `json:"province"`
+		City      string `json:"city"`
+		Email     string `json:"email"`
+		Qq        string `json:"qq"`
+	} `json:"result"`
+	Wxid      string `json:"wxid"`
+	Port      int    `json:"port"`
+	Pid       int    `json:"pid"`
+	Flag      string `json:"flag"`
+	Timestamp string `json:"timestamp"`
+}
+
 // ObjectInfoResp 对象可以是好友、群、公众号
 type ObjectInfoResp struct {
 	Code   int    `json:"code"`
