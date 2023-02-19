@@ -26,6 +26,9 @@ func init() {
 				reply += fmt.Sprintf("类别：%s\nID：%s\n昵称：%s\n\n", "公众号", user.WxId, user.Nick)
 			}
 		}
+		if reply == "" {
+			reply = "未查到"
+		}
 		ctx.ReplyTextAndAt(reply)
 	})
 }

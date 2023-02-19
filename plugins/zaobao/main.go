@@ -43,7 +43,6 @@ func init() {
 				return
 			}
 
-			log.Printf("获取到的微信ID: %s", wxId)
 			go func(wxId string) {
 				if zaoBao.Date == time.Now().Format("2006-01-02") {
 					ctx.SendImage(wxId, zaoBao.Image)
