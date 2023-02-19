@@ -94,7 +94,8 @@ func buildEvent(resp string, f *Framework) *robot.Event {
 					Content: gjson.Get(resp, "data.data.msg").String(),
 				},
 			}
-			if gjson.Get(resp, fmt.Sprintf("data.data.atWxidList.#(==%s)", event.RobotWxId)).Exists() {
+			if gjson.Get(resp, fmt.Sprintf("data.data.atWxidList.#(==%s)", gjson.Get(resp, "wxid").String())).Exists() {
+				log.Println("存在")
 				if !strings.Contains(event.Message.Content, "@所有人") {
 					event.IsAtMe = true
 				}
