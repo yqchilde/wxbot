@@ -1,6 +1,8 @@
 package robot
 
 import (
+	"regexp"
+	"strings"
 	"sync"
 )
 
@@ -26,7 +28,18 @@ func (ctx *Ctx) GetMatcher() *Matcher {
 func (ctx *Ctx) MessageString() string {
 	ctx.once.Do(func() {
 		if ctx.Event != nil && ctx.IsText() {
-			ctx.message = ctx.Event.Message.Content
+			if !ctx.IsAt() {
+				ctx.message = ctx.Event.Message.Content
+			} else {
+				switch bot.config.Framework.Name {
+				case "千寻", "qianxun":
+					ctx.message = strings.TrimPrefix(ctx.Event.Message.Content, "@"+bot.self.Nick)
+					ctx.message = strings.TrimSpace(ctx.message)
+				case "VLW", "vlw":
+					regex := regexp.MustCompile(`\[at=.*\]\s*`)
+					ctx.message = regex.ReplaceAllString(ctx.Event.Message.Content, "")
+				}
+			}
 		}
 	})
 	return ctx.message

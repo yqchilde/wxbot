@@ -1,5 +1,22 @@
 package vlw
 
+type RobotInfoResp struct {
+	Code       int    `json:"Code"`
+	Result     string `json:"Result"`
+	ReturnJson struct {
+		Number int `json:"Number"`
+		Data   []struct {
+			Pid                      int    `json:"pid"`
+			Username                 string `json:"username"`
+			Wxid                     string `json:"wxid"`
+			WxNum                    string `json:"wx_num"`
+			WxHeadimgurl             string `json:"wx_headimgurl"`
+			EnterpriseWechat         int    `json:"Enterprise wechat"`
+			EnterpriseWechatClientId int    `json:"Enterprise wechat clientId"`
+		} `json:"data"`
+	} `json:"ReturnJson"`
+}
+
 // ObjectInfoResp 对象可以是好友、群、公众号
 type ObjectInfoResp struct {
 	Code       int    `json:"Code"`

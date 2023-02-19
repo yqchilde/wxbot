@@ -48,7 +48,7 @@ func init() {
 					FromNick:   ctx.Event.FromUniqueName,
 					SenderWxId: ctx.Event.FromWxId,
 					SenderNick: ctx.Event.FromName,
-					Content:    ctx.Event.Message.Content,
+					Content:    ctx.MessageString(),
 				},
 			}).Error; err != nil {
 				log.Errorf("记录消息失败: %v", err)
