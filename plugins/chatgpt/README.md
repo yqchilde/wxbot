@@ -12,6 +12,7 @@
     * [x] `set chatgpt apiKey [keys]`，(多个key用`;`符号隔开)，设置ChatGPT的apiKey，`apiKey`可小写`apikey`
     * [x] `del chatgpt apiKey [keys]`，(多个key用`;`符号隔开)， 删除ChatGPT的apiKey，`apiKey`可小写`apikey`
     * [x] `set chatgpt model [key=val]`，`k`和`v`请参考下面表格，没做过多校验，请保证设置正确
+    * [x] `set chatgpt model reset`，重置GPT的模型配置
     * [x] `get chatgpt info` 获取ChatGPT的信息
 * 附录：
   * `k`，`v`可选值参考下面表格：

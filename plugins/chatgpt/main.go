@@ -186,7 +186,19 @@ func init() {
 
 	// 设置gpt3模型参数
 	engine.OnRegex("set chatgpt model (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		kv := strings.Split(ctx.State["regex_matched"].([]string)[1], "=")
+		args := ctx.State["regex_matched"].([]string)[1]
+		if args == "reset" {
+			if err := resetGptModel(); err != nil {
+				ctx.ReplyText("重置模型参数失败, err: " + err.Error())
+				return
+			} else {
+				gptModel = nil
+				ctx.ReplyText("重置模型参数成功")
+				return
+			}
+		}
+
+		kv := strings.Split(args, "=")
 		if len(kv) != 2 {
 			ctx.ReplyText("参数格式错误")
 			return
@@ -279,4 +291,21 @@ func getGptModel() (*GptModel, error) {
 		return nil, errors.New("获取模型配置失败")
 	}
 	return &gptModel, nil
+}
+
+// 重置gpt3模型配置
+func resetGptModel() error {
+	updates := map[string]interface{}{
+		"model":             "text-davinci-003",
+		"max_tokens":        512,
+		"temperature":       0.7,
+		"top_p":             1,
+		"frequency_penalty": 0,
+		"presence_penalty":  0,
+	}
+	if err := db.Orm.Table("gptmodel").Where("1=1").Updates(updates).Error; err != nil {
+		log.Errorf("[ChatGPT] 重置模型配置失败, err: %s", err.Error())
+		return err
+	}
+	return nil
 }
