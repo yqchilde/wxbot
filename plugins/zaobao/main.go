@@ -2,9 +2,8 @@ package zaobao
 
 import (
 	"fmt"
+	"sync"
 	"time"
-
-	"github.com/imroc/req/v3"
 
 	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
@@ -13,8 +12,10 @@ import (
 )
 
 var (
-	db     sqlite.DB
-	zaoBao ZaoBao
+	db            sqlite.DB
+	zaoBao        ZaoBao
+	cronjobMutex  sync.Mutex
+	waitSendImage sync.Map
 )
 
 type ZaoBao struct {
@@ -38,27 +39,9 @@ func init() {
 		},
 		OnCronjob: func(ctx *robot.Ctx) {
 			wxId := ctx.Event.FromUniqueID
-			if zaoBao.Token == "" {
-				log.Debugf("[cronjob] 早报token为空，wxId: %s", wxId)
-				return
-			}
-
-			go func(wxId string) {
-				if zaoBao.Date == time.Now().Format("2006-01-02") {
-					ctx.SendImage(wxId, zaoBao.Image)
-					return
-				}
-				ticker := time.NewTicker(10 * time.Minute)
-				for range ticker.C {
-					if zaoBao.Date != time.Now().Format("2006-01-02") {
-						log.Debugf("[cronjob] 早报数据未更新，wxId: %s, 当前时间: %s，早报时间: %s", wxId, time.Now().Format("2006-01-02"), zaoBao.Date)
-						continue
-					}
-					ticker.Stop()
-					ctx.SendImage(wxId, zaoBao.Image)
-					break
-				}
-			}(wxId)
+			cronjobMutex.Lock()
+			defer cronjobMutex.Unlock()
+			waitSendImage.Store(wxId, ctx)
 		},
 	})
 
@@ -69,21 +52,7 @@ func init() {
 		log.Fatalf("create weather table failed: %v", err)
 	}
 
-	go func() {
-		if zaoBao.Token == "" {
-			log.Debug("早报token为空，请先设置token")
-			return
-		}
-		ticker := time.NewTicker(30 * time.Minute)
-		for range ticker.C {
-			if zaoBao.Image != "" && zaoBao.Date == time.Now().Format("2006-01-02") {
-				continue
-			}
-			if err := getZaoBao(zaoBao.Token); err != nil {
-				log.Errorf("获取早报失败: %v", err)
-			}
-		}
-	}()
+	go pollingTask()
 
 	engine.OnFullMatchGroup([]string{"早报", "每日早报"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		if zaoBao.Token == "" {
@@ -123,37 +92,26 @@ func init() {
 	})
 }
 
-func getZaoBao(token string) error {
-	var data zaoBaoJson
-	if err := req.C().Get("https://v2.alapi.cn/api/zaobao").
-		SetQueryParams(map[string]string{
-			"format": "json",
-			"token":  token,
-		}).Do().Into(&data); err != nil {
-		log.Errorf("Zaobao获取失败: %v", err)
-		return err
-	}
+func pollingTask() {
+	ticker := time.NewTicker(10 * time.Minute)
+	for range ticker.C {
+		// 早报token为空
+		if zaoBao.Token == "" {
+			continue
+		}
 
-	if err := db.Orm.Table("zaobao").Where("1=1").Updates(map[string]interface{}{
-		"date":  data.Data.Date,
-		"image": data.Data.Image,
-	}).Error; err == nil {
-		zaoBao.Date = data.Data.Date
-		zaoBao.Image = data.Data.Image
-	}
-	return nil
-}
+		// 早报未更新
+		if zaoBao.Image == "" || zaoBao.Date != time.Now().Format("2006-01-02") {
+			_ = getZaoBao(zaoBao.Token)
+		} else {
+		}
 
-type zaoBaoJson struct {
-	Code int    `json:"code"`
-	Msg  string `json:"msg"`
-	Data struct {
-		Date      string   `json:"date"`
-		News      []string `json:"news"`
-		Weiyu     string   `json:"weiyu"`
-		Image     string   `json:"image"`
-		HeadImage string   `json:"head_image"`
-	} `json:"data"`
-	Time  int    `json:"time"`
-	LogId string `json:"log_id"`
+		waitSendImage.Range(func(key, val interface{}) bool {
+			ctx := val.(*robot.Ctx)
+			ctx.SendImage(key.(string), zaoBao.Image)
+			waitSendImage.Delete(key)
+			time.Sleep(6 * time.Second)
+			return true
+		})
+	}
 }
