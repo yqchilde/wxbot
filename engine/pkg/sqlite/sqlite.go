@@ -32,11 +32,16 @@ func Open(dbPath string, db *DB, opts ...gorm.Option) error {
 	if err := CreateDBFile(dbPath); err != nil {
 		return err
 	}
-	d, err := gorm.Open(sqlite.Open(dbPath), opts...)
+	_db, err := gorm.Open(sqlite.Open(dbPath), opts...)
 	if err != nil {
 		return err
 	}
-	db.Orm = d
+	sqlDB, err := _db.DB()
+	if err != nil {
+		return err
+	}
+	sqlDB.SetMaxOpenConns(1)
+	db.Orm = _db
 	return nil
 }
 

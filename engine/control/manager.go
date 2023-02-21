@@ -25,7 +25,6 @@ func NewManager(dbpath string) (m Manager) {
 			log.Fatal(err)
 		}
 	}
-	dbpath = dbpath + "?_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)"
 	var db sqlite.DB
 	if err := sqlite.Open(dbpath, &db, &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)}); err != nil {
 		log.Fatal("open plugins database failed: ", err)
