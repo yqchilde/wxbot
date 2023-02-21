@@ -1,0 +1,16 @@
+## 插件介绍
+
+* [百度百科](baidubaike)
+* [GPT聊天](chatgpt)
+* [肯德基疯狂星期四骚话](crazykfc)
+* [公众号消息监听转发](ghmonitor)
+* [群组管理相关](manager)
+* [表情包原图](memepicture)
+* [摸鱼办](moyuban)
+* [拼音缩写翻译](pinyinsuoxie)
+* [漂亮妹妹](plmm)
+* [天气查询](weather)
+* [每日早报](zaobao)
+* [聊天热词](wordcloud)
+* [查wxId](chaid)
+* [有道翻译](youdaofanyi)

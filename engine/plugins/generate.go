@@ -45,7 +45,7 @@ func main() {
 			continue
 		}
 		split := strings.Split(line, "#")
-		line = "//" + split[1] + "\n\t" + split[0] + "\n"
+		line = "//" + split[1] + "\n\t" + strings.TrimSpace(split[0]) + "\n"
 		line = strings.Replace(line, "-", "_", 1)
 		imports = append(imports, line)
 	}
