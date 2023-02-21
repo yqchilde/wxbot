@@ -7,6 +7,7 @@
     * [指令大全](#指令大全)
 * [How to use?](#how-to-use)
     * [本地运行](#本地运行)
+    * [Releases包](#releases包)
     * [Docker运行](#docker运行)
     * [Actions编译](#actions编译)
 * [How to develop?](#how-to-develop)
@@ -257,6 +258,10 @@ git clone https://github.com/yqchilde/wxbot.git
 3. 调试运行或编译
    * 调试运行执行 `go run main.go`
    * 编译执行 `make release`
+
+### Releases包
+
+1. 去[Releases](https://github.com/yqchilde/wxbot/releases)下载对应系统的编译包，解压后执行二进制文件即可
 
 ### Docker运行
 
