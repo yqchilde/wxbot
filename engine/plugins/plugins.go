@@ -45,4 +45,7 @@ import (
 
 	// 有道翻译
 	_ "github.com/yqchilde/wxbot/plugins/youdaofanyi"
+
+	// coser
+	_ "github.com/yqchilde/wxbot/plugins/coser"
 )

@@ -228,6 +228,8 @@ type IFramework interface {
     * `import _ "github.com/yqchilde/wxbot/plugins/wordcloud"`
 * [x] [查ID-点击查看使用说明](plugins/chaid)
   * `import _ "github.com/yqchilde/wxbot/plugins/chaid"`
+* [x] [coser-点击查看使用说明](plugins/coser)
+  * `import _ "github.com/yqchilde/wxbot/plugins/coser"`
 
 </details>
 
