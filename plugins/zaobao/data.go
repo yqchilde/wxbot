@@ -1,6 +1,9 @@
 package zaobao
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/imroc/req/v3"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
@@ -22,21 +25,27 @@ type zaoBaoResp struct {
 
 func getZaoBao(token string) error {
 	var data zaoBaoResp
-	if err := req.C().Get("https://v2.alapi.cn/api/zaobao").
-		SetQueryParams(map[string]string{
-			"format": "json",
-			"token":  token,
-		}).Do().Into(&data); err != nil {
-		log.Errorf("Zaobao获取失败: %v", err)
-		return err
+	err := req.C().Get("https://v2.alapi.cn/api/zaobao").
+		SetQueryParams(map[string]string{"format": "json", "token": token}).
+		Do().Into(&data)
+	if err != nil {
+		log.Errorf("[zaoBao]获取数据失败: %v", err)
+		return fmt.Errorf("获取数据失败")
 	}
 
-	if err := db.Orm.Table("zaobao").Where("1=1").Updates(map[string]interface{}{
+	if data.Data.Date != time.Now().Local().Format("2006-01-02") {
+		return fmt.Errorf("获取数据失败: %v", "数据未更新，请稍后再试")
+	}
+
+	updates := map[string]interface{}{
 		"date":  data.Data.Date,
 		"image": data.Data.Image,
-	}).Error; err == nil {
-		zaoBao.Date = data.Data.Date
-		zaoBao.Image = data.Data.Image
 	}
+	if err := db.Orm.Table("zaobao").Where("1=1").Updates(updates).Error; err != nil {
+		log.Errorf("[zaoBao]更新数据库失败: %v", err)
+		return fmt.Errorf("获取数据失败")
+	}
+	zaoBao.Date = data.Data.Date
+	zaoBao.Image = data.Data.Image
 	return nil
 }

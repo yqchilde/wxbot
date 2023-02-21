@@ -59,14 +59,9 @@ func init() {
 			ctx.ReplyTextAndAt("请先私聊机器人配置token\n指令：set zaobao token __\n相关秘钥申请地址：https://admin.alapi.cn")
 			return
 		}
-		if zaoBao.Date != time.Now().Format("2006-01-02") {
+		if zaoBao.Date != time.Now().Local().Format("2006-01-02") {
 			if err := getZaoBao(zaoBao.Token); err != nil {
-				log.Errorf("获取早报失败: %v", err)
-				return
-			}
-			if zaoBao.Date != time.Now().Format("2006-01-02") {
-				log.Errorf("早报数据未更新，当前时间: %s, 早报时间: %s", time.Now().Format("2006-01-02"), zaoBao.Date)
-				ctx.ReplyTextAndAt("早报数据未更新，请稍后再试")
+				ctx.ReplyTextAndAt(err.Error())
 				return
 			}
 		}
@@ -93,19 +88,16 @@ func init() {
 }
 
 func pollingTask() {
-	ticker := time.NewTicker(10 * time.Minute)
-	for range ticker.C {
-		// 早报token为空
-		if zaoBao.Token == "" {
-			continue
-		}
+	// 计算下一个整点
+	now := time.Now().Local()
+	next := now.Add(10 * time.Minute).Truncate(10 * time.Minute)
+	diff := next.Sub(now)
+	timer := time.NewTimer(diff)
+	<-timer.C
+	timer.Stop()
 
-		// 早报未更新
-		if zaoBao.Image == "" || zaoBao.Date != time.Now().Format("2006-01-02") {
-			_ = getZaoBao(zaoBao.Token)
-		} else {
-		}
-
+	// 任务
+	doSendImage := func() {
 		waitSendImage.Range(func(key, val interface{}) bool {
 			ctx := val.(*robot.Ctx)
 			ctx.SendImage(key.(string), zaoBao.Image)
@@ -113,5 +105,28 @@ func pollingTask() {
 			time.Sleep(6 * time.Second)
 			return true
 		})
+	}
+
+	// 轮询任务
+	ticker := time.NewTicker(10 * time.Minute)
+	for range ticker.C {
+		// 避开0点-5点(应该不会有人设置这个时间吧)
+		if time.Now().Hour() < 5 {
+			continue
+		}
+
+		// 早报token为空
+		if zaoBao.Token == "" {
+			continue
+		}
+
+		// 早报未更新
+		if zaoBao.Image == "" || zaoBao.Date != time.Now().Format("2006-01-02") {
+			if err := getZaoBao(zaoBao.Token); err != nil {
+				continue
+			}
+			doSendImage()
+		}
+		doSendImage()
 	}
 }
