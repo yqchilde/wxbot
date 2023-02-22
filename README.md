@@ -7,10 +7,14 @@
     * [指令大全](#指令大全)
 * [How to use?](#how-to-use)
     * [本地运行](#本地运行)
+    * [Releases包](#releases包)
     * [Docker运行](#docker运行)
     * [Actions编译](#actions编译)
 * [How to develop?](#how-to-develop)
-    * [调试-环境变量](#调试-环境变量) 
+    * [制作插件或接入其他框架](#制作插件或接入其他框架)
+    * [参考案例](#参考案例)
+    * [调试-环境变量](#调试-环境变量)
+    * [提交Pr注意项](#提交pr注意项)
 * [Feature](#feature)
 * [Thanks](#thanks)
 * [License](#license)
@@ -228,6 +232,8 @@ type IFramework interface {
     * `import _ "github.com/yqchilde/wxbot/plugins/wordcloud"`
 * [x] [查ID-点击查看使用说明](plugins/chaid)
   * `import _ "github.com/yqchilde/wxbot/plugins/chaid"`
+* [x] [有道翻译-点击查看使用说明](plugins/youdaofanyi)
+  * `import _ "github.com/yqchilde/wxbot/plugins/youdaofanyi"`
 * [x] [coser-点击查看使用说明](plugins/coser)
   * `import _ "github.com/yqchilde/wxbot/plugins/coser"`
 
@@ -252,6 +258,10 @@ git clone https://github.com/yqchilde/wxbot.git
 3. 调试运行或编译
    * 调试运行执行 `go run main.go`
    * 编译执行 `make release`
+
+### Releases包
+
+1. 去[Releases](https://github.com/yqchilde/wxbot/releases)下载对应系统的编译包，解压后执行二进制文件即可
 
 ### Docker运行
 
@@ -280,6 +290,8 @@ docker run -d \
 
 
 ## How to develop?
+
+### 制作插件或接入其他框架
 
 🤔如果您想要扩展自己的插件，可以参考`plugins`目录下的插件
 
@@ -313,6 +325,31 @@ docker run -d \
 | ---------- | -------- | ------------------------------------------------------------ |
 | DEBUG      | bool     | 优先级大于其他`DEBUG_`开头的变量，开启后开启所有DEBUG模式<br />用于调试HTTP请求和调用日志文件名和行号 |
 | DEBUG_LOG  | bool     | 用于调试调用日志文件名和行号                                 |
+
+### 提交Pr注意项
+
+1. import包时顺序要规范，先import标准库，再import第三方库，最后import自己的库，例如：
+```go
+import (
+	"errors"
+	"fmt"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/PullRequestInc/go-gpt3"
+
+	"github.com/yqchilde/wxbot/engine/control"
+	"github.com/yqchilde/wxbot/engine/pkg/log"
+	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
+	"github.com/yqchilde/wxbot/engine/robot"
+)
+```
+
+2. 若提交的是`插件`，请在`plugins.yaml`中添加对应的插件
+3. 若提交的是`插件`，请在`README.md`中已有插件部分添加对应的插件
+4. 若提交的是`插件`，请在`plugins/README.md`中添加对应的插件
+5. 提交代码请先`make plugins` 或 `go generate -tags plugins ./engine/plugins` 生成对应的`plugins.go`文件
 
 ## Feature
 

@@ -1,14 +1,16 @@
 package coser
 
 import (
+	"math/rand"
+	"strconv"
+	"time"
+
 	"github.com/imroc/req/v3"
+	"modernc.org/mathutil"
+
 	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
-	"math/rand"
-	"modernc.org/mathutil"
-	"strconv"
-	"time"
 )
 
 func init() {

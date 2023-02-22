@@ -12,6 +12,7 @@ require (
 	github.com/tidwall/gjson v1.14.4
 	github.com/yqchilde/pkgs v0.0.8
 	gorm.io/gorm v1.24.5
+	modernc.org/mathutil v1.5.0
 )
 
 require (
@@ -57,7 +58,6 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.22.2 // indirect
-	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
 	modernc.org/sqlite v1.20.4 // indirect
 )

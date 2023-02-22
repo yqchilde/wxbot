@@ -14,3 +14,4 @@
 * [聊天热词](wordcloud)
 * [查wxId](chaid)
 * [有道翻译](youdaofanyi)
+* [获取Coser作品](coser)
