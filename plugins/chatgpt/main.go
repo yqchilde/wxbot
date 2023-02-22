@@ -99,6 +99,7 @@ func init() {
 				} else if msg == "清空会话" {
 					chatCTXMap.Store(ctx.Event.FromUniqueID, "")
 					ctx.ReplyTextAndAt("已清空会话，您可以继续提问新的问题")
+					continue
 				}
 
 				// 整理问题
