@@ -2,8 +2,9 @@ package coser
 
 import (
 	"math/rand"
+	"net/http"
 	"strconv"
-	"time"
+	"strings"
 
 	"github.com/imroc/req/v3"
 	"modernc.org/mathutil"
@@ -36,7 +37,7 @@ func reply(ctx *robot.Ctx, num int) {
 		return
 	}
 
-	if title, imageUrls := getCoserInfo(num); title == "" {
+	if title, imageUrls := GetCoserInfo(num); title == "" {
 		ctx.ReplyTextAndAt("获取 coser 作品失败")
 	} else {
 		ctx.ReplyTextAndAt(title)
@@ -46,10 +47,21 @@ func reply(ctx *robot.Ctx, num int) {
 	}
 }
 
-func getCoserInfo(num int) (string, []string) {
+func GetCoserInfo(num int) (string, []string) {
+	return getCoserInfo(num, 0)
+}
+
+func getCoserInfo(num, retryCount int) (string, []string) {
+
+	// 避免无限递归
+	const MaxRetryCount = 3
+	if retryCount >= MaxRetryCount {
+		log.Error("[coser] 获取失败, 超过最大重试次数")
+		return "", nil
+	}
+
 	var resp APIResp
 	const CoserApiUrl = "http://ovooa.com/API/cosplay/api.php"
-
 	if err := req.C().SetBaseURL(CoserApiUrl).Get().Do().Into(&resp); err != nil {
 		log.Errorf("[coser] 请求 %s 失败, err: %v", CoserApiUrl, err)
 		return "", nil
@@ -62,12 +74,19 @@ func getCoserInfo(num int) (string, []string) {
 
 	title := resp.Data.Title
 	data := resp.Data.Data
+	// http://pic.yupoo.com 有额度限制，限额后会 302 到一张固定图片，所以此处会重试
+	if strings.HasPrefix(data[0], "http://pic.yupoo.com") {
+		statusCode := req.C().SetRedirectPolicy(req.NoRedirectPolicy()).SetBaseURL(data[0]).Get().Do().StatusCode
+		if statusCode != http.StatusOK {
+			return getCoserInfo(num, retryCount+1)
+		}
+	}
+
 	if num == 1 {
 		return resp.Data.Title, []string{data[rand.Intn(len(resp.Data.Data))]}
 	} else {
-		rand.Seed(time.Now().UnixNano())
-		rand.Shuffle(len(data), func(i, j int) { data[i], data[j] = data[j], data[i] })
-		min := mathutil.Min(mathutil.Min(num, 10), len(data))
+		const MaxCosNum = 10
+		min := mathutil.Min(mathutil.Min(num, MaxCosNum), len(data))
 		return title, data[0:min]
 	}
 }
