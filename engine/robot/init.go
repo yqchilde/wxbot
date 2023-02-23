@@ -20,7 +20,7 @@ commandPrefix: "/"
 serverPort: 9528
 
 # 接入框架配置
-frameworks:
+framework:
   # 框架选择，可选 千寻、VLW
   name: "千寻"
   # wxbot主动请求微信框架的地址，通常为VX框架设置的HTTP地址，由http://ip:port组成
