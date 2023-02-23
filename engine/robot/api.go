@@ -2,6 +2,11 @@ package robot
 
 import (
 	"errors"
+	"net/url"
+	"strings"
+
+	"github.com/yqchilde/wxbot/engine/pkg/log"
+	"github.com/yqchilde/wxbot/engine/pkg/utils"
 )
 
 // IFramework 这是接入框架所定义的接口
@@ -166,6 +171,17 @@ func (ctx *Ctx) SendTextAndAt(groupWxId, wxId, text string) error {
 func (ctx *Ctx) SendImage(wxId, path string) error {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
+	if strings.HasPrefix(path, "local://") {
+		if !utils.CheckPathExists(path[8:]) {
+			log.Errorf("[SendImage] 发送图片失败，文件不存在: %s", path[8:])
+			return errors.New("发送图片失败，文件不存在")
+		}
+		if bot.config.ServerAddress == "" {
+			log.Errorf("[SendImage] 发送图片失败，请在config.yaml中配置serverAddress项")
+			return errors.New("发送图片失败，请在config.yaml中配置serverAddress项")
+		}
+		path = bot.config.ServerAddress + "/wxbot/static?path=" + url.QueryEscape(path[8:])
+	}
 	return ctx.framework.SendImage(wxId, path)
 }
 
@@ -248,106 +264,78 @@ func (ctx *Ctx) SendBusinessCard(toWxId, targetWxId string) error {
 
 // ReplyText 回复文本消息
 func (ctx *Ctx) ReplyText(text string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
 	if text == "" {
 		return nil
 	}
-	return ctx.framework.SendText(ctx.Event.FromUniqueID, text)
+	return ctx.SendText(ctx.Event.FromUniqueID, text)
 }
 
 // ReplyTextAndAt 回复文本消息并@某人，如果在私聊中则不会@某人
 func (ctx *Ctx) ReplyTextAndAt(text string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
 	if ctx.IsEventPrivateChat() {
-		return ctx.framework.SendText(ctx.Event.FromWxId, text)
+		return ctx.SendText(ctx.Event.FromWxId, text)
 	}
-	return ctx.framework.SendTextAndAt(ctx.Event.FromGroup, ctx.Event.FromWxId, "", text)
+	return ctx.SendTextAndAt(ctx.Event.FromGroup, ctx.Event.FromWxId, text)
 }
 
 // ReplyImage 回复图片消息
 func (ctx *Ctx) ReplyImage(path string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendImage(ctx.Event.FromUniqueID, path)
+	return ctx.SendImage(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyShareLink 回复分享链接消息
 func (ctx *Ctx) ReplyShareLink(title, desc, imageUrl, jumpUrl string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendShareLink(ctx.Event.FromUniqueID, title, desc, imageUrl, jumpUrl)
+	return ctx.SendShareLink(ctx.Event.FromUniqueID, title, desc, imageUrl, jumpUrl)
 }
 
 // ReplyFile 回复文件消息
 func (ctx *Ctx) ReplyFile(path string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendFile(ctx.Event.FromUniqueID, path)
+	return ctx.SendFile(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyVideo 回复视频消息
 func (ctx *Ctx) ReplyVideo(path string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendVideo(ctx.Event.FromUniqueID, path)
+	return ctx.SendVideo(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyEmoji 回复表情消息
 func (ctx *Ctx) ReplyEmoji(path string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendEmoji(ctx.Event.FromUniqueID, path)
+	return ctx.SendEmoji(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyMusic 回复音乐消息
 func (ctx *Ctx) ReplyMusic(name, author, app, jumpUrl, musicUrl, coverUrl string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendMusic(ctx.Event.FromUniqueID, name, author, app, jumpUrl, musicUrl, coverUrl)
+	return ctx.SendMusic(ctx.Event.FromUniqueID, name, author, app, jumpUrl, musicUrl, coverUrl)
 }
 
 // ReplyMiniProgram 回复小程序消息
 func (ctx *Ctx) ReplyMiniProgram(ghId, title, content, imagePath, jumpPath string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendMiniProgram(ctx.Event.FromUniqueID, ghId, title, content, imagePath, jumpPath)
+	return ctx.SendMiniProgram(ctx.Event.FromUniqueID, ghId, title, content, imagePath, jumpPath)
 }
 
 // ReplyMessageRecord 回复消息记录
 func (ctx *Ctx) ReplyMessageRecord(title string, dataList []map[string]interface{}) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendMessageRecord(ctx.Event.FromUniqueID, title, dataList)
+	return ctx.SendMessageRecord(ctx.Event.FromUniqueID, title, dataList)
 }
 
 // ReplyMessageRecordXML 回复消息记录(XML方式)
 func (ctx *Ctx) ReplyMessageRecordXML(xmlStr string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendMessageRecordXML(ctx.Event.FromUniqueID, xmlStr)
+	return ctx.SendMessageRecordXML(ctx.Event.FromUniqueID, xmlStr)
 }
 
 // ReplyFavorites 回复收藏消息
 func (ctx *Ctx) ReplyFavorites(favoritesId string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendFavorites(ctx.Event.FromUniqueID, favoritesId)
+	return ctx.SendFavorites(ctx.Event.FromUniqueID, favoritesId)
 }
 
 // ReplyXML 回复XML消息
 func (ctx *Ctx) ReplyXML(xmlStr string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendXML(ctx.Event.FromUniqueID, xmlStr)
+	return ctx.SendXML(ctx.Event.FromUniqueID, xmlStr)
 }
 
 // ReplyBusinessCard 回复名片消息
 func (ctx *Ctx) ReplyBusinessCard(targetWxId string) error {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	return ctx.framework.SendBusinessCard(ctx.Event.FromUniqueID, targetWxId)
+	return ctx.SendBusinessCard(ctx.Event.FromUniqueID, targetWxId)
 }
 
 // AgreeFriendVerify 同意好友验证
