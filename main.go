@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
-	"github.com/yqchilde/pkgs/net"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
+	"github.com/yqchilde/wxbot/engine/pkg/net"
 	"github.com/yqchilde/wxbot/engine/robot"
 	"github.com/yqchilde/wxbot/framework/qianxun"
 	"github.com/yqchilde/wxbot/framework/vlw"
@@ -20,7 +20,7 @@ func main() {
 	if err := v.ReadInConfig(); err != nil {
 		log.Fatalf("[main] 读取配置文件失败: %s", err.Error())
 	}
-	c := new(robot.Config)
+	c := robot.NewConfig()
 	if err := v.Unmarshal(c); err != nil {
 		log.Fatalf("[main] 解析配置文件失败: %s", err.Error())
 	}
@@ -30,15 +30,17 @@ func main() {
 	case "千寻", "qianxun":
 		f = robot.IFramework(qianxun.New(c.ServerPort, c.BotWxId, c.Framework.ApiUrl, c.Framework.ApiToken))
 		if ipPort, err := net.CheckoutIpPort(c.Framework.ApiUrl); err == nil {
-			if ping := net.PingConn(ipPort, time.Second*20); !ping {
-				log.Warn("[main] 无法连接到千寻框架，网络无法Ping通")
+			if ping := net.PingConn(ipPort, time.Second*10); !ping {
+				c.SetConnHookStatus(false)
+				log.Warn("[main] 无法连接到千寻框架，网络无法Ping通，请检查网络")
 			}
 		}
 	case "VLW", "vlw":
 		f = robot.IFramework(vlw.New(c.ServerPort, c.BotWxId, c.Framework.ApiUrl, c.Framework.ApiToken))
 		if ipPort, err := net.CheckoutIpPort(c.Framework.ApiUrl); err == nil {
-			if ping := net.PingConn(ipPort, time.Second*20); !ping {
-				log.Warn("[main] 无法连接到VLW框架，网络无法Ping通")
+			if ping := net.PingConn(ipPort, time.Second*10); !ping {
+				c.SetConnHookStatus(false)
+				log.Warn("[main] 无法连接到VLW框架，网络无法Ping通，请检查网络")
 			}
 		}
 	default:
