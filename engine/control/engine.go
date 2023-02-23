@@ -1,9 +1,8 @@
 package control
 
 import (
-	"github.com/yqchilde/pkgs/utils"
-
 	"github.com/yqchilde/wxbot/engine/pkg/log"
+	"github.com/yqchilde/wxbot/engine/pkg/utils"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
@@ -34,6 +33,9 @@ func newEngine(service string, o *Options) (e *Engine) {
 		if err := utils.CheckFolderExists(e.dataFolder); err != nil {
 			log.Fatalf("[%s]插件数据目录 %s 创建失败: %v", service, e.dataFolder, err)
 		}
+		if err := utils.CheckFolderExists(e.dataFolder + "/cache"); err != nil {
+			log.Fatalf("[%s]插件缓存目录 %s 创建失败: %v", service, e.dataFolder, err)
+		}
 	}
 	return
 }
@@ -41,6 +43,11 @@ func newEngine(service string, o *Options) (e *Engine) {
 // GetDataFolder 获取插件数据目录
 func (e *Engine) GetDataFolder() string {
 	return e.dataFolder
+}
+
+// GetCacheFolder 获取插件缓存目录
+func (e *Engine) GetCacheFolder() string {
+	return e.dataFolder + "/cache"
 }
 
 // OnMessage 消息触发器
