@@ -47,6 +47,7 @@ func AskChatGpt(question string, delay ...time.Duration) (answer string, err err
 		Echo:             false,
 		PresencePenalty:  float32(gptModel.PresencePenalty),
 		FrequencyPenalty: float32(gptModel.FrequencyPenalty),
+		Stop:             []string{"Human:", "AI:"},
 	})
 
 	// 处理响应回来的错误
@@ -74,7 +75,7 @@ func AskChatGpt(question string, delay ...time.Duration) (answer string, err err
 		}
 		return "", err
 	}
-	return resp.Choices[0].Text, nil
+	return resp.Choices[0].Text + "\n", nil
 }
 
 // filterAnswer 过滤答案，处理一些符号问题

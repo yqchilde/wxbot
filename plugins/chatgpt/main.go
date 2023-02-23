@@ -57,10 +57,10 @@ func init() {
 	if err := db.CreateAndFirstOrCreate("gptmodel", &GptModel{
 		Model:            gpt3.TextDavinci003Engine,
 		MaxTokens:        512,
-		Temperature:      0.7,
+		Temperature:      0.9,
 		TopP:             1,
 		PresencePenalty:  0,
-		FrequencyPenalty: 0,
+		FrequencyPenalty: 0.6,
 	}); err != nil {
 		log.Fatalf("create gptmodel table failed: %v", err)
 	}
@@ -99,10 +99,11 @@ func init() {
 				} else if msg == "清空会话" {
 					chatCTXMap.Store(ctx.Event.FromUniqueID, "")
 					ctx.ReplyTextAndAt("已清空会话，您可以继续提问新的问题")
+					continue
 				}
 
 				// 整理问题
-				question := msg + "\n"
+				question := "Human: " + msg + "\nAI: "
 				if c, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
 					question = c.(string) + question
 				}
@@ -111,7 +112,7 @@ func init() {
 					ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
 					continue
 				}
-				chatCTXMap.Store(ctx.Event.FromUniqueID, question+"\n"+answer)
+				chatCTXMap.Store(ctx.Event.FromUniqueID, question+answer)
 				if newAnswer, isNeedReply := filterAnswer(answer); isNeedReply {
 					retryAnswer, err := AskChatGpt(question + "\n" + answer + newAnswer)
 					if err != nil {
@@ -129,7 +130,8 @@ func init() {
 
 	// 单独提问，没有上下文处理
 	engine.OnRegex(`^提问 (.*)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		question := ctx.State["regex_matched"].([]string)[1]
+		questionRaw := ctx.State["regex_matched"].([]string)[1]
+		question := "Human: " + questionRaw + "\nAI: "
 		answer, err := AskChatGpt(question, time.Second)
 		if err != nil {
 			log.Errorf("ChatGPT出错了, err: %s", err.Error())
@@ -141,9 +143,9 @@ func init() {
 				log.Errorf("ChatGPT出错了, err: %s", err.Error())
 				return
 			}
-			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", question, retryAnswer))
+			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", questionRaw, retryAnswer))
 		} else {
-			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", question, newAnswer))
+			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", questionRaw, newAnswer))
 		}
 	})
 
@@ -298,10 +300,10 @@ func resetGptModel() error {
 	updates := map[string]interface{}{
 		"model":             "text-davinci-003",
 		"max_tokens":        512,
-		"temperature":       0.7,
+		"temperature":       0.9,
 		"top_p":             1,
 		"frequency_penalty": 0,
-		"presence_penalty":  0,
+		"presence_penalty":  0.6,
 	}
 	if err := db.Orm.Table("gptmodel").Where("1=1").Updates(updates).Error; err != nil {
 		log.Errorf("[ChatGPT] 重置模型配置失败, err: %s", err.Error())
