@@ -6,17 +6,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PullRequestInc/go-gpt3"
+	gogpt "github.com/sashabaranov/go-gpt3"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 )
 
 var (
-	gptClient gpt3.Client
+	gptClient *gogpt.Client
 	gptModel  *GptModel
 )
 
-func AskChatGpt(question string, delay ...time.Duration) (answer string, err error) {
+func AskChatGpt(prompt string, delay ...time.Duration) (answer string, err error) {
 	// 获取客户端
 	if gptClient == nil {
 		gptClient, err = getGptClient()
@@ -39,14 +39,15 @@ func AskChatGpt(question string, delay ...time.Duration) (answer string, err err
 	}
 
 	// 请求gpt3
-	resp, err := gptClient.CompletionWithEngine(context.Background(), gptModel.Model, gpt3.CompletionRequest{
-		Prompt:           []string{question},
-		MaxTokens:        gpt3.IntPtr(gptModel.MaxTokens),
-		Temperature:      gpt3.Float32Ptr(float32(gptModel.Temperature)),
-		TopP:             gpt3.Float32Ptr(float32(gptModel.TopP)),
-		Echo:             false,
+	resp, err := gptClient.CreateCompletion(context.Background(), gogpt.CompletionRequest{
+		Model:            gptModel.Model,
+		Prompt:           prompt,
+		MaxTokens:        gptModel.MaxTokens,
+		Temperature:      float32(gptModel.Temperature),
+		TopP:             float32(gptModel.TopP),
 		PresencePenalty:  float32(gptModel.PresencePenalty),
 		FrequencyPenalty: float32(gptModel.FrequencyPenalty),
+		Echo:             false,
 		Stop:             []string{"Human:", "AI:"},
 	})
 
@@ -59,16 +60,16 @@ func AskChatGpt(question string, delay ...time.Duration) (answer string, err err
 				return "", errors.New("OpenAi配额已用完，请联系管理员")
 			}
 			apiKeys = apiKeys[1:]
-			gptClient = gpt3.NewClient(apiKeys[0].Key, gpt3.WithTimeout(time.Minute))
-			return AskChatGpt(question)
+			gptClient = gogpt.NewClient(apiKeys[0].Key)
+			return AskChatGpt(prompt)
 		}
 		if strings.Contains(err.Error(), "The server had an error while processing your request") {
 			log.Println("OpenAi服务出现问题，将重试")
-			return AskChatGpt(question)
+			return AskChatGpt(prompt)
 		}
 		if strings.Contains(err.Error(), "Client.Timeout exceeded while awaiting headers") {
 			log.Println("OpenAi服务请求超时，将重试")
-			return AskChatGpt(question)
+			return AskChatGpt(prompt)
 		}
 		if strings.Contains(err.Error(), "Please reduce your prompt") {
 			return "", errors.New("OpenAi免费上下文长度限制为4097个词组，您的上下文长度已超出限制，请发送\"清空会话\"以清空上下文")
@@ -96,4 +97,37 @@ func filterAnswer(answer string) (newAnswer string, isNeedRetry bool) {
 		return false
 	})
 	return answer, false
+}
+
+func AskChatGptWithImage(prompt string, delay ...time.Duration) (b64 string, err error) {
+	// 获取客户端
+	if gptClient == nil {
+		gptClient, err = getGptClient()
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// 获取模型
+	if gptModel == nil {
+		gptModel, err = getGptModel()
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// 延迟请求
+	if len(delay) > 0 {
+		time.Sleep(delay[0])
+	}
+
+	resp, err := gptClient.CreateImage(context.Background(), gogpt.ImageRequest{
+		Prompt:         prompt,
+		Size:           gptModel.ImageSize,
+		ResponseFormat: gogpt.CreateImageResponseFormatB64JSON,
+	})
+	if err != nil {
+		return "", err
+	}
+	return resp.Data[0].B64JSON, nil
 }

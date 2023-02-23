@@ -7,11 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/PullRequestInc/go-gpt3"
+	gogpt "github.com/sashabaranov/go-gpt3"
 
 	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
+	"github.com/yqchilde/wxbot/engine/pkg/utils"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
@@ -34,6 +35,17 @@ type GptModel struct {
 	TopP             float64 `gorm:"column:top_p"`
 	PresencePenalty  float64 `gorm:"column:presence_penalty"`
 	FrequencyPenalty float64 `gorm:"column:frequency_penalty"`
+	ImageSize        string  `gorm:"column:image_size"`
+}
+
+var defaultGptModel = GptModel{
+	Model:            "text-davinci-003",
+	MaxTokens:        512,
+	Temperature:      0.9,
+	TopP:             1.0,
+	PresencePenalty:  0.0,
+	FrequencyPenalty: 0.6,
+	ImageSize:        "512x512",
 }
 
 func init() {
@@ -54,14 +66,8 @@ func init() {
 		log.Fatalf("create apikey table failed: %v", err)
 	}
 	// 初始化gpt 模型参数配置
-	if err := db.CreateAndFirstOrCreate("gptmodel", &GptModel{
-		Model:            gpt3.TextDavinci003Engine,
-		MaxTokens:        512,
-		Temperature:      0.9,
-		TopP:             1,
-		PresencePenalty:  0,
-		FrequencyPenalty: 0.6,
-	}); err != nil {
+	initGptModel := defaultGptModel
+	if err := db.CreateAndFirstOrCreate("gptmodel", &initGptModel); err != nil {
 		log.Fatalf("create gptmodel table failed: %v", err)
 	}
 
@@ -109,14 +115,14 @@ func init() {
 				}
 				answer, err := AskChatGpt(question, 2*time.Second)
 				if err != nil {
-					ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
+					ctx.ReplyTextAndAt("ChatGPT出错了, Err: " + err.Error())
 					continue
 				}
 				chatCTXMap.Store(ctx.Event.FromUniqueID, question+answer)
 				if newAnswer, isNeedReply := filterAnswer(answer); isNeedReply {
 					retryAnswer, err := AskChatGpt(question + "\n" + answer + newAnswer)
 					if err != nil {
-						ctx.ReplyTextAndAt("ChatGPT出错了, err: " + err.Error())
+						ctx.ReplyTextAndAt("ChatGPT出错了, Err: " + err.Error())
 						continue
 					}
 					chatCTXMap.Store(ctx.Event.FromUniqueID, question+"\n"+answer)
@@ -134,19 +140,36 @@ func init() {
 		question := "Human: " + questionRaw + "\nAI: "
 		answer, err := AskChatGpt(question, time.Second)
 		if err != nil {
-			log.Errorf("ChatGPT出错了, err: %s", err.Error())
+			log.Errorf("ChatGPT出错了, Err: %s", err.Error())
 			return
 		}
 		if newAnswer, isNeedRetry := filterAnswer(answer); isNeedRetry {
 			retryAnswer, err := AskChatGpt(question + "\n" + answer + newAnswer)
 			if err != nil {
-				log.Errorf("ChatGPT出错了, err: %s", err.Error())
+				log.Errorf("ChatGPT出错了, Err %s", err.Error())
 				return
 			}
 			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", questionRaw, retryAnswer))
 		} else {
 			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", questionRaw, newAnswer))
 		}
+	})
+
+	// AI作画
+	engine.OnRegex(`^作画 (.*)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		prompt := ctx.State["regex_matched"].([]string)[1]
+		b64, err := AskChatGptWithImage(prompt, time.Second)
+		if err != nil {
+			log.Errorf("ChatGPT出错了, Err: %s", err.Error())
+			return
+		}
+		filename := fmt.Sprintf("%s/%s.png", engine.GetCacheFolder(), prompt)
+		if err := utils.Base64ToImage(b64, filename); err != nil {
+			log.Errorf("作画失败，Err: %s", err.Error())
+			ctx.ReplyTextAndAt("作画失败，请重试")
+			return
+		}
+		ctx.ReplyImage("local://" + filename)
 	})
 
 	// 设置openai api key
@@ -221,8 +244,11 @@ func init() {
 			updates["frequency_penalty"] = v
 		case "PresencePenalty":
 			updates["presence_penalty"] = v
+		case "ImageSize":
+			updates["image_size"] = v
 		default:
 			ctx.ReplyTextAndAt(fmt.Sprintf("配置模型没有[%s]这个参数，请核实", k))
+			return
 		}
 
 		if err := db.Orm.Table("gptmodel").Where("1=1").Updates(updates).Error; err != nil {
@@ -250,8 +276,9 @@ func init() {
 		replyMsg += "Temperature: %.2f\n"
 		replyMsg += "TopP: %.2f\n"
 		replyMsg += "FrequencyPenalty: %.2f\n"
-		replyMsg += "PresencePenalty: %.2f\n----------\n"
-		replyMsg = fmt.Sprintf(replyMsg, gptModel.Model, gptModel.MaxTokens, gptModel.Temperature, gptModel.TopP, gptModel.FrequencyPenalty, gptModel.PresencePenalty)
+		replyMsg += "PresencePenalty: %.2f\n"
+		replyMsg += "ImageSize: %s\n----------\n"
+		replyMsg = fmt.Sprintf(replyMsg, gptModel.Model, gptModel.MaxTokens, gptModel.Temperature, gptModel.TopP, gptModel.FrequencyPenalty, gptModel.PresencePenalty, gptModel.ImageSize)
 
 		// key设置
 		var keys []ApiKey
@@ -271,7 +298,7 @@ func init() {
 var apiKeys []ApiKey
 
 // 获取gpt3客户端
-func getGptClient() (gpt3.Client, error) {
+func getGptClient() (*gogpt.Client, error) {
 	var keys []ApiKey
 	if err := db.Orm.Table("apikey").Find(&keys).Error; err != nil {
 		log.Errorf("[ChatGPT] 获取apikey失败, error:%s", err.Error())
@@ -282,7 +309,7 @@ func getGptClient() (gpt3.Client, error) {
 		return nil, fmt.Errorf("请先私聊机器人配置apiKey\n指令：set chatgpt apiKey __(多个key用;符号隔开)\napiKey获取请到https://beta.openai.com获取")
 	}
 	apiKeys = keys
-	return gpt3.NewClient(keys[0].Key, gpt3.WithTimeout(time.Minute)), nil
+	return gogpt.NewClient(keys[0].Key), nil
 }
 
 // 获取gpt3模型配置
@@ -292,20 +319,15 @@ func getGptModel() (*GptModel, error) {
 		log.Errorf("[ChatGPT] 获取模型配置失败, err: %s", err.Error())
 		return nil, errors.New("获取模型配置失败")
 	}
+	if gptModel.ImageSize == "" {
+		gptModel.ImageSize = gogpt.CreateImageSize512x512
+	}
 	return &gptModel, nil
 }
 
 // 重置gpt3模型配置
 func resetGptModel() error {
-	updates := map[string]interface{}{
-		"model":             "text-davinci-003",
-		"max_tokens":        512,
-		"temperature":       0.9,
-		"top_p":             1,
-		"frequency_penalty": 0,
-		"presence_penalty":  0.6,
-	}
-	if err := db.Orm.Table("gptmodel").Where("1=1").Updates(updates).Error; err != nil {
+	if err := db.Orm.Table("gptmodel").Where("1=1").Updates(&defaultGptModel).Error; err != nil {
 		log.Errorf("[ChatGPT] 重置模型配置失败, err: %s", err.Error())
 		return err
 	}
