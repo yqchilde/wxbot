@@ -102,7 +102,8 @@ func pollingTask() {
 			ctx := val.(*robot.Ctx)
 			ctx.SendImage(key.(string), zaoBao.Image)
 			waitSendImage.Delete(key)
-			time.Sleep(6 * time.Second)
+			// 有时候连续发图片会有问题，所以延迟10s
+			time.Sleep(10 * time.Second)
 			return true
 		})
 	}
