@@ -106,7 +106,7 @@ func init() {
 					chatCTXMap.Store(ctx.Event.FromUniqueID, "")
 					ctx.ReplyTextAndAt("已清空会话，您可以继续提问新的问题")
 					continue
-				} else if strings.Contains(msg, "画") {
+				} else if strings.HasPrefix(msg, "作画") {
 					b64, err := AskChatGptWithImage(msg, time.Second)
 					if err != nil {
 						log.Errorf("ChatGPT出错了，Err：%s", err.Error())
