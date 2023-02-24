@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/imroc/req/v3"
 	"modernc.org/mathutil"
@@ -43,6 +44,7 @@ func reply(ctx *robot.Ctx, num int) {
 		ctx.ReplyTextAndAt(title)
 		for _, url := range imageUrls {
 			ctx.ReplyImage(url)
+			time.Sleep(2 * time.Second)
 		}
 	}
 }
