@@ -74,6 +74,9 @@ func AskChatGpt(prompt string, delay ...time.Duration) (answer string, err error
 		if strings.Contains(err.Error(), "Please reduce your prompt") {
 			return "", errors.New("OpenAi免费上下文长度限制为4097个词组，您的上下文长度已超出限制，请发送\"清空会话\"以清空上下文")
 		}
+		if strings.Contains(err.Error(), "Incorrect API key") {
+			return "", errors.New("OpenAi ApiKey错误，请联系管理员")
+		}
 		return "", err
 	}
 	return resp.Choices[0].Text + "\n", nil

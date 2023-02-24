@@ -115,14 +115,14 @@ func init() {
 				}
 				answer, err := AskChatGpt(question, 2*time.Second)
 				if err != nil {
-					ctx.ReplyTextAndAt("ChatGPT出错了, Err: " + err.Error())
+					ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
 					continue
 				}
 				chatCTXMap.Store(ctx.Event.FromUniqueID, question+answer)
 				if newAnswer, isNeedReply := filterAnswer(answer); isNeedReply {
 					retryAnswer, err := AskChatGpt(question + "\n" + answer + newAnswer)
 					if err != nil {
-						ctx.ReplyTextAndAt("ChatGPT出错了, Err: " + err.Error())
+						ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
 						continue
 					}
 					chatCTXMap.Store(ctx.Event.FromUniqueID, question+"\n"+answer)
@@ -140,13 +140,15 @@ func init() {
 		question := "Human: " + questionRaw + "\nAI: "
 		answer, err := AskChatGpt(question, time.Second)
 		if err != nil {
-			log.Errorf("ChatGPT出错了, Err: %s", err.Error())
+			log.Errorf("ChatGPT出错了，Err：%s", err.Error())
+			ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
 			return
 		}
 		if newAnswer, isNeedRetry := filterAnswer(answer); isNeedRetry {
 			retryAnswer, err := AskChatGpt(question + "\n" + answer + newAnswer)
 			if err != nil {
-				log.Errorf("ChatGPT出错了, Err %s", err.Error())
+				log.Errorf("ChatGPT出错了，Err：%s", err.Error())
+				ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
 				return
 			}
 			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", questionRaw, retryAnswer))
@@ -160,7 +162,8 @@ func init() {
 		prompt := ctx.State["regex_matched"].([]string)[1]
 		b64, err := AskChatGptWithImage(prompt, time.Second)
 		if err != nil {
-			log.Errorf("ChatGPT出错了, Err: %s", err.Error())
+			log.Errorf("ChatGPT出错了，Err：%s", err.Error())
+			ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
 			return
 		}
 		filename := fmt.Sprintf("%s/%s.png", engine.GetCacheFolder(), prompt)
