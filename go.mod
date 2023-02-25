@@ -3,6 +3,7 @@ module github.com/yqchilde/wxbot
 go 1.19
 
 require (
+	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/PullRequestInc/go-gpt3 v1.1.11
 	github.com/glebarez/sqlite v1.7.0
 	github.com/go-co-op/gocron v1.18.0
@@ -16,6 +17,7 @@ require (
 )
 
 require (
+	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/glebarez/go-sqlite v1.20.3 // indirect
