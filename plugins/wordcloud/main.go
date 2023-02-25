@@ -1,11 +1,7 @@
 package wordcloud
 
 import (
-	"bytes"
-	"encoding/base64"
 	"fmt"
-	"io"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -15,6 +11,7 @@ import (
 
 	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
+	"github.com/yqchilde/wxbot/engine/pkg/utils"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
@@ -27,9 +24,6 @@ func init() {
 			"输入 {热词 id xxx top 10} => 获取指定聊天室热词前10条\n",
 		DataFolder: "wordcloud",
 	})
-
-	cachePath := engine.GetDataFolder() + "/cache"
-	_ = os.MkdirAll(cachePath, 0755)
 
 	engine.OnRegex(`^热词(?:\s+id\s+(\S+))?(?:\s+top\s+(\d+))?$|^热词\s+top\s+(\d+)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		id := ctx.State["regex_matched"].([]string)[1]
@@ -85,8 +79,8 @@ func init() {
 
 		// 保存图片
 		imgB64 := gjson.Get(resp.String(), "data.image").String()
-		filename := fmt.Sprintf("%s/%s_%s.png", engine.GetDataFolder()+"/cache", ctx.Event.FromUniqueID, time.Now().Local().Format("20060102"))
-		if err := base64ToImage(filename, imgB64); err != nil {
+		filename := fmt.Sprintf("%s/%s_%s.png", engine.GetCacheFolder(), ctx.Event.FromUniqueID, time.Now().Local().Format("20060102"))
+		if err := utils.Base64ToImage(imgB64, filename); err != nil {
 			log.Errorf("保存图片失败: %v", err)
 			ctx.ReplyText("获取热词失败")
 			return
@@ -106,21 +100,4 @@ func init() {
 		}
 		ctx.ReplyImage(gjson.Get(resp.String(), "data").String())
 	})
-}
-
-func base64ToImage(src string, base64Str string) error {
-	imgByte, err := base64.StdEncoding.DecodeString(base64Str)
-	if err != nil {
-		return err
-	}
-	file, err := os.Create(src)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	_, err = io.Copy(file, bytes.NewReader(imgByte))
-	if err != nil {
-		return err
-	}
-	return nil
 }

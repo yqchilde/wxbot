@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yqchilde/pkgs/utils"
-
 	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
+	"github.com/yqchilde/wxbot/engine/pkg/utils"
 )
 
 // MessageRecord 消息记录表

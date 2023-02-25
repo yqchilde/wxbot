@@ -7,15 +7,19 @@ superUsers:
   - "wxid_5cvtxuwufytd21"
 # 管理员命令前缀
 commandPrefix: "/"
-# 本项目运行时的HTTP端口，用于在接入框架里配置回调地址
-# 在所接入的VX框架中设置回调地址可写成 http://ip:9528/wxbot/callback，本地测试ip可写localhost
+# 本项目运行时会启动一个HTTP服务，包含一个接收事件回调服务，该配置项为HTTP服务端口
+# 在所接入的VX框架中请将回调地址改为 http://[本项目运行服务器IP]:[serverPort]/wxbot/callback，本地测试ip可写localhost
 serverPort: 9528
+# 本项目运行时会启动一个HTTP服务，包含一个静态图片文件服务，用于将本地图片作为网络图片
+# 仅当在插件中使用ctx.ReplyImage(local://[图片路径时])才会用到该项
+# 本项目和VX框架运行在同一台服务器时，请填写http://[本机IP]:[serverPort]，否则请填写本项目运行服务器IP，也可以使用域名
+serverAddress: ""
 
 # 接入框架配置
 framework:
   # 框架选择，可选 千寻、VLW
   name: "千寻"
-  # wxbot主动请求微信框架的地址，通常为VX框架设置的HTTP地址，由http://ip:port组成
+  # wxbot主动请求微信框架的地址，比如：http://[运行千寻的服务器ip]:[千寻的HTTP端口]
   apiUrl: "http://192.168.31.8:9527"
   # VX框架HTTP鉴权Token (千寻目前没有，vlw需要)
   apiToken: ""

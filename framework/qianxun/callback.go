@@ -8,8 +8,8 @@ import (
 
 	"github.com/tidwall/gjson"
 
-	"github.com/yqchilde/pkgs/net"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
+	"github.com/yqchilde/wxbot/engine/pkg/net"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
@@ -41,6 +41,13 @@ func New(serverPort uint, botWxId, apiUrl, apiToken string) *Framework {
 }
 
 func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
+	// 静态文件服务
+	http.HandleFunc("/wxbot/static", func(w http.ResponseWriter, r *http.Request) {
+		file := r.URL.Query().Get("path")
+		http.ServeFile(w, r, file)
+	})
+
+	// 回调服务
 	http.HandleFunc("/wxbot/callback", func(w http.ResponseWriter, r *http.Request) {
 		recv, err := io.ReadAll(r.Body)
 		if err != nil {

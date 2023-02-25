@@ -8,10 +8,10 @@ require (
 	github.com/glebarez/sqlite v1.7.0
 	github.com/go-co-op/gocron v1.18.0
 	github.com/imroc/req/v3 v3.32.0
+	github.com/sashabaranov/go-gpt3 v1.2.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.15.0
 	github.com/tidwall/gjson v1.14.4
-	github.com/yqchilde/pkgs v0.0.8
 	gorm.io/gorm v1.24.5
 	modernc.org/mathutil v1.5.0
 )
