@@ -2,11 +2,15 @@ package heisiwu
 
 import (
 	"fmt"
-	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"math/rand"
 	"os"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/go-co-op/gocron"
+
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 )
 
 const (
@@ -18,10 +22,22 @@ const (
 
 var (
 	cats = []string{"heisi", "baisi", "juru", "jk", "mcn", "meizu"}
+	job  = gocron.NewScheduler(time.Local)
 )
 
 func start() {
-	crawlCategory(cats[rand.Intn(len(cats))])
+	// 每个分类爬虫任务的执行状态，true 运行，false 未运行
+	categorySpiderTaskState := make(map[string]bool)
+	job.Tag("黑丝屋爬虫任务").Every(5).Minutes().Do(func() {
+		category := cats[rand.Intn(len(cats))]
+		if categorySpiderTaskState[category] {
+			return
+		}
+		categorySpiderTaskState[category] = true
+		crawlCategory(category)
+		categorySpiderTaskState[category] = false
+	})
+	job.StartAsync()
 }
 
 func crawlCategory(category string) {

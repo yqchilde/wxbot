@@ -2,13 +2,16 @@ package heisiwu
 
 import (
 	"fmt"
-	"github.com/yqchilde/wxbot/engine/control"
-	"github.com/yqchilde/wxbot/engine/robot"
 	"math/rand"
-	"modernc.org/mathutil"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
+
+	"modernc.org/mathutil"
+
+	"github.com/yqchilde/wxbot/engine/control"
+	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 var (
@@ -18,6 +21,7 @@ var (
 		"巨乳": "juru",
 		"美足": "meizu",
 		"网红": "mcn",
+		"jk": "jk",
 	}
 	categoryKeys = func() []string {
 		keys := make([]string, 0, len(categoryMap))
@@ -27,7 +31,7 @@ var (
 		return keys
 	}()
 	categoryMatch = strings.Join(categoryKeys, "|")
-	categoryRegex = fmt.Sprintf(`^%s ?(\d+)$`, categoryMatch)
+	categoryRegex = fmt.Sprintf(`^(%s) ?(\d+)$`, categoryMatch)
 )
 
 func init() {
@@ -38,38 +42,44 @@ func init() {
 			"输入 {巨乳 3} => 获取 3 张巨乳作品，依此类推",
 	})
 
-	// 启动黑丝屋爬虫
-	start()
-
 	engine.OnFullMatchGroup(categoryKeys).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		reply(ctx, ctx.State["regex_matched"].(string), 1)
+		reply(ctx, ctx.State["matched"].(string), 1)
 	})
 
 	engine.OnRegex(categoryRegex).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		words := ctx.State["regex_matched"].([]string)
-		if num, err := strconv.Atoi(words[1]); err == nil {
-			reply(ctx, words[0], num)
+		if num, err := strconv.Atoi(words[2]); err == nil {
+			reply(ctx, words[1], num)
 		}
 	})
 
+	// 启动黑丝屋爬虫
+	start()
 }
 
 func reply(ctx *robot.Ctx, category string, num int) {
-	if num <= 0 {
+	if num <= 0 || category == "" {
 		return
 	}
-	if title, imageUrls := getSetu(categoryMap[category], num); title == "" {
+
+	title, imageUrls := getSetu(categoryMap[category], num)
+	if title == "" {
 		ctx.ReplyTextAndAt(fmt.Sprintf("获取%s作品失败，请稍后重试", category))
-	} else {
-		ctx.ReplyTextAndAt(title)
-		for _, url := range imageUrls {
-			ctx.ReplyImage(url)
+		return
+	}
+
+	ctx.ReplyTextAndAt(title)
+	for _, url := range imageUrls {
+		ctx.ReplyImage(url)
+		if dur, err := time.ParseDuration(fmt.Sprintf("%sms", int(rand.Float64()*2000))); err == nil {
+			// 等待 2s 内的一个随机数
+			time.Sleep(dur)
 		}
 	}
 }
 
 func getSetu(category string, num int) (string, []string) {
-	categoryPath := GetPath(StorageFolder, categoryMap[category])
+	categoryPath := GetPath(StorageFolder, category)
 	entries, err := ReadDir(categoryPath)
 	if err != nil || len(entries) == 0 {
 		return "", nil

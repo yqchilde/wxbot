@@ -48,4 +48,7 @@ import (
 
 	// coser
 	_ "github.com/yqchilde/wxbot/plugins/coser"
+
+	// 黑丝屋
+	_ "github.com/yqchilde/wxbot/plugins/heisiwu"
 )

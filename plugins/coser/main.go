@@ -1,7 +1,6 @@
 package coser
 
 import (
-	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -84,11 +83,7 @@ func getCoserInfo(num, retryCount int) (string, []string) {
 		}
 	}
 
-	if num == 1 {
-		return resp.Data.Title, []string{data[rand.Intn(len(resp.Data.Data))]}
-	} else {
-		const MaxCosNum = 10
-		min := mathutil.Min(mathutil.Min(num, MaxCosNum), len(data))
-		return title, data[0:min]
-	}
+	const MaxCosNum = 10
+	min := mathutil.Min(mathutil.Min(num, MaxCosNum), len(data))
+	return title, data[0:min]
 }
