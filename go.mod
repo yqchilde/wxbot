@@ -4,7 +4,6 @@ go 1.19
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
-	github.com/PullRequestInc/go-gpt3 v1.1.11
 	github.com/glebarez/sqlite v1.7.0
 	github.com/go-co-op/gocron v1.18.0
 	github.com/imroc/req/v3 v3.32.0
