@@ -18,6 +18,21 @@ func WriteFile(filePath, content string) {
 	}
 }
 
+func GetSubFolder(folderPath string) ([]os.DirEntry, error) {
+	entries, err := ReadDir(folderPath)
+	if err != nil {
+		return nil, err
+	}
+
+	subFolders := make([]os.DirEntry, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() {
+			subFolders = append(subFolders, entry)
+		}
+	}
+	return subFolders, nil
+}
+
 func ReadDir(folderPath string) ([]os.DirEntry, error) {
 	if !Exist(folderPath) {
 		return nil, nil

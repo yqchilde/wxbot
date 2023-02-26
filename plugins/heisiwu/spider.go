@@ -61,7 +61,7 @@ func crawlCategory(category string) {
 		return
 	}
 
-	dirEntries, err := ReadDir(folderPath)
+	dirEntries, err := GetSubFolder(folderPath)
 	if err != nil {
 		return
 	}
@@ -88,10 +88,6 @@ func crawlCategory(category string) {
 func convert(dirEntries []os.DirEntry) map[string]string {
 	existTopicMap := make(map[string]string)
 	for _, entry := range dirEntries {
-		if !entry.IsDir() {
-			continue
-		}
-
 		topicInfo := strings.Split(entry.Name(), "-")
 		if len(topicInfo) != 2 {
 			continue

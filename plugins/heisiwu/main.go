@@ -80,7 +80,8 @@ func reply(ctx *robot.Ctx, category string, num int) {
 
 func getSetu(category string, num int) (string, []string) {
 	categoryPath := GetPath(StorageFolder, category)
-	entries, err := ReadDir(categoryPath)
+	entries, err := GetSubFolder(categoryPath)
+
 	if err != nil || len(entries) == 0 {
 		return "", nil
 	}
