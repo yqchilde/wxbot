@@ -42,11 +42,11 @@ func init() {
 			"输入 {巨乳 3} => 获取 3 张巨乳作品，依此类推",
 	})
 
-	engine.OnFullMatchGroup(categoryKeys).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnFullMatchGroup(categoryKeys, robot.OnlyPrivate).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		reply(ctx, ctx.State["matched"].(string), 1)
 	})
 
-	engine.OnRegex(categoryRegex).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(categoryRegex, robot.OnlyPrivate).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		words := ctx.State["regex_matched"].([]string)
 		if num, err := strconv.Atoi(words[2]); err == nil {
 			reply(ctx, words[1], num)
