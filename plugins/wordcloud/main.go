@@ -59,7 +59,11 @@ func init() {
 			}
 			// 剔除消息中的艾特
 			if strings.HasPrefix(msg.Content, "@") {
-				msg.Content = msg.Content[strings.Index(msg.Content, " "):]
+				if strings.Contains(msg.Content, " ") {
+					msg.Content = msg.Content[strings.Index(msg.Content, " "):]
+				} else {
+					msg.Content = msg.Content[1:]
+				}
 			}
 			words += msg.Content + " "
 		}
