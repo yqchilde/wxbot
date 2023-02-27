@@ -32,9 +32,12 @@ func Run(c *Config, f IFramework) {
 	if c.MaxProcessTime == 0 {
 		c.MaxProcessTime = time.Minute * 3
 	}
+	if c.ServerPort == 0 {
+		c.ServerPort = 9528
+	}
 
 	bot = &Bot{config: c, framework: f}
-	bot.self = &Self{bot: bot}
+	bot.self = &Self{bot: bot, User: &User{}}
 	if c.connHookStatus {
 		bot.self.Init()
 		for i := range c.SuperUsers {

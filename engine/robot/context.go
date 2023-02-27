@@ -28,7 +28,7 @@ func (ctx *Ctx) GetMatcher() *Matcher {
 func (ctx *Ctx) MessageString() string {
 	ctx.once.Do(func() {
 		if ctx.Event != nil && ctx.IsText() {
-			if !ctx.IsAt() {
+			if !ctx.IsAt() || ctx.IsEventPrivateChat() {
 				ctx.message = ctx.Event.Message.Content
 			} else {
 				switch bot.config.Framework.Name {
