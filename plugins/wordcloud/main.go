@@ -90,18 +90,7 @@ func init() {
 			return
 		}
 
-		// 上传图片
-		resp = req.C().Post("https://bot.yqqy.top/api/uploadImg").SetFile("file", filename).Do()
-		if resp.GetStatusCode() != 200 {
-			log.Errorf("上传图片失败: %v", err)
-			ctx.ReplyText("获取热词失败")
-			return
-		}
-		if gjson.Get(resp.String(), "code").Int() != 200 {
-			log.Errorf("上传图片失败: %v", err)
-			ctx.ReplyText("获取热词失败")
-			return
-		}
-		ctx.ReplyImage(gjson.Get(resp.String(), "data").String())
+		// 发送图片
+		ctx.ReplyImage("local://" + filename)
 	})
 }
