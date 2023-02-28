@@ -54,7 +54,7 @@ func Run(c *Config, f IFramework) {
 
 	eventBuffer = NewEventBuffer(bot.config.BufferLen)
 	eventBuffer.Loop(bot.config.Latency, bot.config.MaxProcessTime, processEventAsync)
-	bot.framework.Callback(eventBuffer.ProcessEvent)
+	runServer(c)
 }
 
 func processEventAsync(event *Event, framework IFramework, maxWait time.Duration) {

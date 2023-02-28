@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/pkg/utils"
 )
@@ -12,7 +14,7 @@ import (
 // IFramework 这是接入框架所定义的接口
 type IFramework interface {
 	// Callback 这是消息回调方法，vx框架回调消息转发给该Server
-	Callback(func(*Event, IFramework))
+	Callback(*gin.Context, func(*Event, IFramework))
 
 	// GetRobotInfo 获取机器人信息
 	// return: User, error

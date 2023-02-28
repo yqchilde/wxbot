@@ -1,9 +1,14 @@
 package robot
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/yqchilde/wxbot/engine/pkg/log"
+	"github.com/yqchilde/wxbot/web"
 )
 
 var configTemplate = `# 机器人WxId，修改为自己的机器人WxId
@@ -47,4 +52,15 @@ func init() {
 
 	// 打印版本
 	log.Printf("当前运行版本: %s", version)
+
+	// 检查web服务
+	_, err := web.Web.ReadFile("dist/index.html")
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			log.Fatalf("web文件夹下的dist文件夹为空，请使用(git clone --recurse-submodules https://github.com/yqchilde/wxbot.git)克隆完整项目")
+			return
+		}
+		log.Fatalf("读取web/dist/index.html失败，可能造成web服务异常: error: %v", err)
+	}
+	gin.SetMode(gin.ReleaseMode)
 }
