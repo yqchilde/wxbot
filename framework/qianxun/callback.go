@@ -2,14 +2,13 @@ package qianxun
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/tidwall/gjson"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
-	"github.com/yqchilde/wxbot/engine/pkg/net"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
@@ -40,41 +39,17 @@ func New(serverPort uint, botWxId, apiUrl, apiToken string) *Framework {
 	}
 }
 
-func (f *Framework) Callback(handler func(*robot.Event, robot.IFramework)) {
-	// 静态文件服务
-	http.HandleFunc("/wxbot/static", func(w http.ResponseWriter, r *http.Request) {
-		file := r.URL.Query().Get("path")
-		http.ServeFile(w, r, file)
-	})
-
-	// 回调服务
-	http.HandleFunc("/wxbot/callback", func(w http.ResponseWriter, r *http.Request) {
-		recv, err := io.ReadAll(r.Body)
-		if err != nil {
-			log.Errorf("[千寻] 接收回调错误, error: %v", err)
-			return
-		}
-		resp := string(recv)
-		event := buildEvent(resp, f)
-		handler(event, f)
-		w.Header().Add("Content-Type", "application/json")
-		w.Write([]byte(`{"code":0}`))
-	})
-	if f.ServerPort == 0 {
-		f.ServerPort = 9528
+func (f *Framework) Callback(ctx *gin.Context, handler func(*robot.Event, robot.IFramework)) {
+	recv, err := ctx.GetRawData()
+	if err != nil {
+		log.Errorf("[千寻] 接收回调错误, error: %v", err)
+		return
 	}
-
-	if ip, err := net.GetIPWithLocal(); err != nil {
-		log.Printf("[千寻] WxBot回调地址: http://%s:%d/wxbot/callback", "127.0.0.1", f.ServerPort)
-	} else {
-		log.Printf("[千寻] WxBot回调地址: http://%s:%d/wxbot/callback", ip, f.ServerPort)
-	}
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", f.ServerPort), nil); err != nil {
-		log.Fatalf("[千寻] WxBot回调服务启动失败, error: %v", err)
-	}
+	handler(buildEvent(string(recv)), f)
+	ctx.JSON(http.StatusOK, gin.H{"code": 0})
 }
 
-func buildEvent(resp string, f *Framework) *robot.Event {
+func buildEvent(resp string) *robot.Event {
 	var event robot.Event
 	switch gjson.Get(resp, "event").Int() {
 	case eventAccountChange:
