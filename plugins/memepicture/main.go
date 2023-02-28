@@ -74,7 +74,7 @@ func featureImage(url, b64, cacheDir string) (original, thumbnail string, err er
 		// 下载图片
 		resp, err := http.Get(url)
 		if err != nil {
-			return
+			return "", "", err
 		}
 		defer resp.Body.Close()
 
@@ -82,19 +82,19 @@ func featureImage(url, b64, cacheDir string) (original, thumbnail string, err er
 		file, err := os.Create(tmpFile)
 		if err != nil {
 			os.Remove(tmpFile)
-			return
+			return "", "", err
 		}
 		defer file.Close()
 		if _, err := io.Copy(file, resp.Body); err != nil {
 			os.Remove(tmpFile)
-			return
+			return "", "", err
 		}
 	}
 	if b64 != "" {
 		// 保存图片
 		if err := utils.Base64ToImage(b64, tmpFile); err != nil {
 			os.Remove(tmpFile)
-			return
+			return "", "", err
 		}
 	}
 
