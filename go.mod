@@ -3,6 +3,7 @@ module github.com/yqchilde/wxbot
 go 1.19
 
 require (
+	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/gin-gonic/gin v1.9.0
 	github.com/glebarez/sqlite v1.7.0
 	github.com/go-co-op/gocron v1.18.0
