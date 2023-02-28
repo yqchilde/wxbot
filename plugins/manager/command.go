@@ -78,9 +78,9 @@ func registerCommand() {
 			ctx.ReplyTextAndAt(menus)
 		case "2":
 			// 🔔实现方案二：web输出菜单，需要在config.yaml中配置公网环境，否则打不开
-			address := ctx.Bot.GetServerAddress()
+			address := ctx.Bot.GetConfig().ServerAddress
 			address = fmt.Sprintf("%s/menu?wxid=%s", address, ctx.Event.FromUniqueID)
-			ctx.ReplyShareLink(ctx.Bot.GetBotNick(), "机器人当前所有的指令都在这里哦！", "https://imgbed.link/file/10160", address)
+			ctx.ReplyShareLink(ctx.Bot.GetConfig().BotNickname, "机器人当前所有的指令都在这里哦！", "https://imgbed.link/file/10160", address)
 		}
 	})
 }

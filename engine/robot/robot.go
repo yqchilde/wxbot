@@ -321,29 +321,9 @@ func GetBot() *Bot {
 	return bot
 }
 
-// GetBotNick 获取机器人昵称
-func (b *Bot) GetBotNick() string {
-	return b.config.BotNickname
-}
-
-// GetBotWxId 获取机器人微信ID
-func (b *Bot) GetBotWxId() string {
-	return b.config.BotWxId
-}
-
-// GetSuperUsers 获取超级用户
-func (b *Bot) GetSuperUsers() []string {
-	return b.config.SuperUsers
-}
-
-// GetCommandPrefix 获取命令前缀
-func (b *Bot) GetCommandPrefix() string {
-	return b.config.CommandPrefix
-}
-
-// GetServerAddress 获取服务器地址
-func (b *Bot) GetServerAddress() string {
-	return b.config.ServerAddress
+// GetConfig 获取机器人配置
+func (b *Bot) GetConfig() *Config {
+	return b.config
 }
 
 // Friends 从缓存中获取好友列表

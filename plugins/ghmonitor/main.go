@@ -131,7 +131,7 @@ func init() {
 						if err := xml.Unmarshal([]byte(content), &msgModel); err != nil {
 							return
 						}
-						msgModel.Fromusername = ctx.Bot.GetBotWxId()
+						msgModel.Fromusername = ctx.Bot.GetConfig().BotWxId
 						if newXml, err := xml.Marshal(msgModel); err == nil {
 							for _, wxId := range strings.Split(data.PushWxIds, ",") {
 								ctx.SendXML(wxId, string(newXml))
@@ -146,7 +146,7 @@ func init() {
 					}
 					for _, key := range strings.Split(data.Keys, ",") {
 						if strings.Contains(msgModel.Appmsg.Title, key) || strings.Contains(msgModel.Appmsg.Des, key) {
-							msgModel.Fromusername = ctx.Bot.GetBotWxId()
+							msgModel.Fromusername = ctx.Bot.GetConfig().BotWxId
 							if newXml, err := xml.Marshal(msgModel); err == nil {
 								for _, wxId := range strings.Split(data.PushWxIds, ",") {
 									ctx.SendXML(wxId, string(newXml))
