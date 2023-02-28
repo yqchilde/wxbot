@@ -341,6 +341,11 @@ func (b *Bot) GetCommandPrefix() string {
 	return b.config.CommandPrefix
 }
 
+// GetServerAddress 获取服务器地址
+func (b *Bot) GetServerAddress() string {
+	return b.config.ServerAddress
+}
+
 // Friends 从缓存中获取好友列表
 func (b *Bot) Friends() Friends {
 	return b.self.friends
