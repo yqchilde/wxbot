@@ -341,6 +341,15 @@ func (b *Bot) MPs() MPs {
 	return b.self.mps
 }
 
+// Users 从缓存中获取所有用户列表
+func (b *Bot) Users() []*User {
+	var users []*User
+	users = append(users, b.self.friends.AsUsers()...)
+	users = append(users, b.self.groups.AsUsers()...)
+	users = append(users, b.self.mps.AsUsers()...)
+	return users
+}
+
 // GetSelf 获取Self对象，Self对象包含了对用户、群、公众号的包装
 func (b *Bot) GetSelf() (*Self, error) {
 	if b.self == nil {
