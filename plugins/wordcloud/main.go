@@ -18,10 +18,13 @@ import (
 func init() {
 	engine := control.Register("wordcloud", &control.Options{
 		Alias: "词云",
-		Help: "输入 {热词} => 获取当前聊天室热词，默认当前聊天室Top30条\n" +
-			"输入 {热词 top 10} => 获取当前聊天室热词前10条\n" +
-			"输入 {热词 id xxx} => 获取指定聊天室热词\n" +
-			"输入 {热词 id xxx top 10} => 获取指定聊天室热词前10条\n",
+		Help: "描述:\n" +
+			"想了解一下当前聊天室的聊天热点？快来试一试\n\n" +
+			"指令:\n" +
+			"* 热词 -> 获取当前聊天室热词，默认当前聊天室Top30条\n" +
+			"* 热词 top [10] -> 获取当前聊天室热词前10条\n" +
+			"* 热词 id [xxx] -> 获取指定聊天室热词\n" +
+			"* 热词 id [xxx] top [10] -> 获取指定聊天室热词前10条\n",
 		DataFolder: "wordcloud",
 	})
 

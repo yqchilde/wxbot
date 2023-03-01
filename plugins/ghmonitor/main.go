@@ -24,8 +24,12 @@ type Monitor struct {
 
 func init() {
 	engine := control.Register("ghmonitor", &control.Options{
-		Alias:      "公众号监控",
-		Help:       "监控公众号 (gh_.*) 转发到 (.*)\n监控公众号关键词 (.*) 转发到 (.*)",
+		Alias: "公众号监控",
+		Help: "权限:\n" +
+			"仅限机器人管理员\n\n" +
+			"指令:\n" +
+			"* 监控公众号 (gh_.*) 转发到 (.*)\n" +
+			"* 监控公众号关键词 (.*) 转发到 (.*)",
 		DataFolder: "ghmonitor",
 	})
 

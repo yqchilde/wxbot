@@ -26,8 +26,10 @@ type ZaoBao struct {
 
 func init() {
 	engine := control.Register("zaobao", &control.Options{
-		Alias:      "每日早报",
-		Help:       "输入 {每日早报|早报} => 获取每天60s读懂世界",
+		Alias: "每日早报",
+		Help: "指令:\n" +
+			"* 早报 -> 获取每天60s读懂世界\n" +
+			"* 每日早报 -> 获取每天60s读懂世界",
 		DataFolder: "zaobao",
 		OnEnable: func(ctx *robot.Ctx) {
 			// todo 启动将定时任务加入到定时任务列表

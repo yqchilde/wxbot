@@ -50,8 +50,11 @@ var defaultGptModel = GptModel{
 
 func init() {
 	engine := control.Register("chatgpt", &control.Options{
-		Alias:      "ChatGPT",
-		Help:       "输入 {开始会话} => 进行ChatGPT连续会话\n输入 {提问 [问题]} => 可以单独提问，没有上下文",
+		Alias: "ChatGPT",
+		Help: "指令:\n" +
+			"* 开始会话 -> 进行ChatGPT连续会话\n" +
+			"* 提问 [问题] -> 单独提问，没有上下文\n" +
+			"* 作画 [描述] -> 生成图片",
 		DataFolder: "chatgpt",
 		OnDisable: func(ctx *robot.Ctx) {
 			ctx.ReplyText("禁用成功")

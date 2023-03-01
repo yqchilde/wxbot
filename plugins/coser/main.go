@@ -18,8 +18,9 @@ import (
 func init() {
 	engine := control.Register("coser", &control.Options{
 		Alias: "coser",
-		Help: "输入 {coser} => 获取 1 张 coser 作品\n" +
-			"输入 {coser 5} => 获取 5 张 coser 作品，限制 10 张",
+		Help: "指令:\n" +
+			"* coser -> 获取1张coser作品\n" +
+			"* coser 5 -> 获取5张coser作品，限制10张",
 	})
 
 	engine.OnFullMatch("coser").SetBlock(true).Handle(func(ctx *robot.Ctx) {

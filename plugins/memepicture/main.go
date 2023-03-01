@@ -20,8 +20,11 @@ import (
 
 func init() {
 	engine := control.Register("memepicture", &control.Options{
-		Alias:      "表情原图",
-		Help:       "输入 {表情原图} => 30s内发送表情获取表情原图",
+		Alias: "表情原图",
+		Help: "描述:\n" +
+			"表情包不能直接保存下来是个很头疼的事，有时候我们需要保存下来发在其他社交平台，该插件就是这个功能\n\n" +
+			"指令:\n" +
+			"* 表情原图 -> 30s内发送表情包获取表情原图",
 		DataFolder: "memepicture",
 	})
 
