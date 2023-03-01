@@ -40,8 +40,6 @@
 **功能示例：**
 
 ![img](docs/screenshots.jpg)
-![img](docs/screenshots2.png)
-![img](docs/screenshots3.png)
 
 ### 已对接框架
 
