@@ -24,18 +24,16 @@ const (
 )
 
 type Framework struct {
-	ServerPort uint   // 本地服务端口，用于接收回调
-	BotWxId    string // 机器人微信ID
-	ApiUrl     string // http api地址
-	ApiToken   string // http api鉴权token
+	BotWxId  string // 机器人微信ID
+	ApiUrl   string // http api地址
+	ApiToken string // http api鉴权token
 }
 
-func New(serverPort uint, botWxId, apiUrl, apiToken string) *Framework {
+func New(botWxId, apiUrl, apiToken string) *Framework {
 	return &Framework{
-		ServerPort: serverPort,
-		BotWxId:    botWxId,
-		ApiUrl:     apiUrl,
-		ApiToken:   apiToken,
+		BotWxId:  botWxId,
+		ApiUrl:   apiUrl,
+		ApiToken: apiToken,
 	}
 }
 

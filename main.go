@@ -28,7 +28,7 @@ func main() {
 	f := robot.IFramework(nil)
 	switch c.Framework.Name {
 	case "千寻", "qianxun":
-		f = robot.IFramework(qianxun.New(c.ServerPort, c.BotWxId, c.Framework.ApiUrl, c.Framework.ApiToken))
+		f = robot.IFramework(qianxun.New(c.BotWxId, c.Framework.ApiUrl, c.Framework.ApiToken))
 		if ipPort, err := net.CheckoutIpPort(c.Framework.ApiUrl); err == nil {
 			if ping := net.PingConn(ipPort, time.Second*10); !ping {
 				c.SetConnHookStatus(false)
@@ -36,7 +36,7 @@ func main() {
 			}
 		}
 	case "VLW", "vlw":
-		f = robot.IFramework(vlw.New(c.ServerPort, c.BotWxId, c.Framework.ApiUrl, c.Framework.ApiToken))
+		f = robot.IFramework(vlw.New(c.BotWxId, c.Framework.ApiUrl, c.Framework.ApiToken))
 		if ipPort, err := net.CheckoutIpPort(c.Framework.ApiUrl); err == nil {
 			if ping := net.PingConn(ipPort, time.Second*10); !ping {
 				c.SetConnHookStatus(false)
