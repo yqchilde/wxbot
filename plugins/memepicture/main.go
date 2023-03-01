@@ -63,7 +63,7 @@ func init() {
 }
 
 func featureImage(url, b64, cacheDir string) (original, thumbnail string, err error) {
-	tmpFile := "/tmp/" + time.Now().Local().Format("20060102150405") + ".png"
+	tmpFile := fmt.Sprintf("%s/tmp_%s%s", cacheDir, time.Now().Local().Format("20060102150405"), ".png")
 	if url == "" && b64 == "" {
 		return "", "", errors.New("url和b64不能同时为空")
 	}
@@ -102,15 +102,18 @@ func featureImage(url, b64, cacheDir string) (original, thumbnail string, err er
 	mime, err := mimetype.DetectFile(tmpFile)
 	if err != nil {
 		os.Remove(tmpFile)
-		return
+		return "", "", err
 	}
-	original = fmt.Sprintf("%s/%s%s", cacheDir, time.Now().Local().Format("20060102150405"), mime.Extension())
-	os.Rename(tmpFile, original)
+	original = fmt.Sprintf("%s/origin_%s%s", cacheDir, time.Now().Local().Format("20060102150405"), mime.Extension())
+	if err := os.Rename(tmpFile, original); err != nil {
+		os.Remove(tmpFile)
+		return "", "", err
+	}
 
 	// 生成缩略图
 	if mime.Extension() == ".gif" { // gif
 		thumbnail = strings.ReplaceAll(original, "origin", "thumb")
-		thumbnail = strings.ReplaceAll(original, ".gif", ".png")
+		thumbnail = strings.ReplaceAll(thumbnail, ".gif", ".png")
 		return original, thumbnail, gif2Png(original, thumbnail)
 	} else {
 		thumbnail = original
