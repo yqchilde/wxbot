@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/base64"
 	"io"
+	"net/http"
 	"os"
+	"strings"
 )
 
 // CheckFolderExists 检查文件夹是否存在，如果不存在则创建
@@ -52,4 +54,26 @@ func Base64ToImage(b64Str, dst string) error {
 		return err
 	}
 	return nil
+}
+
+// IsImageFile 判断文件是否存在，如果存在是否为图片类型
+func IsImageFile(path string) bool {
+	if !CheckPathExists(path) {
+		return false
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+	buff := make([]byte, 512)
+	_, err = file.Read(buff)
+	if err != nil {
+		return false
+	}
+	fileType := http.DetectContentType(buff)
+	if strings.Contains(fileType, "image") {
+		return true
+	}
+	return false
 }

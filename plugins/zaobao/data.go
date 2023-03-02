@@ -23,7 +23,7 @@ type zaoBaoResp struct {
 	LogId string `json:"log_id"`
 }
 
-func getZaoBao(token string) error {
+func flushZaoBao(token, dstFile string) error {
 	var data zaoBaoResp
 	err := req.C().Get("https://v2.alapi.cn/api/zaobao").
 		SetQueryParams(map[string]string{"format": "json", "token": token}).
@@ -47,5 +47,11 @@ func getZaoBao(token string) error {
 	}
 	zaoBao.Date = data.Data.Date
 	zaoBao.Image = data.Data.Image
+
+	// 下载图片
+	if err := req.C().Get(data.Data.Image).SetOutputFile(dstFile).Do().Err; err != nil {
+		log.Errorf("[zaoBao]下载图片失败: %v", err)
+		return fmt.Errorf("获取数据失败")
+	}
 	return nil
 }
