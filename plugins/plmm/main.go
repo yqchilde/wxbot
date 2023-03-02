@@ -37,9 +37,9 @@ func init() {
 			return
 		}
 
-		if len(plmmUrlStorage) > 50 {
+		if len(plmmUrlStorage) > 0 {
 			if err := ctx.ReplyImage(plmmUrlStorage[0]); err != nil {
-				ctx.ReplyText(err.Error())
+				log.Errorf("[plmm] 发送图片失败: %v", err)
 			}
 			plmmUrlStorage = plmmUrlStorage[1:]
 		} else {
@@ -55,7 +55,7 @@ func init() {
 				plmmUrlStorage = append(plmmUrlStorage, val.ImageUrl)
 			}
 			if err := ctx.ReplyImage(plmmUrlStorage[0]); err != nil {
-				ctx.ReplyText(err.Error())
+				log.Errorf("[plmm] 发送图片失败: %v", err)
 			}
 			plmmUrlStorage = plmmUrlStorage[1:]
 		}
