@@ -2,12 +2,14 @@ package zaobao
 
 import (
 	"fmt"
+	"path/filepath"
 	"sync"
 	"time"
 
 	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
+	"github.com/yqchilde/wxbot/engine/pkg/utils"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
@@ -61,13 +63,14 @@ func init() {
 			ctx.ReplyTextAndAt("请先私聊机器人配置token\n指令：set zaobao token __\n相关秘钥申请地址：https://admin.alapi.cn")
 			return
 		}
-		if zaoBao.Date != time.Now().Local().Format("2006-01-02") {
-			if err := getZaoBao(zaoBao.Token); err != nil {
-				ctx.ReplyTextAndAt(err.Error())
+		imgCache := filepath.Join(engine.GetCacheFolder(), time.Now().Local().Format("20060102")+".jpg")
+		if !utils.IsImageFile(imgCache) {
+			if err := flushZaoBao(zaoBao.Token, imgCache); err != nil {
+				ctx.ReplyTextAndAt("获取早报失败")
 				return
 			}
 		}
-		ctx.ReplyImage(zaoBao.Image)
+		ctx.ReplyImage("local://" + imgCache)
 	})
 
 	engine.OnRegex("set zaobao token ([0-9a-zA-Z]{16})", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
@@ -99,10 +102,10 @@ func pollingTask() {
 	timer.Stop()
 
 	// 任务
-	doSendImage := func() {
+	doSendImage := func(imgCache string) {
 		waitSendImage.Range(func(key, val interface{}) bool {
 			ctx := val.(*robot.Ctx)
-			ctx.SendImage(key.(string), zaoBao.Image)
+			ctx.SendImage(key.(string), "local://"+imgCache)
 			waitSendImage.Delete(key)
 			// 有时候连续发图片会有问题，所以延迟10s
 			time.Sleep(10 * time.Second)
@@ -124,12 +127,13 @@ func pollingTask() {
 		}
 
 		// 早报未更新
-		if zaoBao.Image == "" || zaoBao.Date != time.Now().Format("2006-01-02") {
-			if err := getZaoBao(zaoBao.Token); err != nil {
+		imgCache := filepath.Join("./data/plugins/zaobao/cache", time.Now().Local().Format("20060102")+".jpg")
+		if !utils.IsImageFile(imgCache) {
+			if err := flushZaoBao(zaoBao.Token, imgCache); err != nil {
 				continue
 			}
-			doSendImage()
+			doSendImage(imgCache)
 		}
-		doSendImage()
+		doSendImage(imgCache)
 	}
 }
