@@ -41,7 +41,7 @@ type GptModel struct {
 var defaultGptModel = GptModel{
 	Model:            "gpt-3.5-turbo",
 	MaxTokens:        4096,
-	Temperature:      0.9,
+	Temperature:      0.8,
 	TopP:             1.0,
 	PresencePenalty:  0.0,
 	FrequencyPenalty: 0.6,
@@ -295,11 +295,6 @@ func init() {
 		replyMsg := ""
 		replyMsg += "----------\n"
 		replyMsg += "ModelName: %s\n"
-		replyMsg += "MaxTokens: %d\n"
-		replyMsg += "Temperature: %.2f\n"
-		replyMsg += "TopP: %.2f\n"
-		replyMsg += "FrequencyPenalty: %.2f\n"
-		replyMsg += "PresencePenalty: %.2f\n"
 		replyMsg += "ImageSize: %s\n----------\n"
 		replyMsg = fmt.Sprintf(replyMsg, gptModel.Model, gptModel.ImageSize)
 

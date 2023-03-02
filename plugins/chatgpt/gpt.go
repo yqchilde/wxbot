@@ -62,13 +62,8 @@ func AskChatGpt(messages []gogpt.ChatCompletionMessage, delay ...time.Duration) 
 	chatMessages = append(chatMessages, messages...)
 
 	resp, err := gptClient.CreateChatCompletion(context.Background(), gogpt.ChatCompletionRequest{
-		Model:            gptModel.Model,
-		Messages:         chatMessages,
-		MaxTokens:        gptModel.MaxTokens,
-		Temperature:      float32(gptModel.Temperature),
-		TopP:             float32(gptModel.TopP),
-		PresencePenalty:  float32(gptModel.PresencePenalty),
-		FrequencyPenalty: float32(gptModel.FrequencyPenalty),
+		Model:    gptModel.Model,
+		Messages: chatMessages,
 	})
 	// 处理响应回来的错误
 	if err != nil {
