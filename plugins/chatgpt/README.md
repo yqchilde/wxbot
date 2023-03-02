@@ -18,12 +18,7 @@
   * `k`，`v`可选值参考下面表格：
     |     k 可选值     | v 类型  | v 可选值                                                     |
     | :--------------: | ------- | ------------------------------------------------------------ |
-    |    ModelName     | string  | 默认：`text-davinci-003`<br />可选：请参考 https://github.com/sashabaranov/go-gpt3/blob/master/completion.go#L14 |
-    |    MaxTokens     | int     | 默认：`512`                                                  |
-    |   Temperature    | float32 | 默认：`0.9`                                                  |
-    |       TopP       | float32 | 默认：`1.0`                                                    |
-    | FrequencyPenalty | float32 | 默认：`0.0`                                                    |
-    | PresencePenalty  | float32 | 默认：`0.6`                                                    |
+    |    ModelName     | string  | 默认：`gpt-3.5-turbo`<br />可选：`gpt-3.5-turbo` `gpt-3.5-turbo-0301` |
     | ImageSize  | string | 默认：`512x512` <br />可选：请参考 https://github.com/sashabaranov/go-gpt3/blob/master/image.go#L15 |
 
 
