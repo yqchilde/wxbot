@@ -32,9 +32,12 @@ func Run(c *Config, f IFramework) {
 	if c.MaxProcessTime == 0 {
 		c.MaxProcessTime = time.Minute * 3
 	}
+	if c.ServerPort == 0 {
+		c.ServerPort = 9528
+	}
 
 	bot = &Bot{config: c, framework: f}
-	bot.self = &Self{bot: bot}
+	bot.self = &Self{bot: bot, User: &User{}}
 	if c.connHookStatus {
 		bot.self.Init()
 		for i := range c.SuperUsers {
@@ -51,7 +54,7 @@ func Run(c *Config, f IFramework) {
 
 	eventBuffer = NewEventBuffer(bot.config.BufferLen)
 	eventBuffer.Loop(bot.config.Latency, bot.config.MaxProcessTime, processEventAsync)
-	bot.framework.Callback(eventBuffer.ProcessEvent)
+	runServer(c)
 }
 
 func processEventAsync(event *Event, framework IFramework, maxWait time.Duration) {
@@ -318,24 +321,9 @@ func GetBot() *Bot {
 	return bot
 }
 
-// GetBotNick 获取机器人昵称
-func (b *Bot) GetBotNick() string {
-	return b.config.BotNickname
-}
-
-// GetBotWxId 获取机器人微信ID
-func (b *Bot) GetBotWxId() string {
-	return b.config.BotWxId
-}
-
-// GetSuperUsers 获取超级用户
-func (b *Bot) GetSuperUsers() []string {
-	return b.config.SuperUsers
-}
-
-// GetCommandPrefix 获取命令前缀
-func (b *Bot) GetCommandPrefix() string {
-	return b.config.CommandPrefix
+// GetConfig 获取机器人配置
+func (b *Bot) GetConfig() *Config {
+	return b.config
 }
 
 // Friends 从缓存中获取好友列表
@@ -351,6 +339,15 @@ func (b *Bot) Groups() Groups {
 // MPs 从缓存中获取公众号列表
 func (b *Bot) MPs() MPs {
 	return b.self.mps
+}
+
+// Users 从缓存中获取所有用户列表
+func (b *Bot) Users() []*User {
+	var users []*User
+	users = append(users, b.self.friends.AsUsers()...)
+	users = append(users, b.self.groups.AsUsers()...)
+	users = append(users, b.self.mps.AsUsers()...)
+	return users
 }
 
 // GetSelf 获取Self对象，Self对象包含了对用户、群、公众号的包装

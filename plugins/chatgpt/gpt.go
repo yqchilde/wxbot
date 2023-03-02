@@ -3,10 +3,12 @@ package chatgpt
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
 	gogpt "github.com/sashabaranov/go-gpt3"
+	"github.com/yqchilde/wxbot/engine/robot"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 )
@@ -16,7 +18,7 @@ var (
 	gptModel  *GptModel
 )
 
-func AskChatGpt(prompt string, delay ...time.Duration) (answer string, err error) {
+func AskChatGpt(messages []gogpt.ChatCompletionMessage, delay ...time.Duration) (answer string, err error) {
 	// 获取客户端
 	if gptClient == nil {
 		gptClient, err = getGptClient()
@@ -39,18 +41,31 @@ func AskChatGpt(prompt string, delay ...time.Duration) (answer string, err error
 	}
 
 	// 请求gpt3
-	resp, err := gptClient.CreateCompletion(context.Background(), gogpt.CompletionRequest{
-		Model:            gptModel.Model,
-		Prompt:           prompt,
-		MaxTokens:        gptModel.MaxTokens,
-		Temperature:      float32(gptModel.Temperature),
-		TopP:             float32(gptModel.TopP),
-		PresencePenalty:  float32(gptModel.PresencePenalty),
-		FrequencyPenalty: float32(gptModel.FrequencyPenalty),
-		Echo:             false,
-		Stop:             []string{"Human:", "AI:"},
-	})
+	//resp, err := gptClient.CreateCompletion(context.Background(), gogpt.CompletionRequest{
+	//	Model:            gptModel.Model,
+	//	Prompt:           prompt,
+	//	MaxTokens:        gptModel.MaxTokens,
+	//	Temperature:      float32(gptModel.Temperature),
+	//	TopP:             float32(gptModel.TopP),
+	//	PresencePenalty:  float32(gptModel.PresencePenalty),
+	//	FrequencyPenalty: float32(gptModel.FrequencyPenalty),
+	//	Echo:             false,
+	//	Stop:             []string{"Human:", "AI:"},
+	//})
 
+	chatMessages := []gogpt.ChatCompletionMessage{
+		{
+			Role:    "system",
+			Content: fmt.Sprintf("你是一个强大的助手，你是ChatGPT，我将为你起一个名字叫%s，并且你会用中文回答我的问题", robot.GetBot().GetConfig().BotNickname),
+		},
+	}
+	chatMessages = append(chatMessages, messages...)
+
+	log.Println("chatMessages: ", chatMessages)
+	resp, err := gptClient.CreateChatCompletion(context.Background(), gogpt.ChatCompletionRequest{
+		Model:    gptModel.Model,
+		Messages: chatMessages,
+	})
 	// 处理响应回来的错误
 	if err != nil {
 		if strings.Contains(err.Error(), "You exceeded your current quota") {
@@ -61,15 +76,15 @@ func AskChatGpt(prompt string, delay ...time.Duration) (answer string, err error
 			}
 			apiKeys = apiKeys[1:]
 			gptClient = gogpt.NewClient(apiKeys[0].Key)
-			return AskChatGpt(prompt)
+			return AskChatGpt(messages)
 		}
 		if strings.Contains(err.Error(), "The server had an error while processing your request") {
 			log.Println("OpenAi服务出现问题，将重试")
-			return AskChatGpt(prompt)
+			return AskChatGpt(messages)
 		}
 		if strings.Contains(err.Error(), "Client.Timeout exceeded while awaiting headers") {
 			log.Println("OpenAi服务请求超时，将重试")
-			return AskChatGpt(prompt)
+			return AskChatGpt(messages)
 		}
 		if strings.Contains(err.Error(), "Please reduce your prompt") {
 			return "", errors.New("OpenAi免费上下文长度限制为4097个词组，您的上下文长度已超出限制，请发送\"清空会话\"以清空上下文")
@@ -79,7 +94,7 @@ func AskChatGpt(prompt string, delay ...time.Duration) (answer string, err error
 		}
 		return "", err
 	}
-	return resp.Choices[0].Text + "\n", nil
+	return resp.Choices[0].Message.Content, nil
 }
 
 // filterAnswer 过滤答案，处理一些符号问题

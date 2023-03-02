@@ -12,8 +12,8 @@ import (
 func init() {
 	engine := control.Register("baidubaike", &control.Options{
 		Alias: "百度百科",
-		Help: "用法：百度百科 XX\n" +
-			"示例：百度百科 okr",
+		Help: "指令:\n" +
+			"* 百度百科 [查询内容]",
 	})
 
 	engine.OnRegex(`^百度百科 ?(.*?)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {

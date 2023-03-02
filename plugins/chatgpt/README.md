@@ -4,7 +4,7 @@
 
 ### 配置参数
 
-* 插件名：ChatGPT聊天
+* 插件名：ChatGPT聊天，已支持`GPT-3.5-turbo`模型
 * 权限：所有好友和群聊
 * 数据来源：https://beta.openai.com
 * 注意：请先私聊机器人配置`appKey`，相关秘钥申请地址点上面链接
@@ -18,12 +18,7 @@
   * `k`，`v`可选值参考下面表格：
     |     k 可选值     | v 类型  | v 可选值                                                     |
     | :--------------: | ------- | ------------------------------------------------------------ |
-    |    ModelName     | string  | 默认：`text-davinci-003`<br />可选：请参考 https://github.com/sashabaranov/go-gpt3/blob/master/completion.go#L14 |
-    |    MaxTokens     | int     | 默认：`512`                                                  |
-    |   Temperature    | float32 | 默认：`0.9`                                                  |
-    |       TopP       | float32 | 默认：`1.0`                                                    |
-    | FrequencyPenalty | float32 | 默认：`0.0`                                                    |
-    | PresencePenalty  | float32 | 默认：`0.6`                                                    |
+    |    ModelName     | string  | 默认：`gpt-3.5-turbo`<br />可选：`gpt-3.5-turbo` `gpt-3.5-turbo-0301` |
     | ImageSize  | string | 默认：`512x512` <br />可选：请参考 https://github.com/sashabaranov/go-gpt3/blob/master/image.go#L15 |
 
 
@@ -40,10 +35,10 @@
 * 指令：
     * [x] `提问 [问题]`，即可进行单独提问
 
-### AI作图
+### AI作画
 
 * 指令：
-  * [x] `作图 [描述]`，即可进行AI作画
+  * [x] `作画 [描述]`，即可进行AI作画
 
 ## 预览：
 

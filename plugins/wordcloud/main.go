@@ -18,10 +18,13 @@ import (
 func init() {
 	engine := control.Register("wordcloud", &control.Options{
 		Alias: "词云",
-		Help: "输入 {热词} => 获取当前聊天室热词，默认当前聊天室Top30条\n" +
-			"输入 {热词 top 10} => 获取当前聊天室热词前10条\n" +
-			"输入 {热词 id xxx} => 获取指定聊天室热词\n" +
-			"输入 {热词 id xxx top 10} => 获取指定聊天室热词前10条\n",
+		Help: "描述:\n" +
+			"想了解一下当前聊天室的聊天热点？快来试一试\n\n" +
+			"指令:\n" +
+			"* 热词 -> 获取当前聊天室热词，默认当前聊天室Top30条\n" +
+			"* 热词 top [10] -> 获取当前聊天室热词前10条\n" +
+			"* 热词 id [xxx] -> 获取指定聊天室热词\n" +
+			"* 热词 id [xxx] top [10] -> 获取指定聊天室热词前10条\n",
 		DataFolder: "wordcloud",
 	})
 
@@ -59,7 +62,11 @@ func init() {
 			}
 			// 剔除消息中的艾特
 			if strings.HasPrefix(msg.Content, "@") {
-				msg.Content = msg.Content[strings.Index(msg.Content, " "):]
+				if strings.Contains(msg.Content, " ") {
+					msg.Content = msg.Content[strings.Index(msg.Content, " "):]
+				} else {
+					msg.Content = msg.Content[1:]
+				}
 			}
 			words += msg.Content + " "
 		}
@@ -86,18 +93,7 @@ func init() {
 			return
 		}
 
-		// 上传图片
-		resp = req.C().Post("https://bot.yqqy.top/api/uploadImg").SetFile("file", filename).Do()
-		if resp.GetStatusCode() != 200 {
-			log.Errorf("上传图片失败: %v", err)
-			ctx.ReplyText("获取热词失败")
-			return
-		}
-		if gjson.Get(resp.String(), "code").Int() != 200 {
-			log.Errorf("上传图片失败: %v", err)
-			ctx.ReplyText("获取热词失败")
-			return
-		}
-		ctx.ReplyImage(gjson.Get(resp.String(), "data").String())
+		// 发送图片
+		ctx.ReplyImage("local://" + filename)
 	})
 }

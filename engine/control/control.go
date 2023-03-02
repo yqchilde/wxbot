@@ -149,7 +149,7 @@ func (m *Control) IsEnabledIn(gid string) bool {
 		m.Cache["all"] = c.Enable
 		return c.Enable
 	}
-	if m.Manager.D.Table(m.Service).First(&c, "gid = ?", "all").Error == nil {
+	if m.Manager.D.Table(m.Service).First(&c, "gid = ?", gid).Error == nil {
 		m.Cache[gid] = c.Enable
 		return c.Enable
 	}

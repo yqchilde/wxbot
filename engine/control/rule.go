@@ -22,6 +22,7 @@ func newControl(service string, o *Options) robot.Rule {
 }
 
 func init() {
+	robot.RegisterApi(&controlApi{})
 	once.Do(func() {
 		if err := managers.D.Table("__message").AutoMigrate(&MessageRecord{}); err != nil {
 			log.Fatal(err)

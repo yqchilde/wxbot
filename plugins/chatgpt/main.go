@@ -39,19 +39,17 @@ type GptModel struct {
 }
 
 var defaultGptModel = GptModel{
-	Model:            "text-davinci-003",
-	MaxTokens:        512,
-	Temperature:      0.9,
-	TopP:             1.0,
-	PresencePenalty:  0.0,
-	FrequencyPenalty: 0.6,
-	ImageSize:        "512x512",
+	Model:     "gpt-3.5-turbo",
+	ImageSize: "512x512",
 }
 
 func init() {
 	engine := control.Register("chatgpt", &control.Options{
-		Alias:      "ChatGPT",
-		Help:       "输入 {开始会话} => 进行ChatGPT连续会话\n输入 {提问 [问题]} => 可以单独提问，没有上下文",
+		Alias: "ChatGPT",
+		Help: "指令:\n" +
+			"* 开始会话 -> 进行ChatGPT连续会话\n" +
+			"* 提问 [问题] -> 单独提问，没有上下文\n" +
+			"* 作画 [描述] -> 生成图片",
 		DataFolder: "chatgpt",
 		OnDisable: func(ctx *robot.Ctx) {
 			ctx.ReplyText("禁用成功")
@@ -79,10 +77,12 @@ func init() {
 			return
 		}
 
+		var nullMessage []gogpt.ChatCompletionMessage
+
 		// 开始会话
 		recv, cancel := ctx.EventChannel(ctx.CheckGroupSession()).Repeat()
 		defer cancel()
-		chatCTXMap.LoadOrStore(ctx.Event.FromUniqueID, "")
+		chatCTXMap.LoadOrStore(ctx.Event.FromUniqueID, nullMessage)
 		ctx.ReplyTextAndAt("收到！已开始ChatGPT连续会话中，输入\"结束会话\"结束会话，或5分钟后自动结束，请开始吧！")
 		for {
 			select {
@@ -103,7 +103,7 @@ func init() {
 					ctx.ReplyTextAndAt("已结束聊天的上下文语境，您可以重新发起提问")
 					return
 				} else if msg == "清空会话" {
-					chatCTXMap.Store(ctx.Event.FromUniqueID, "")
+					chatCTXMap.Store(ctx.Event.FromUniqueID, nullMessage)
 					ctx.ReplyTextAndAt("已清空会话，您可以继续提问新的问题")
 					continue
 				} else if strings.HasPrefix(msg, "作画") {
@@ -123,53 +123,53 @@ func init() {
 					continue
 				}
 
-				// 整理问题
-				question := "Human: " + msg + "\nAI: "
+				var messages []gogpt.ChatCompletionMessage
 				if c, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
-					question = c.(string) + question
+					messages = append(c.([]gogpt.ChatCompletionMessage), gogpt.ChatCompletionMessage{
+						Role:    "user",
+						Content: msg,
+					})
+				} else {
+					messages = []gogpt.ChatCompletionMessage{
+						{
+							Role:    "user",
+							Content: msg,
+						},
+					}
 				}
-				answer, err := AskChatGpt(question, 2*time.Second)
+
+				answer, err := AskChatGpt(messages, 2*time.Second)
 				if err != nil {
 					ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
 					continue
 				}
-				chatCTXMap.Store(ctx.Event.FromUniqueID, question+answer)
-				if newAnswer, isNeedReply := filterAnswer(answer); isNeedReply {
-					retryAnswer, err := AskChatGpt(question + "\n" + answer + newAnswer)
-					if err != nil {
-						ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
-						continue
-					}
-					chatCTXMap.Store(ctx.Event.FromUniqueID, question+"\n"+answer)
-					ctx.ReplyTextAndAt(retryAnswer)
-				} else {
-					ctx.ReplyTextAndAt(newAnswer)
-				}
+				messages = append(messages, gogpt.ChatCompletionMessage{
+					Role:    "assistant",
+					Content: answer,
+				})
+				chatCTXMap.Store(ctx.Event.FromUniqueID, messages)
+				ctx.ReplyTextAndAt(answer)
 			}
 		}
 	})
 
 	// 单独提问，没有上下文处理
 	engine.OnRegex(`^提问 (.*)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		questionRaw := ctx.State["regex_matched"].([]string)[1]
-		question := "Human: " + questionRaw + "\nAI: "
-		answer, err := AskChatGpt(question, time.Second)
+		question := ctx.State["regex_matched"].([]string)[1]
+
+		messages := []gogpt.ChatCompletionMessage{
+			{
+				Role:    "user",
+				Content: question,
+			},
+		}
+		answer, err := AskChatGpt(messages, time.Second)
 		if err != nil {
 			log.Errorf("ChatGPT出错了，Err：%s", err.Error())
 			ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
 			return
 		}
-		if newAnswer, isNeedRetry := filterAnswer(answer); isNeedRetry {
-			retryAnswer, err := AskChatGpt(question + "\n" + answer + newAnswer)
-			if err != nil {
-				log.Errorf("ChatGPT出错了，Err：%s", err.Error())
-				ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
-				return
-			}
-			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", questionRaw, retryAnswer))
-		} else {
-			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", questionRaw, newAnswer))
-		}
+		ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", question, answer))
 	})
 
 	// AI作画
@@ -252,16 +252,6 @@ func init() {
 		switch k {
 		case "ModelName":
 			updates["model"] = v
-		case "MaxTokens":
-			updates["max_tokens"] = v
-		case "Temperature":
-			updates["temperature"] = v
-		case "TopP":
-			updates["top_p"] = v
-		case "FrequencyPenalty":
-			updates["frequency_penalty"] = v
-		case "PresencePenalty":
-			updates["presence_penalty"] = v
 		case "ImageSize":
 			updates["image_size"] = v
 		default:
@@ -290,13 +280,8 @@ func init() {
 		replyMsg := ""
 		replyMsg += "----------\n"
 		replyMsg += "ModelName: %s\n"
-		replyMsg += "MaxTokens: %d\n"
-		replyMsg += "Temperature: %.2f\n"
-		replyMsg += "TopP: %.2f\n"
-		replyMsg += "FrequencyPenalty: %.2f\n"
-		replyMsg += "PresencePenalty: %.2f\n"
 		replyMsg += "ImageSize: %s\n----------\n"
-		replyMsg = fmt.Sprintf(replyMsg, gptModel.Model, gptModel.MaxTokens, gptModel.Temperature, gptModel.TopP, gptModel.FrequencyPenalty, gptModel.PresencePenalty, gptModel.ImageSize)
+		replyMsg = fmt.Sprintf(replyMsg, gptModel.Model, gptModel.ImageSize)
 
 		// key设置
 		var keys []ApiKey

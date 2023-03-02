@@ -10,7 +10,10 @@ import (
 func init() {
 	engine := control.Register("chaid", &control.Options{
 		Alias: "查ID",
-		Help:  "模糊查用户ID\n用法：查ID [昵称/备注]",
+		Help: "描述:\n" +
+			"模糊查用户ID，仅支持查询已添加好友、群友、公众号\n\n" +
+			"指令:\n" +
+			"* 查id [昵称/备注]",
 	})
 
 	// 查系统ID，只能由管理员使用

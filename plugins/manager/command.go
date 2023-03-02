@@ -3,8 +3,6 @@ package manager
 import (
 	"fmt"
 
-	"github.com/imroc/req/v3"
-
 	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
@@ -60,15 +58,12 @@ func registerCommand() {
 			})
 		}
 
+		if command.MenuMode == "" {
+			command.MenuMode = "1"
+		}
+
 		switch command.MenuMode {
-		case "2":
-			// 🔔实现方案二：调用接口输出菜单（仅限作者个人使用，其他开发者请使用方案一或者自行修改）
-			if err := req.C().Post("https://bot.yqqy.top/api/menu").SetBodyJsonMarshal(options).Do().Error(); err != nil {
-				ctx.ReplyTextAndAt("菜单获取失败，请联系管理员")
-				return
-			}
-			ctx.ReplyShareLink(ctx.Bot.GetBotNick(), "机器人当前所有的指令都在这里哦！", "https://imgbed.link/file/10160", "https://bot.yqqy.top/menu?wxId="+ctx.Event.FromUniqueID)
-		default:
+		case "1":
 			// 🔔实现方案一(默认方案)：直接输出菜单
 			menus := "当前支持的功能有: \n"
 			for i := range options.Menus {
@@ -81,6 +76,11 @@ func registerCommand() {
 				menus += fmt.Sprintf(menu, options.Menus[i].Name, options.Menus[i].Alias, options.Menus[i].DefStatus, options.Menus[i].CurStatus, options.Menus[i].Describe)
 			}
 			ctx.ReplyTextAndAt(menus)
+		case "2":
+			// 🔔实现方案二：web输出菜单，需要在config.yaml中配置公网环境，否则打不开
+			address := ctx.Bot.GetConfig().ServerAddress
+			address = fmt.Sprintf("%s/menu?wxid=%s", address, ctx.Event.FromUniqueID)
+			ctx.ReplyShareLink(ctx.Bot.GetConfig().BotNickname, "机器人当前所有的指令都在这里哦！", "https://imgbed.link/file/10160", address)
 		}
 	})
 }
