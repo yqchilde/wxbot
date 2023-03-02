@@ -4,7 +4,7 @@
 
 ### 配置参数
 
-* 插件名：ChatGPT聊天
+* 插件名：ChatGPT聊天，已支持`GPT-3.5-turbo`模型
 * 权限：所有好友和群聊
 * 数据来源：https://beta.openai.com
 * 注意：请先私聊机器人配置`appKey`，相关秘钥申请地址点上面链接
