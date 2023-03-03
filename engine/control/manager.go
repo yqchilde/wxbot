@@ -10,6 +10,7 @@ import (
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
+	"github.com/yqchilde/wxbot/engine/pkg/utils"
 )
 
 type Manager struct {
@@ -25,6 +26,12 @@ func NewManager(dbpath string) (m Manager) {
 			log.Fatal(err)
 		}
 	}
+	if utils.CheckPathExists("data/manager/plugins.db") {
+		if err := os.Rename("data/manager/plugins.db", dbpath); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	var db sqlite.DB
 	if err := sqlite.Open(dbpath, &db, &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)}); err != nil {
 		log.Fatal("open plugins database failed: ", err)
@@ -33,11 +40,17 @@ func NewManager(dbpath string) (m Manager) {
 		M: map[string]*Control{},
 		D: db.Orm,
 	}
+	if err := m.initBase(); err != nil {
+		log.Fatal("init base failed: ", err)
+	}
 	if err := m.initBlock(); err != nil {
 		log.Fatal("init block failed: ", err)
 	}
 	if err := m.initResponse(); err != nil {
 		log.Fatal("init response failed: ", err)
+	}
+	if err := m.initMessage(); err != nil {
+		log.Fatal("init message failed: ", err)
 	}
 	return
 }

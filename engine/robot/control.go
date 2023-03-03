@@ -12,3 +12,16 @@ type controlApi interface {
 func RegisterApi(api controlApi) {
 	ControlApi = api
 }
+
+// fileSecret 文件服务秘钥
+var fileSecret []byte
+
+// SetFileSecret 设置文件服务秘钥
+func SetFileSecret(secret []byte) {
+	fileSecret = secret
+}
+
+// GetFileSecret 获取文件服务秘钥
+func (ctx *Ctx) GetFileSecret() []byte {
+	return fileSecret
+}

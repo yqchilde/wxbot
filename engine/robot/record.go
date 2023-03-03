@@ -27,7 +27,7 @@ func initMessageRecordDB() error {
 		return nil
 	}
 
-	dbPath := "data/manager/plugins.db"
+	dbPath := "data/manager/manager.db"
 	if !utils.CheckPathExists(dbPath) {
 		return fmt.Errorf("db file not found: %s", dbPath)
 	}

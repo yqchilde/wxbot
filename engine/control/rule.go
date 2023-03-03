@@ -10,7 +10,7 @@ import (
 
 var (
 	once     = sync.Once{}
-	managers = NewManager("data/manager/plugins.db")
+	managers = NewManager("data/manager/manager.db")
 )
 
 func newControl(service string, o *Options) robot.Rule {
@@ -24,10 +24,6 @@ func newControl(service string, o *Options) robot.Rule {
 func init() {
 	robot.RegisterApi(&controlApi{})
 	once.Do(func() {
-		if err := managers.D.Table("__message").AutoMigrate(&MessageRecord{}); err != nil {
-			log.Fatal(err)
-		}
-
 		// 记录聊天文本消息
 		robot.OnMessage().SetBlock(false).Handle(func(ctx *robot.Ctx) {
 			if !ctx.IsText() {
