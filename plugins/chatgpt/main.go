@@ -17,10 +17,15 @@ import (
 )
 
 var (
-	db         sqlite.DB             // 数据库
-	chatCTXMap sync.Map              // 群号/私聊:消息上下文
-	chatDone   = make(chan struct{}) // 用于结束会话
+	db         sqlite.DB                   // 数据库
+	msgContext sync.Map                    // 群号/私聊:消息上下文
+	chatRoom   = make(map[string]ChatRoom) // 连续会话聊天室
 )
+
+type ChatRoom struct {
+	wxId string
+	done chan struct{}
+}
 
 // ApiKey apikey表，存放openai key
 type ApiKey struct {
@@ -58,7 +63,11 @@ func init() {
 		DataFolder: "chatgpt",
 		OnDisable: func(ctx *robot.Ctx) {
 			ctx.ReplyText("禁用成功")
-			chatDone <- struct{}{}
+			wxId := ctx.Event.FromUniqueID
+			if room, ok := chatRoom[wxId]; ok {
+				close(room.done)
+				delete(chatRoom, wxId)
+			}
 		},
 	})
 
@@ -76,39 +85,51 @@ func init() {
 
 	// 连续会话
 	engine.OnFullMatch("开始会话").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		wxId := ctx.Event.FromUniqueID
 		// 检查是否已经在进行会话
-		if _, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
+		if _, ok := chatRoom[wxId]; ok {
 			ctx.ReplyTextAndAt("当前已经在会话中了")
 			return
 		}
 
-		var nullMessage []gogpt.ChatCompletionMessage
+		var (
+			nullMessage []gogpt.ChatCompletionMessage
+			room        = ChatRoom{
+				wxId: wxId,
+				done: make(chan struct{}),
+			}
+		)
+
+		chatRoom[wxId] = room
 
 		// 开始会话
 		recv, cancel := ctx.EventChannel(ctx.CheckGroupSession()).Repeat()
 		defer cancel()
-		chatCTXMap.LoadOrStore(ctx.Event.FromUniqueID, nullMessage)
+		msgContext.LoadOrStore(wxId, nullMessage)
 		ctx.ReplyTextAndAt("收到！已开始ChatGPT连续会话中，输入\"结束会话\"结束会话，或5分钟后自动结束，请开始吧！")
 		for {
 			select {
 			case <-time.After(time.Minute * 5):
-				chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
+				msgContext.LoadAndDelete(wxId)
 				ctx.ReplyTextAndAt("😊检测到您已有5分钟不再提问，那我先主动结束会话咯")
 				return
-			case <-chatDone:
-				chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
-				ctx.ReplyTextAndAt("已退出ChatGPT")
-				return
+			case <-room.done:
+				if room.wxId == wxId {
+					msgContext.LoadAndDelete(wxId)
+					ctx.ReplyTextAndAt("已退出ChatGPT")
+					return
+				}
 			case ctx := <-recv:
+				wxId := ctx.Event.FromUniqueID
 				msg := ctx.MessageString()
 				if msg == "" {
 					continue
 				} else if msg == "结束会话" {
-					chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
+					msgContext.LoadAndDelete(wxId)
 					ctx.ReplyTextAndAt("已结束聊天的上下文语境，您可以重新发起提问")
 					return
 				} else if msg == "清空会话" {
-					chatCTXMap.Store(ctx.Event.FromUniqueID, nullMessage)
+					msgContext.Store(wxId, nullMessage)
 					ctx.ReplyTextAndAt("已清空会话，您可以继续提问新的问题")
 					continue
 				} else if strings.HasPrefix(msg, "作画") {
@@ -129,7 +150,7 @@ func init() {
 				}
 
 				var messages []gogpt.ChatCompletionMessage
-				if c, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
+				if c, ok := msgContext.Load(wxId); ok {
 					messages = append(c.([]gogpt.ChatCompletionMessage), gogpt.ChatCompletionMessage{
 						Role:    "user",
 						Content: msg,
@@ -152,7 +173,7 @@ func init() {
 					Role:    "assistant",
 					Content: answer,
 				})
-				chatCTXMap.Store(ctx.Event.FromUniqueID, messages)
+				msgContext.Store(wxId, messages)
 				ctx.ReplyTextAndAt(answer)
 			}
 		}
