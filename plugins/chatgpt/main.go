@@ -39,8 +39,13 @@ type GptModel struct {
 }
 
 var defaultGptModel = GptModel{
-	Model:     "gpt-3.5-turbo",
-	ImageSize: "512x512",
+	Model:            "gpt-3.5-turbo",
+	MaxTokens:        4096,
+	Temperature:      0.8,
+	TopP:             1.0,
+	PresencePenalty:  0.0,
+	FrequencyPenalty: 0.6,
+	ImageSize:        "512x512",
 }
 
 func init() {
@@ -252,6 +257,16 @@ func init() {
 		switch k {
 		case "ModelName":
 			updates["model"] = v
+		case "MaxTokens":
+			updates["max_tokens"] = v
+		case "Temperature":
+			updates["temperature"] = v
+		case "TopP":
+			updates["top_p"] = v
+		case "FrequencyPenalty":
+			updates["frequency_penalty"] = v
+		case "PresencePenalty":
+			updates["presence_penalty"] = v
 		case "ImageSize":
 			updates["image_size"] = v
 		default:

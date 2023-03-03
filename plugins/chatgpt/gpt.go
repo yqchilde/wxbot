@@ -61,7 +61,6 @@ func AskChatGpt(messages []gogpt.ChatCompletionMessage, delay ...time.Duration) 
 	}
 	chatMessages = append(chatMessages, messages...)
 
-	log.Println("chatMessages: ", chatMessages)
 	resp, err := gptClient.CreateChatCompletion(context.Background(), gogpt.ChatCompletionRequest{
 		Model:    gptModel.Model,
 		Messages: chatMessages,

@@ -170,6 +170,7 @@ func (ctx *Ctx) SendTextAndAt(groupWxId, wxId, text string) error {
 }
 
 // SendImage 发送图片消息到指定好友
+// 支持本地图片，图片路径以local://开头
 func (ctx *Ctx) SendImage(wxId, path string) error {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
@@ -188,9 +189,21 @@ func (ctx *Ctx) SendImage(wxId, path string) error {
 }
 
 // SendShareLink 发送分享链接消息到指定好友
+// 支持本地图片，图片路径以local://开头
 func (ctx *Ctx) SendShareLink(wxId, title, desc, imageUrl, jumpUrl string) error {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
+	if strings.HasPrefix(imageUrl, "local://") {
+		if !utils.CheckPathExists(imageUrl[8:]) {
+			log.Errorf("[SendShareLink] 发送分享链接失败，文件不存在: %s", imageUrl[8:])
+			return errors.New("发送分享链接失败，文件不存在")
+		}
+		if bot.config.ServerAddress == "" {
+			log.Errorf("[SendShareLink] 发送分享链接失败，请在config.yaml中配置serverAddress项")
+			return errors.New("发送分享链接失败，请在config.yaml中配置serverAddress项")
+		}
+		imageUrl = bot.config.ServerAddress + "/wxbot/static?path=" + url.QueryEscape(imageUrl[8:])
+	}
 	return ctx.framework.SendShareLink(wxId, title, desc, imageUrl, jumpUrl)
 }
 
@@ -281,11 +294,13 @@ func (ctx *Ctx) ReplyTextAndAt(text string) error {
 }
 
 // ReplyImage 回复图片消息
+// 支持本地图片，图片路径以local://开头
 func (ctx *Ctx) ReplyImage(path string) error {
 	return ctx.SendImage(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyShareLink 回复分享链接消息
+// 支持本地图片，图片路径以local://开头
 func (ctx *Ctx) ReplyShareLink(title, desc, imageUrl, jumpUrl string) error {
 	return ctx.SendShareLink(ctx.Event.FromUniqueID, title, desc, imageUrl, jumpUrl)
 }
