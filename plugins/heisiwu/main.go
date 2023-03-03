@@ -37,9 +37,10 @@ var (
 func init() {
 	engine := control.Register("heisiwu", &control.Options{
 		Alias: "黑丝屋",
-		Help: "输入 {" + categoryMatch + "} => 获取 1 张作品\n" +
-			"输入 {黑丝 5} => 获取 5 张黑丝作品，限制 10 张\n" +
-			"输入 {巨乳 3} => 获取 3 张巨乳作品，依此类推",
+		Help: "指令:\n" +
+			"* {" + categoryMatch + "} => 获取 1 张作品\n" +
+			"* {黑丝 5} => 获取 5 张黑丝作品，限制 10 张\n" +
+			"* {巨乳 3} => 获取 3 张巨乳作品，依此类推",
 	})
 
 	engine.OnFullMatchGroup(categoryKeys, robot.OnlyPrivate).SetBlock(true).Handle(func(ctx *robot.Ctx) {
