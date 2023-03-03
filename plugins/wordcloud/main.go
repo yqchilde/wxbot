@@ -74,12 +74,16 @@ func init() {
 		// 获取热词图
 		resp := req.C().Post("https://bot.yqqy.top/api/wordcloud").SetBody(map[string]interface{}{"words": words, "count": top}).Do()
 		if resp.GetStatusCode() != 200 {
-			log.Errorf("获取[%s]热词失败: %v", id, err)
+			log.Errorf("获取[%s]热词失败，HTTP Status: %v", id, resp.GetStatusCode())
 			ctx.ReplyText("获取热词失败")
 			return
 		}
-		if gjson.Get(resp.String(), "code").Int() != 200 {
-			log.Errorf("获取[%s]热词失败: %v", id, err)
+		if code := gjson.Get(resp.String(), "code").Int(); code != 200 {
+			if code == 401 {
+				ctx.ReplyText("数据太少，再聊会儿吧")
+				return
+			}
+			log.Errorf("获取[%s]热词失败: code: %v", id, code)
 			ctx.ReplyText("获取热词失败")
 			return
 		}

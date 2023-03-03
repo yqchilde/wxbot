@@ -2,11 +2,11 @@ package robot
 
 import (
 	"errors"
-	"net/url"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/yqchilde/wxbot/engine/pkg/cryptor"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/pkg/utils"
 )
@@ -183,7 +183,12 @@ func (ctx *Ctx) SendImage(wxId, path string) error {
 			log.Errorf("[SendImage] 发送图片失败，请在config.yaml中配置serverAddress项")
 			return errors.New("发送图片失败，请在config.yaml中配置serverAddress项")
 		}
-		path = bot.config.ServerAddress + "/wxbot/static?path=" + url.QueryEscape(path[8:])
+		filename, err := cryptor.EncryptFilename(fileSecret, path[8:])
+		if err != nil {
+			log.Errorf("[SendImage] 加密文件名失败: %v", err)
+			return err
+		}
+		path = bot.config.ServerAddress + "/wxbot/static?file=" + filename
 	}
 	return ctx.framework.SendImage(wxId, path)
 }
@@ -202,7 +207,12 @@ func (ctx *Ctx) SendShareLink(wxId, title, desc, imageUrl, jumpUrl string) error
 			log.Errorf("[SendShareLink] 发送分享链接失败，请在config.yaml中配置serverAddress项")
 			return errors.New("发送分享链接失败，请在config.yaml中配置serverAddress项")
 		}
-		imageUrl = bot.config.ServerAddress + "/wxbot/static?path=" + url.QueryEscape(imageUrl[8:])
+		filename, err := cryptor.EncryptFilename(fileSecret, imageUrl[8:])
+		if err != nil {
+			log.Errorf("[SendImage] 加密文件名失败: %v", err)
+			return err
+		}
+		imageUrl = bot.config.ServerAddress + "/wxbot/static?file=" + filename
 	}
 	return ctx.framework.SendShareLink(wxId, title, desc, imageUrl, jumpUrl)
 }

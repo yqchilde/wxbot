@@ -3,9 +3,11 @@ package robot
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/yqchilde/wxbot/engine/pkg/cryptor"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/pkg/net"
 	"github.com/yqchilde/wxbot/engine/pkg/static"
@@ -40,8 +42,16 @@ func runServer(c *Config) {
 
 	// 静态文件服务
 	r.GET("/wxbot/static", func(c *gin.Context) {
-		file := c.Query("path")
-		c.File(file)
+		filename, err := cryptor.DecryptFilename(fileSecret, c.Query("file"))
+		if err != nil {
+			c.String(http.StatusInternalServerError, "数据非法")
+			return
+		}
+		if !strings.HasPrefix(filename, "./data/plugins") && !strings.HasPrefix(filename, "data/plugins") {
+			c.String(http.StatusInternalServerError, "数据非法")
+			return
+		}
+		c.File(filename)
 	})
 
 	// 菜单接口
