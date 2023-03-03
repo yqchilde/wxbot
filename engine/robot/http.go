@@ -42,13 +42,17 @@ func runServer(c *Config) {
 
 	// 静态文件服务
 	r.GET("/wxbot/static", func(c *gin.Context) {
+		if c.Query("file") == "" {
+			c.String(http.StatusInternalServerError, "Warning: 非法访问")
+			return
+		}
 		filename, err := cryptor.DecryptFilename(fileSecret, c.Query("file"))
 		if err != nil {
-			c.String(http.StatusInternalServerError, "数据非法")
+			c.String(http.StatusInternalServerError, "Warning: 非法访问")
 			return
 		}
 		if !strings.HasPrefix(filename, "./data/plugins") && !strings.HasPrefix(filename, "data/plugins") {
-			c.String(http.StatusInternalServerError, "数据非法")
+			c.String(http.StatusInternalServerError, "Warning: 非法访问")
 			return
 		}
 		c.File(filename)
