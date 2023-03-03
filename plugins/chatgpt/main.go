@@ -32,6 +32,12 @@ type ApiKey struct {
 	Key string `gorm:"column:key;index"`
 }
 
+// ApiProxy ApiProxy表，存放openai 代理url地址
+type ApiProxy struct {
+	Id  uint   `gorm:"column:id;index"`
+	Url string `gorm:"column:url;"`
+}
+
 // GptModel gptmodel表，存放gpt模型相关配置参数
 type GptModel struct {
 	Model            string  `gorm:"column:model"`
@@ -76,6 +82,9 @@ func init() {
 	}
 	if err := db.Create("apikey", &ApiKey{}); err != nil {
 		log.Fatalf("create apikey table failed: %v", err)
+	}
+	if err := db.Create("apiproxy", &ApiProxy{}); err != nil {
+		log.Fatalf("create apiproxy table failed: %v", err)
 	}
 	// 初始化gpt 模型参数配置
 	initGptModel := defaultGptModel
@@ -218,6 +227,28 @@ func init() {
 		ctx.ReplyImage("local://" + filename)
 	})
 
+	// 设置openai api 代理
+	engine.OnRegex("set chatgpt proxy (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		url := ctx.State["regex_matched"].([]string)[1]
+		data := ApiProxy{Id: 1}
+		if err := db.Orm.Table("apiproxy").Where(ApiProxy{Id: 1}).Assign(ApiProxy{Url: url}).FirstOrCreate(&data).Error; err != nil {
+			ctx.ReplyText(fmt.Sprintf("设置api代理地址失败: %v", url))
+			return
+		}
+		ctx.ReplyText("api代理设置成功")
+		return
+	})
+
+	// 删除openai api 代理
+	engine.OnRegex("del chatgpt proxy", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		if err := db.Orm.Table("apiproxy").Where("id = 1").Delete(&ApiProxy{}).Error; err != nil {
+			ctx.ReplyText(fmt.Sprintf("删除api代理地址失败: %v", err.Error()))
+			return
+		}
+		ctx.ReplyText("api代理删除成功")
+		return
+	})
+
 	// 设置openai api key
 	engine.OnRegex("set chatgpt api[K|k]ey (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		keys := strings.Split(ctx.State["regex_matched"].([]string)[1], ";")
@@ -331,6 +362,16 @@ func init() {
 		for i := range keys {
 			replyMsg += fmt.Sprintf("apiKey: %s\n", keys[i].Key)
 		}
+		// Proxy查询
+		var proxy ApiProxy
+		if err := db.Orm.Table("apiproxy").Find(&proxy).Error; err != nil {
+			log.Errorf("[ChatGPT] 获取apiproxy失败, err: %s", err.Error())
+			ctx.ReplyTextAndAt("插件 - ChatGPT\n获取apiProxy失败")
+			return
+		}
+		if len(proxy.Url) > 0 {
+			replyMsg += fmt.Sprintf("apiProxy: %s\n", proxy.Url)
+		}
 		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - ChatGPT\n%s", replyMsg))
 	})
 }
@@ -350,7 +391,19 @@ func getGptClient() (*gogpt.Client, error) {
 		return nil, fmt.Errorf("请先私聊机器人配置apiKey\n指令：set chatgpt apiKey __(多个key用;符号隔开)\napiKey获取请到https://beta.openai.com获取")
 	}
 	apiKeys = keys
-	return gogpt.NewClient(keys[0].Key), nil
+
+	var proxy ApiProxy
+	if err := db.Orm.Table("apiproxy").Find(&proxy).Error; err != nil {
+		log.Errorf("[ChatGPT] 获取apiProxy失败, error:%s", err.Error())
+		return nil, errors.New("获取apiProxy失败")
+	}
+
+	config := gogpt.DefaultConfig(keys[0].Key)
+	if len(proxy.Url) > 0 {
+		config.BaseURL = proxy.Url
+	}
+
+	return gogpt.NewClientWithConfig(config), nil
 }
 
 // 获取gpt3模型配置
