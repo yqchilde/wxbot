@@ -111,6 +111,7 @@ func init() {
 			select {
 			case <-time.After(time.Minute * 5):
 				msgContext.LoadAndDelete(wxId)
+				delete(chatRoom, wxId)
 				ctx.ReplyTextAndAt("😊检测到您已有5分钟不再提问，那我先主动结束会话咯")
 				return
 			case <-room.done:
@@ -126,6 +127,7 @@ func init() {
 					continue
 				} else if msg == "结束会话" {
 					msgContext.LoadAndDelete(wxId)
+					delete(chatRoom, wxId)
 					ctx.ReplyTextAndAt("已结束聊天的上下文语境，您可以重新发起提问")
 					return
 				} else if msg == "清空会话" {
