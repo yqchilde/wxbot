@@ -63,6 +63,10 @@ func init() {
 			ctx.ReplyTextAndAt("请先私聊机器人配置token\n指令：set zaobao token __\n相关秘钥申请地址：https://admin.alapi.cn")
 			return
 		}
+		if time.Now().Hour() < 5 {
+			ctx.ReplyTextAndAt("早报数据每天5点后更新，当前时间不可用")
+			return
+		}
 		imgCache := filepath.Join(engine.GetCacheFolder(), time.Now().Local().Format("20060102")+".jpg")
 		if !utils.IsImageFile(imgCache) {
 			if err := flushZaoBao(zaoBao.Token, imgCache); err != nil {

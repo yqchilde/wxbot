@@ -9,7 +9,7 @@ require (
 	github.com/glebarez/sqlite v1.7.0
 	github.com/go-co-op/gocron v1.18.0
 	github.com/imroc/req/v3 v3.32.0
-	github.com/sashabaranov/go-gpt3 v1.3.1
+	github.com/sashabaranov/go-gpt3 v1.3.3
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.15.0
 	github.com/tidwall/gjson v1.14.4

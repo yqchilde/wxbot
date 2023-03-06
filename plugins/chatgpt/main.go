@@ -17,14 +17,25 @@ import (
 )
 
 var (
-	db         sqlite.DB             // 数据库
-	chatCTXMap sync.Map              // 群号/私聊:消息上下文
-	chatDone   = make(chan struct{}) // 用于结束会话
+	db         sqlite.DB                   // 数据库
+	msgContext sync.Map                    // 群号/私聊:消息上下文
+	chatRoom   = make(map[string]ChatRoom) // 连续会话聊天室
 )
+
+type ChatRoom struct {
+	wxId string
+	done chan struct{}
+}
 
 // ApiKey apikey表，存放openai key
 type ApiKey struct {
 	Key string `gorm:"column:key;index"`
+}
+
+// ApiProxy ApiProxy表，存放openai 代理url地址
+type ApiProxy struct {
+	Id  uint   `gorm:"column:id;index"`
+	Url string `gorm:"column:url;"`
 }
 
 // GptModel gptmodel表，存放gpt模型相关配置参数
@@ -58,7 +69,11 @@ func init() {
 		DataFolder: "chatgpt",
 		OnDisable: func(ctx *robot.Ctx) {
 			ctx.ReplyText("禁用成功")
-			chatDone <- struct{}{}
+			wxId := ctx.Event.FromUniqueID
+			if room, ok := chatRoom[wxId]; ok {
+				close(room.done)
+				delete(chatRoom, wxId)
+			}
 		},
 	})
 
@@ -68,6 +83,9 @@ func init() {
 	if err := db.Create("apikey", &ApiKey{}); err != nil {
 		log.Fatalf("create apikey table failed: %v", err)
 	}
+	if err := db.Create("apiproxy", &ApiProxy{}); err != nil {
+		log.Fatalf("create apiproxy table failed: %v", err)
+	}
 	// 初始化gpt 模型参数配置
 	initGptModel := defaultGptModel
 	if err := db.CreateAndFirstOrCreate("gptmodel", &initGptModel); err != nil {
@@ -76,39 +94,53 @@ func init() {
 
 	// 连续会话
 	engine.OnFullMatch("开始会话").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		wxId := ctx.Event.FromUniqueID
 		// 检查是否已经在进行会话
-		if _, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
+		if _, ok := chatRoom[wxId]; ok {
 			ctx.ReplyTextAndAt("当前已经在会话中了")
 			return
 		}
 
-		var nullMessage []gogpt.ChatCompletionMessage
+		var (
+			nullMessage []gogpt.ChatCompletionMessage
+			room        = ChatRoom{
+				wxId: wxId,
+				done: make(chan struct{}),
+			}
+		)
+
+		chatRoom[wxId] = room
 
 		// 开始会话
 		recv, cancel := ctx.EventChannel(ctx.CheckGroupSession()).Repeat()
 		defer cancel()
-		chatCTXMap.LoadOrStore(ctx.Event.FromUniqueID, nullMessage)
+		msgContext.LoadOrStore(wxId, nullMessage)
 		ctx.ReplyTextAndAt("收到！已开始ChatGPT连续会话中，输入\"结束会话\"结束会话，或5分钟后自动结束，请开始吧！")
 		for {
 			select {
 			case <-time.After(time.Minute * 5):
-				chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
+				msgContext.LoadAndDelete(wxId)
+				delete(chatRoom, wxId)
 				ctx.ReplyTextAndAt("😊检测到您已有5分钟不再提问，那我先主动结束会话咯")
 				return
-			case <-chatDone:
-				chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
-				ctx.ReplyTextAndAt("已退出ChatGPT")
-				return
+			case <-room.done:
+				if room.wxId == wxId {
+					msgContext.LoadAndDelete(wxId)
+					ctx.ReplyTextAndAt("已退出ChatGPT")
+					return
+				}
 			case ctx := <-recv:
+				wxId := ctx.Event.FromUniqueID
 				msg := ctx.MessageString()
 				if msg == "" {
 					continue
 				} else if msg == "结束会话" {
-					chatCTXMap.LoadAndDelete(ctx.Event.FromUniqueID)
+					msgContext.LoadAndDelete(wxId)
+					delete(chatRoom, wxId)
 					ctx.ReplyTextAndAt("已结束聊天的上下文语境，您可以重新发起提问")
 					return
 				} else if msg == "清空会话" {
-					chatCTXMap.Store(ctx.Event.FromUniqueID, nullMessage)
+					msgContext.Store(wxId, nullMessage)
 					ctx.ReplyTextAndAt("已清空会话，您可以继续提问新的问题")
 					continue
 				} else if strings.HasPrefix(msg, "作画") {
@@ -129,7 +161,7 @@ func init() {
 				}
 
 				var messages []gogpt.ChatCompletionMessage
-				if c, ok := chatCTXMap.Load(ctx.Event.FromUniqueID); ok {
+				if c, ok := msgContext.Load(wxId); ok {
 					messages = append(c.([]gogpt.ChatCompletionMessage), gogpt.ChatCompletionMessage{
 						Role:    "user",
 						Content: msg,
@@ -152,7 +184,7 @@ func init() {
 					Role:    "assistant",
 					Content: answer,
 				})
-				chatCTXMap.Store(ctx.Event.FromUniqueID, messages)
+				msgContext.Store(wxId, messages)
 				ctx.ReplyTextAndAt(answer)
 			}
 		}
@@ -193,6 +225,28 @@ func init() {
 			return
 		}
 		ctx.ReplyImage("local://" + filename)
+	})
+
+	// 设置openai api 代理
+	engine.OnRegex("set chatgpt proxy (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		url := ctx.State["regex_matched"].([]string)[1]
+		data := ApiProxy{Id: 1}
+		if err := db.Orm.Table("apiproxy").Where(ApiProxy{Id: 1}).Assign(ApiProxy{Url: url}).FirstOrCreate(&data).Error; err != nil {
+			ctx.ReplyText(fmt.Sprintf("设置api代理地址失败: %v", url))
+			return
+		}
+		ctx.ReplyText("api代理设置成功")
+		return
+	})
+
+	// 删除openai api 代理
+	engine.OnRegex("del chatgpt proxy", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		if err := db.Orm.Table("apiproxy").Where("id = 1").Delete(&ApiProxy{}).Error; err != nil {
+			ctx.ReplyText(fmt.Sprintf("删除api代理地址失败: %v", err.Error()))
+			return
+		}
+		ctx.ReplyText("api代理删除成功")
+		return
 	})
 
 	// 设置openai api key
@@ -308,6 +362,16 @@ func init() {
 		for i := range keys {
 			replyMsg += fmt.Sprintf("apiKey: %s\n", keys[i].Key)
 		}
+		// Proxy查询
+		var proxy ApiProxy
+		if err := db.Orm.Table("apiproxy").Find(&proxy).Error; err != nil {
+			log.Errorf("[ChatGPT] 获取apiproxy失败, err: %s", err.Error())
+			ctx.ReplyTextAndAt("插件 - ChatGPT\n获取apiProxy失败")
+			return
+		}
+		if len(proxy.Url) > 0 {
+			replyMsg += fmt.Sprintf("apiProxy: %s\n", proxy.Url)
+		}
 		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - ChatGPT\n%s", replyMsg))
 	})
 }
@@ -327,7 +391,19 @@ func getGptClient() (*gogpt.Client, error) {
 		return nil, fmt.Errorf("请先私聊机器人配置apiKey\n指令：set chatgpt apiKey __(多个key用;符号隔开)\napiKey获取请到https://beta.openai.com获取")
 	}
 	apiKeys = keys
-	return gogpt.NewClient(keys[0].Key), nil
+
+	var proxy ApiProxy
+	if err := db.Orm.Table("apiproxy").Find(&proxy).Error; err != nil {
+		log.Errorf("[ChatGPT] 获取apiProxy失败, error:%s", err.Error())
+		return nil, errors.New("获取apiProxy失败")
+	}
+
+	config := gogpt.DefaultConfig(keys[0].Key)
+	if len(proxy.Url) > 0 {
+		config.BaseURL = proxy.Url
+	}
+
+	return gogpt.NewClientWithConfig(config), nil
 }
 
 // 获取gpt3模型配置

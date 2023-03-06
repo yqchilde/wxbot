@@ -42,3 +42,8 @@ type BotResponseConfig struct {
 type MessageRecord struct {
 	*robot.MessageRecord
 }
+
+// BaseConfig 基础配置表
+type BaseConfig struct {
+	FileSecret []byte `gorm:"column:file_secret"`
+}

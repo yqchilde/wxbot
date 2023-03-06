@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 
 	"github.com/yqchilde/wxbot/engine/control"
+	"github.com/yqchilde/wxbot/engine/pkg/cryptor"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/pkg/utils"
 	"github.com/yqchilde/wxbot/engine/robot"
@@ -44,8 +44,20 @@ func init() {
 				ctx.ReplyTextAndAt("获取表情原图失败")
 				return
 			}
-			thumbnail = fmt.Sprintf("%s/wxbot/static?path=%s", host, url.QueryEscape(thumbnail))
-			original = fmt.Sprintf("%s/wxbot/static?path=%s", host, url.QueryEscape(original))
+			thumbnail, err = cryptor.EncryptFilename(ctx.GetFileSecret(), thumbnail)
+			if err != nil {
+				log.Errorf("获取表情原图失败: %v", err)
+				ctx.ReplyTextAndAt("获取表情原图失败")
+				return
+			}
+			original, err = cryptor.EncryptFilename(ctx.GetFileSecret(), original)
+			if err != nil {
+				log.Errorf("获取表情原图失败: %v", err)
+				ctx.ReplyTextAndAt("获取表情原图失败")
+				return
+			}
+			thumbnail = fmt.Sprintf("%s/wxbot/static?file=%s", host, thumbnail)
+			original = fmt.Sprintf("%s/wxbot/static?file=%s", host, original)
 			jumpUrl := fmt.Sprintf("%s/memepicture?img=%s", host, original)
 			ctx.ReplyShareLink("快来下载你要的表情原图", "打开后长按图片可保存到本地哦", thumbnail, jumpUrl)
 		case "VLW", "vlw":
@@ -55,8 +67,20 @@ func init() {
 				ctx.ReplyTextAndAt("获取表情原图失败")
 				return
 			}
-			thumbnail = fmt.Sprintf("%s/wxbot/static?path=%s", host, url.QueryEscape(thumbnail))
-			original = fmt.Sprintf("%s/wxbot/static?path=%s", host, url.QueryEscape(original))
+			thumbnail, err = cryptor.EncryptFilename(ctx.GetFileSecret(), thumbnail)
+			if err != nil {
+				log.Errorf("获取表情原图失败: %v", err)
+				ctx.ReplyTextAndAt("获取表情原图失败")
+				return
+			}
+			original, err = cryptor.EncryptFilename(ctx.GetFileSecret(), original)
+			if err != nil {
+				log.Errorf("获取表情原图失败: %v", err)
+				ctx.ReplyTextAndAt("获取表情原图失败")
+				return
+			}
+			thumbnail = fmt.Sprintf("%s/wxbot/static?file=%s", host, thumbnail)
+			original = fmt.Sprintf("%s/wxbot/static?file=%s", host, original)
 			jumpUrl := fmt.Sprintf("%s/memepicture?img=%s", host, original)
 			ctx.ReplyShareLink("快来下载你要的表情原图", "打开后长按图片可保存到本地哦", thumbnail, jumpUrl)
 		default:
