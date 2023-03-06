@@ -17,6 +17,7 @@
     * [提交Pr注意项](#提交pr注意项)
 * [Feature](#feature)
 * [Thanks](#thanks)
+* [Support](#support)
 * [License](#license)
 
 ## What's this?
@@ -376,6 +377,10 @@ import (
 * Hook版机器人框架我使用的是 ~~《我的框架》已跑路~~，现在用的是千寻，为hook分支
 
 * hook分支大量借鉴了一个十分优秀的项目`ZeroBot-Plugin`的设计方案 👍🏻，其中很多基础代码来自`ZeroBot-Plugin`，在此基础上扩展了支持`wechat`的方式，非常感谢，Thanks♪(･ω･)ﾉ
+
+## Support
+
+* [ChatGPT账号购买](http://c.nxw.so/yyka)，有需要的朋友可以看看
 
 ## License
 
