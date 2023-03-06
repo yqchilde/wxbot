@@ -2,15 +2,19 @@ package heisiwu
 
 import (
 	"fmt"
+	"image"
 	"math/rand"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/signintech/gopdf"
 	"modernc.org/mathutil"
 
 	"github.com/yqchilde/wxbot/engine/control"
+	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
@@ -32,6 +36,7 @@ var (
 	}()
 	categoryMatch = strings.Join(categoryKeys, "|")
 	categoryRegex = fmt.Sprintf(`^(%s) ?(\d+)$`, categoryMatch)
+	pdfSuffix     = ".pdf"
 )
 
 func init() {
@@ -43,11 +48,11 @@ func init() {
 			"* {巨乳 3} => 获取 3 张巨乳作品，依此类推",
 	})
 
-	engine.OnFullMatchGroup(categoryKeys, robot.OnlyPrivate).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnFullMatchGroup(categoryKeys).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		reply(ctx, ctx.State["matched"].(string), 1)
 	})
 
-	engine.OnRegex(categoryRegex, robot.OnlyPrivate).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(categoryRegex).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		words := ctx.State["regex_matched"].([]string)
 		if num, err := strconv.Atoi(words[2]); err == nil {
 			reply(ctx, words[1], num)
@@ -71,8 +76,12 @@ func reply(ctx *robot.Ctx, category string, num int) {
 
 	ctx.ReplyTextAndAt(title)
 	for _, url := range imageUrls {
-		ctx.ReplyImage(url)
-		if dur, err := time.ParseDuration(fmt.Sprintf("%sms", int(rand.Float64()*2000))); err == nil {
+		if strings.HasSuffix(url, pdfSuffix) {
+			ctx.ReplyFile(url)
+		} else {
+			ctx.ReplyImage(url)
+		}
+		if dur, err := time.ParseDuration(fmt.Sprintf("%vms", int(rand.Float64()*2000))); err == nil {
 			// 等待 2s 内的一个随机数
 			time.Sleep(dur)
 		}
@@ -94,18 +103,65 @@ func getSetu(category string, num int) (string, []string) {
 		return "", nil
 	}
 
-	sort.Slice(files, func(i, j int) bool {
-		left, _ := files[i].Info()
-		right, _ := files[j].Info()
+	imageFiles := make([]os.DirEntry, 0, len(files))
+	for _, file := range files {
+		if !strings.HasSuffix(file.Name(), pdfSuffix) {
+			imageFiles = append(imageFiles, file)
+		}
+	}
+
+	sort.Slice(imageFiles, func(i, j int) bool {
+		left, _ := imageFiles[i].Info()
+		right, _ := imageFiles[j].Info()
 		return left.ModTime().Before(right.ModTime())
 	})
 
-	const MaxNum = 10
-	min := mathutil.Min(mathutil.Min(num, MaxNum), len(files))
-	setus := make([]string, 0, min)
-	for i := 0; i < min; i++ {
-		setus = append(setus, "local://"+GetPath(topicPath, files[i].Name()))
+	num = mathutil.Min(num, len(imageFiles))
+	setus := make([]string, 0, num)
+	// 小于 10 张，直接返回
+	if num <= 10 {
+		for i := 0; i < num; i++ {
+			setus = append(setus, "local://"+GetPath(topicPath, imageFiles[i].Name()))
+		}
+		return title, setus
 	}
-	return title, setus
 
+	// 大于 10 张，返回文件
+	for i := 0; i < num; i++ {
+		setus = append(setus, GetPath(topicPath, imageFiles[i].Name()))
+	}
+	pdfFilePath := GetPath(topicPath, title+pdfSuffix)
+	if !Exist(pdfFilePath) {
+		err := generatePdfFile(pdfFilePath, setus)
+		if err != nil {
+			log.Errorf("生成 pdf 文件 %s 失败, err: %v", pdfFilePath, err)
+			return "", nil
+		}
+	}
+	return title, []string{"local://" + pdfFilePath}
+}
+
+func generatePdfFile(filePath string, imagePaths []string) error {
+	pdf := gopdf.GoPdf{}
+	pdf.Start(gopdf.Config{PageSize: *gopdf.PageSizeA4})
+	// 添加图片
+	for _, imagePath := range imagePaths {
+		file, err := os.Open(imagePath) // 打开图片文件
+		if err != nil {
+			return err
+		}
+		img, _, err := image.Decode(file) // 解码图片文件的配置，包括宽高信息
+		_ = file.Close()                  // 关闭文件
+		// 等比例缩放
+		ratio := float64(img.Bounds().Size().X) / float64(img.Bounds().Size().Y)
+		width := float64(595)
+		size := &gopdf.Rect{W: width, H: width / ratio}
+
+		pdf.AddPage()
+		err = pdf.Image(imagePath, 0, 0, size)
+		if err != nil {
+			return err
+		}
+	}
+	return pdf.WritePdf(filePath)
 }
