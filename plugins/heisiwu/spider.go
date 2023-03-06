@@ -16,7 +16,6 @@ import (
 const (
 	HeisiwuURL          = "http://hs.heisiwu.com/"
 	CategoryURLTemplate = HeisiwuURL + "%s/page/%v"
-	StorageFolder       = "heisiwu"
 	PageInfoFile        = "pageinfo"
 )
 
@@ -25,7 +24,7 @@ var (
 	job  = gocron.NewScheduler(time.Local)
 )
 
-func start() {
+func start(storageFolder string) {
 	// 每个分类爬虫任务的执行状态，true 运行，false 未运行
 	categorySpiderTaskState := make(map[string]bool)
 	job.Tag("黑丝屋爬虫任务").Every(5).Minutes().Do(func() {
@@ -34,15 +33,15 @@ func start() {
 			return
 		}
 		categorySpiderTaskState[category] = true
-		crawlCategory(category)
+		crawlCategory(storageFolder, category)
 		categorySpiderTaskState[category] = false
 	})
 	job.StartAsync()
 }
 
-func crawlCategory(category string) {
+func crawlCategory(storageFolder, category string) {
 	// 文件夹路径
-	folderPath := GetPath(StorageFolder, category)
+	folderPath := GetPath(storageFolder, category)
 	if !Exist(folderPath) && !MakeDir(folderPath) {
 		return
 	}
