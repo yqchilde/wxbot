@@ -405,7 +405,7 @@ func getGptClient() (*openai.Client, error) {
 
 	config := openai.DefaultConfig(keys[0].Key)
 	if len(proxy.Url) > 0 {
-		config.BaseURL = proxy.Url + "/v1"
+		config.BaseURL = proxy.Url
 	}
 
 	return openai.NewClientWithConfig(config), nil
