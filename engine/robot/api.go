@@ -170,7 +170,7 @@ func (ctx *Ctx) SendTextAndAt(groupWxId, wxId, text string) error {
 }
 
 // SendImage 发送图片消息到指定好友
-// 支持本地图片，图片路径以local://开头
+// 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) SendImage(wxId, path string) error {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
@@ -194,7 +194,7 @@ func (ctx *Ctx) SendImage(wxId, path string) error {
 }
 
 // SendShareLink 发送分享链接消息到指定好友
-// 支持本地图片，图片路径以local://开头
+// 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) SendShareLink(wxId, title, desc, imageUrl, jumpUrl string) error {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
@@ -218,23 +218,74 @@ func (ctx *Ctx) SendShareLink(wxId, title, desc, imageUrl, jumpUrl string) error
 }
 
 // SendFile 发送文件消息到指定好友
+// 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) SendFile(wxId, path string) error {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
+	if strings.HasPrefix(path, "local://") {
+		if !utils.CheckPathExists(path[8:]) {
+			log.Errorf("[SendFile] 发送文件失败，文件不存在: %s", path[8:])
+			return errors.New("发送文件失败，文件不存在")
+		}
+		if bot.config.ServerAddress == "" {
+			log.Errorf("[SendFile] 发送文件失败，请在config.yaml中配置serverAddress项")
+			return errors.New("发送文件失败，请在config.yaml中配置serverAddress项")
+		}
+		filename, err := cryptor.EncryptFilename(fileSecret, path[8:])
+		if err != nil {
+			log.Errorf("[SendFile] 加密文件名失败: %v", err)
+			return err
+		}
+		path = bot.config.ServerAddress + "/wxbot/static?file=" + filename
+	}
 	return ctx.framework.SendFile(wxId, path)
 }
 
 // SendVideo 发送视频消息到指定好友
+// 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) SendVideo(wxId, path string) error {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
+	if strings.HasPrefix(path, "local://") {
+		if !utils.CheckPathExists(path[8:]) {
+			log.Errorf("[SendVideo] 发送视频失败，文件不存在: %s", path[8:])
+			return errors.New("发送视频失败，文件不存在")
+		}
+		if bot.config.ServerAddress == "" {
+			log.Errorf("[SendVideo] 发送视频失败，请在config.yaml中配置serverAddress项")
+			return errors.New("发送视频失败，请在config.yaml中配置serverAddress项")
+		}
+		filename, err := cryptor.EncryptFilename(fileSecret, path[8:])
+		if err != nil {
+			log.Errorf("[SendVideo] 加密文件名失败: %v", err)
+			return err
+		}
+		path = bot.config.ServerAddress + "/wxbot/static?file=" + filename
+	}
 	return ctx.framework.SendVideo(wxId, path)
 }
 
 // SendEmoji 发送表情消息到指定好友
+// 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) SendEmoji(wxId, path string) error {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
+	if strings.HasPrefix(path, "local://") {
+		if !utils.CheckPathExists(path[8:]) {
+			log.Errorf("[SendEmoji] 发送Emoji失败，文件不存在: %s", path[8:])
+			return errors.New("发送Emoji失败，文件不存在")
+		}
+		if bot.config.ServerAddress == "" {
+			log.Errorf("[SendEmoji] 发送Emoji失败，请在config.yaml中配置serverAddress项")
+			return errors.New("发送Emoji失败，请在config.yaml中配置serverAddress项")
+		}
+		filename, err := cryptor.EncryptFilename(fileSecret, path[8:])
+		if err != nil {
+			log.Errorf("[SendEmoji] 加密文件名失败: %v", err)
+			return err
+		}
+		path = bot.config.ServerAddress + "/wxbot/static?file=" + filename
+	}
 	return ctx.framework.SendEmoji(wxId, path)
 }
 
@@ -304,28 +355,31 @@ func (ctx *Ctx) ReplyTextAndAt(text string) error {
 }
 
 // ReplyImage 回复图片消息
-// 支持本地图片，图片路径以local://开头
+// 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) ReplyImage(path string) error {
 	return ctx.SendImage(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyShareLink 回复分享链接消息
-// 支持本地图片，图片路径以local://开头
+// 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) ReplyShareLink(title, desc, imageUrl, jumpUrl string) error {
 	return ctx.SendShareLink(ctx.Event.FromUniqueID, title, desc, imageUrl, jumpUrl)
 }
 
 // ReplyFile 回复文件消息
+// 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) ReplyFile(path string) error {
 	return ctx.SendFile(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyVideo 回复视频消息
+// 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) ReplyVideo(path string) error {
 	return ctx.SendVideo(ctx.Event.FromUniqueID, path)
 }
 
 // ReplyEmoji 回复表情消息
+// 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) ReplyEmoji(path string) error {
 	return ctx.SendEmoji(ctx.Event.FromUniqueID, path)
 }
