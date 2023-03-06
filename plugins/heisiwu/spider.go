@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -41,7 +42,7 @@ func start(storageFolder string) {
 
 func crawlCategory(storageFolder, category string) {
 	// 文件夹路径
-	folderPath := GetPath(storageFolder, category)
+	folderPath := filepath.Join(storageFolder, category)
 	if !Exist(folderPath) && !MakeDir(folderPath) {
 		return
 	}
@@ -56,7 +57,7 @@ func crawlCategory(storageFolder, category string) {
 	linkMap := GetTextLink(url)
 	if len(linkMap) == 0 {
 		// 为空说明当前分类爬完了，重置页码，这样新增数据之后，可以重新爬到
-		WriteFile(GetPath(folderPath, PageInfoFile), "0")
+		WriteFile(filepath.Join(folderPath, PageInfoFile), "0")
 		return
 	}
 
@@ -74,14 +75,14 @@ func crawlCategory(storageFolder, category string) {
 			continue
 		}
 
-		topicFolderPath := GetPath(folderPath, topicId+"-"+title)
+		topicFolderPath := filepath.Join(folderPath, topicId+"-"+title)
 		if !MakeDir(topicFolderPath) {
 			return
 		}
 		crawlTopic(link, topicFolderPath)
 	}
 
-	WriteFile(GetPath(folderPath, PageInfoFile), strconv.Itoa(currentPageNum))
+	WriteFile(filepath.Join(folderPath, PageInfoFile), strconv.Itoa(currentPageNum))
 }
 
 func convert(dirEntries []os.DirEntry) map[string]string {
@@ -105,7 +106,7 @@ func crawlTopic(link, topicFolderPath string) {
 }
 
 func getCurrentPageNum(folderPath string) (int, error) {
-	pageInfoFilePath := GetPath(folderPath, PageInfoFile)
+	pageInfoFilePath := filepath.Join(folderPath, PageInfoFile)
 	if !Exist(pageInfoFilePath) {
 		return 0, nil
 	}

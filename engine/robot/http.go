@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"path/filepath"
+	"strings"
 
 	"github.com/yqchilde/wxbot/engine/pkg/cryptor"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
@@ -49,10 +51,10 @@ func runServer(c *Config) {
 			c.String(http.StatusInternalServerError, "Warning: 非法访问")
 			return
 		}
-		/*if !strings.HasPrefix(filename, filepath.Join("data", "plugins")) && !strings.HasPrefix(filename, filepath.Join(".", "data", "plugins")) {
+		if !strings.HasPrefix(filename, filepath.Join("data", "plugins")) && !strings.HasPrefix(filename, filepath.Join(".", "data", "plugins")) {
 			c.String(http.StatusInternalServerError, "Warning: 非法访问")
 			return
-		}*/
+		}
 		c.File(filename)
 	})
 

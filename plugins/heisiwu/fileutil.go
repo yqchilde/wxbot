@@ -1,15 +1,9 @@
 package heisiwu
 
 import (
-	"os"
-	"strings"
-
 	"github.com/yqchilde/wxbot/engine/pkg/log"
+	"os"
 )
-
-func GetPath(strs ...string) string {
-	return strings.Join(strs, string(os.PathSeparator))
-}
 
 func WriteFile(filePath, content string) {
 	err := os.WriteFile(filePath, []byte(content), os.ModePerm)

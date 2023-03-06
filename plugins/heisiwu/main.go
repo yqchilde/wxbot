@@ -5,6 +5,7 @@ import (
 	"image"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -92,7 +93,7 @@ func reply(ctx *robot.Ctx, storageFolder, category string, num int) {
 }
 
 func getSetu(storageFolder, category string, num int) (string, []string) {
-	categoryPath := GetPath(storageFolder, category)
+	categoryPath := filepath.Join(storageFolder, category)
 	entries, err := GetSubFolder(categoryPath)
 
 	if err != nil || len(entries) == 0 {
@@ -100,7 +101,7 @@ func getSetu(storageFolder, category string, num int) (string, []string) {
 	}
 
 	title := entries[rand.Intn(len(entries))].Name()
-	topicPath := GetPath(categoryPath, title)
+	topicPath := filepath.Join(categoryPath, title)
 	files, err := ReadDir(topicPath)
 	if err != nil || len(files) == 0 {
 		return "", nil
@@ -124,16 +125,16 @@ func getSetu(storageFolder, category string, num int) (string, []string) {
 	// 小于 10 张，直接返回
 	if num <= 10 {
 		for i := 0; i < num; i++ {
-			setus = append(setus, "local://"+GetPath(topicPath, imageFiles[i].Name()))
+			setus = append(setus, "local://"+filepath.Join(topicPath, imageFiles[i].Name()))
 		}
 		return title, setus
 	}
 
 	// 大于 10 张，返回文件
 	for i := 0; i < num; i++ {
-		setus = append(setus, GetPath(topicPath, imageFiles[i].Name()))
+		setus = append(setus, filepath.Join(topicPath, imageFiles[i].Name()))
 	}
-	pdfFilePath := GetPath(topicPath, title+pdfSuffix)
+	pdfFilePath := filepath.Join(topicPath, title+"-"+strconv.Itoa(num)+pdfSuffix)
 	if !Exist(pdfFilePath) {
 		err := generatePdfFile(pdfFilePath, setus)
 		if err != nil {
@@ -141,7 +142,8 @@ func getSetu(storageFolder, category string, num int) (string, []string) {
 			return "", nil
 		}
 	}
-	return title, []string{"local://" + pdfFilePath}
+	pwd, _ := os.Getwd()
+	return title, []string{filepath.Join(pwd, pdfFilePath)}
 }
 
 func generatePdfFile(filePath string, imagePaths []string) error {
