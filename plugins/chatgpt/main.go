@@ -230,8 +230,11 @@ func init() {
 	// 设置openai api 代理
 	engine.OnRegex("set chatgpt proxy (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		url := ctx.State["regex_matched"].([]string)[1]
-		data := ApiProxy{Id: 1}
-		if err := db.Orm.Table("apiproxy").Where(ApiProxy{Id: 1}).Assign(ApiProxy{Url: url}).FirstOrCreate(&data).Error; err != nil {
+		data := ApiProxy{
+			Id:  1,
+			Url: url,
+		}
+		if err := db.Orm.Table("apiproxy").Save(&data).Error; err != nil {
 			ctx.ReplyText(fmt.Sprintf("设置api代理地址失败: %v", url))
 			return
 		}
