@@ -7,18 +7,18 @@ import (
 	"strings"
 	"time"
 
-	gogpt "github.com/sashabaranov/go-gpt3"
-	"github.com/yqchilde/wxbot/engine/robot"
+	"github.com/sashabaranov/go-openai"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
+	"github.com/yqchilde/wxbot/engine/robot"
 )
 
 var (
-	gptClient *gogpt.Client
+	gptClient *openai.Client
 	gptModel  *GptModel
 )
 
-func AskChatGpt(messages []gogpt.ChatCompletionMessage, delay ...time.Duration) (answer string, err error) {
+func AskChatGpt(messages []openai.ChatCompletionMessage, delay ...time.Duration) (answer string, err error) {
 	// 获取客户端
 	if gptClient == nil {
 		gptClient, err = getGptClient()
@@ -40,20 +40,7 @@ func AskChatGpt(messages []gogpt.ChatCompletionMessage, delay ...time.Duration) 
 		time.Sleep(delay[0])
 	}
 
-	// 请求gpt3
-	//resp, err := gptClient.CreateCompletion(context.Background(), gogpt.CompletionRequest{
-	//	Model:            gptModel.Model,
-	//	Prompt:           prompt,
-	//	MaxTokens:        gptModel.MaxTokens,
-	//	Temperature:      float32(gptModel.Temperature),
-	//	TopP:             float32(gptModel.TopP),
-	//	PresencePenalty:  float32(gptModel.PresencePenalty),
-	//	FrequencyPenalty: float32(gptModel.FrequencyPenalty),
-	//	Echo:             false,
-	//	Stop:             []string{"Human:", "AI:"},
-	//})
-
-	chatMessages := []gogpt.ChatCompletionMessage{
+	chatMessages := []openai.ChatCompletionMessage{
 		{
 			Role:    "system",
 			Content: fmt.Sprintf("你是一个强大的助手，你是ChatGPT，我将为你起一个名字叫%s，并且你会用中文回答我的问题", robot.GetBot().GetConfig().BotNickname),
@@ -61,7 +48,7 @@ func AskChatGpt(messages []gogpt.ChatCompletionMessage, delay ...time.Duration) 
 	}
 	chatMessages = append(chatMessages, messages...)
 
-	resp, err := gptClient.CreateChatCompletion(context.Background(), gogpt.ChatCompletionRequest{
+	resp, err := gptClient.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
 		Model:    gptModel.Model,
 		Messages: chatMessages,
 	})
@@ -74,7 +61,7 @@ func AskChatGpt(messages []gogpt.ChatCompletionMessage, delay ...time.Duration) 
 				return "", errors.New("OpenAi配额已用完，请联系管理员")
 			}
 			apiKeys = apiKeys[1:]
-			gptClient = gogpt.NewClient(apiKeys[0].Key)
+			gptClient = openai.NewClient(apiKeys[0].Key)
 			return AskChatGpt(messages)
 		}
 		if strings.Contains(err.Error(), "The server had an error while processing your request") {
@@ -138,10 +125,10 @@ func AskChatGptWithImage(prompt string, delay ...time.Duration) (b64 string, err
 		time.Sleep(delay[0])
 	}
 
-	resp, err := gptClient.CreateImage(context.Background(), gogpt.ImageRequest{
+	resp, err := gptClient.CreateImage(context.Background(), openai.ImageRequest{
 		Prompt:         prompt,
 		Size:           gptModel.ImageSize,
-		ResponseFormat: gogpt.CreateImageResponseFormatB64JSON,
+		ResponseFormat: openai.CreateImageResponseFormatB64JSON,
 	})
 	if err != nil {
 		return "", err
