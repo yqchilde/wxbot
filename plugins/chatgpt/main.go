@@ -238,6 +238,7 @@ func init() {
 			ctx.ReplyText(fmt.Sprintf("设置api代理地址失败: %v", url))
 			return
 		}
+		gptClient = nil
 		ctx.ReplyText("api代理设置成功")
 		return
 	})
@@ -248,6 +249,7 @@ func init() {
 			ctx.ReplyText(fmt.Sprintf("删除api代理地址失败: %v", err.Error()))
 			return
 		}
+		gptClient = nil
 		ctx.ReplyText("api代理删除成功")
 		return
 	})
