@@ -46,29 +46,32 @@ func init() {
 			"* {" + categoryMatch + "} => 获取 1 张作品\n" +
 			"* {黑丝 5} => 获取 5 张黑丝作品，限制 10 张\n" +
 			"* {巨乳 3} => 获取 3 张巨乳作品，依此类推",
+		DataFolder: "heisiwu",
 	})
 
+	storageFolder := engine.GetCacheFolder()
+
 	engine.OnFullMatchGroup(categoryKeys).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		reply(ctx, ctx.State["matched"].(string), 1)
+		reply(ctx, storageFolder, ctx.State["matched"].(string), 1)
 	})
 
 	engine.OnRegex(categoryRegex).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		words := ctx.State["regex_matched"].([]string)
 		if num, err := strconv.Atoi(words[2]); err == nil {
-			reply(ctx, words[1], num)
+			reply(ctx, storageFolder, words[1], num)
 		}
 	})
 
 	// 启动黑丝屋爬虫
-	start()
+	start(storageFolder)
 }
 
-func reply(ctx *robot.Ctx, category string, num int) {
+func reply(ctx *robot.Ctx, storageFolder, category string, num int) {
 	if num <= 0 || category == "" {
 		return
 	}
 
-	title, imageUrls := getSetu(categoryMap[category], num)
+	title, imageUrls := getSetu(storageFolder, categoryMap[category], num)
 	if title == "" {
 		ctx.ReplyTextAndAt(fmt.Sprintf("获取%s作品失败，请稍后重试", category))
 		return
@@ -88,8 +91,8 @@ func reply(ctx *robot.Ctx, category string, num int) {
 	}
 }
 
-func getSetu(category string, num int) (string, []string) {
-	categoryPath := GetPath(StorageFolder, category)
+func getSetu(storageFolder, category string, num int) (string, []string) {
+	categoryPath := GetPath(storageFolder, category)
 	entries, err := GetSubFolder(categoryPath)
 
 	if err != nil || len(entries) == 0 {
