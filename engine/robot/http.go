@@ -3,6 +3,7 @@ package robot
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -51,7 +52,7 @@ func runServer(c *Config) {
 			c.String(http.StatusInternalServerError, "Warning: 非法访问")
 			return
 		}
-		if !strings.HasPrefix(filename, "./data/plugins") && !strings.HasPrefix(filename, "data/plugins") {
+		if !strings.HasPrefix(filename, filepath.Join("data", "plugins")) && !strings.HasPrefix(filename, filepath.Join(".", "data", "plugins")) {
 			c.String(http.StatusInternalServerError, "Warning: 非法访问")
 			return
 		}
