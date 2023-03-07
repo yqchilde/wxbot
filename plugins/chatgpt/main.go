@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	gogpt "github.com/sashabaranov/go-gpt3"
+	"github.com/sashabaranov/go-openai"
 
 	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
@@ -102,7 +102,7 @@ func init() {
 		}
 
 		var (
-			nullMessage []gogpt.ChatCompletionMessage
+			nullMessage []openai.ChatCompletionMessage
 			room        = ChatRoom{
 				wxId: wxId,
 				done: make(chan struct{}),
@@ -160,14 +160,14 @@ func init() {
 					continue
 				}
 
-				var messages []gogpt.ChatCompletionMessage
+				var messages []openai.ChatCompletionMessage
 				if c, ok := msgContext.Load(wxId); ok {
-					messages = append(c.([]gogpt.ChatCompletionMessage), gogpt.ChatCompletionMessage{
+					messages = append(c.([]openai.ChatCompletionMessage), openai.ChatCompletionMessage{
 						Role:    "user",
 						Content: msg,
 					})
 				} else {
-					messages = []gogpt.ChatCompletionMessage{
+					messages = []openai.ChatCompletionMessage{
 						{
 							Role:    "user",
 							Content: msg,
@@ -180,7 +180,7 @@ func init() {
 					ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
 					continue
 				}
-				messages = append(messages, gogpt.ChatCompletionMessage{
+				messages = append(messages, openai.ChatCompletionMessage{
 					Role:    "assistant",
 					Content: answer,
 				})
@@ -194,7 +194,7 @@ func init() {
 	engine.OnRegex(`^提问 (.*)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		question := ctx.State["regex_matched"].([]string)[1]
 
-		messages := []gogpt.ChatCompletionMessage{
+		messages := []openai.ChatCompletionMessage{
 			{
 				Role:    "user",
 				Content: question,
@@ -238,6 +238,7 @@ func init() {
 			ctx.ReplyText(fmt.Sprintf("设置api代理地址失败: %v", url))
 			return
 		}
+		gptClient = nil
 		ctx.ReplyText("api代理设置成功")
 		return
 	})
@@ -248,6 +249,7 @@ func init() {
 			ctx.ReplyText(fmt.Sprintf("删除api代理地址失败: %v", err.Error()))
 			return
 		}
+		gptClient = nil
 		ctx.ReplyText("api代理删除成功")
 		return
 	})
@@ -383,7 +385,7 @@ func init() {
 var apiKeys []ApiKey
 
 // 获取gpt3客户端
-func getGptClient() (*gogpt.Client, error) {
+func getGptClient() (*openai.Client, error) {
 	var keys []ApiKey
 	if err := db.Orm.Table("apikey").Find(&keys).Error; err != nil {
 		log.Errorf("[ChatGPT] 获取apikey失败, error:%s", err.Error())
@@ -401,12 +403,12 @@ func getGptClient() (*gogpt.Client, error) {
 		return nil, errors.New("获取apiProxy失败")
 	}
 
-	config := gogpt.DefaultConfig(keys[0].Key)
+	config := openai.DefaultConfig(keys[0].Key)
 	if len(proxy.Url) > 0 {
 		config.BaseURL = proxy.Url
 	}
 
-	return gogpt.NewClientWithConfig(config), nil
+	return openai.NewClientWithConfig(config), nil
 }
 
 // 获取gpt3模型配置
@@ -417,7 +419,7 @@ func getGptModel() (*GptModel, error) {
 		return nil, errors.New("获取模型配置失败")
 	}
 	if gptModel.ImageSize == "" {
-		gptModel.ImageSize = gogpt.CreateImageSize512x512
+		gptModel.ImageSize = openai.CreateImageSize512x512
 	}
 	return &gptModel, nil
 }
