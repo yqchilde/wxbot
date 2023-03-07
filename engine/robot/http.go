@@ -3,7 +3,6 @@ package robot
 import (
 	"fmt"
 	"net/http"
-	"runtime"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -53,19 +52,11 @@ func runServer(c *Config) {
 			c.String(http.StatusInternalServerError, "Warning: 非法访问")
 			return
 		}
-		switch runtime.GOOS {
-		case "windows":
-			if !strings.HasPrefix(filename, "data\\plugins") && !strings.HasPrefix(filename, ".\\data\\plugins") {
-				log.Errorf("[http] 非法访问静态文件: %s", filename)
-				c.String(http.StatusInternalServerError, "Warning: 非法访问")
-				return
-			}
-		default:
-			if !strings.HasPrefix(filename, "data/plugins") && !strings.HasPrefix(filename, "./data/plugins") {
-				log.Errorf("[http] 非法访问静态文件: %s", filename)
-				c.String(http.StatusInternalServerError, "Warning: 非法访问")
-				return
-			}
+		if !strings.HasPrefix(filename, "data/plugins") && !strings.HasPrefix(filename, "./data/plugins") &&
+			!strings.HasPrefix(filename, "data\\plugins") && !strings.HasPrefix(filename, ".\\data\\plugins") {
+			log.Errorf("[http] 非法访问静态文件: %s", filename)
+			c.String(http.StatusInternalServerError, "Warning: 非法访问")
+			return
 		}
 		c.File(filename)
 	})
