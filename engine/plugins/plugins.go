@@ -51,4 +51,7 @@ import (
 
 	// 黑丝屋
 	_ "github.com/yqchilde/wxbot/plugins/heisiwu"
+
+	// 自动加好友
+	_ "github.com/yqchilde/wxbot/plugins/friendadd"
 )

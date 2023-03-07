@@ -14,3 +14,4 @@
 - "github.com/yqchilde/wxbot/plugins/youdaofanyi"  # 有道翻译
 - "github.com/yqchilde/wxbot/plugins/coser"        # coser
 - "github.com/yqchilde/wxbot/plugins/heisiwu"      # 黑丝屋
+- "github.com/yqchilde/wxbot/plugins/friendadd"    # 自动加好友

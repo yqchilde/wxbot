@@ -1,4 +1,4 @@
-package friendAddReq
+package friendadd
 
 import (
 	"fmt"
