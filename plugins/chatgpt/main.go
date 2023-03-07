@@ -359,7 +359,7 @@ func init() {
 
 		// key设置
 		var keys []ApiKey
-		if err := db.Orm.Table("apikey").Find(&keys).Error; err != nil || len(keys) == 0 {
+		if err := db.Orm.Table("apikey").Find(&keys).Error; err != nil {
 			log.Errorf("[ChatGPT] 获取apiKey失败, err: %s", err.Error())
 			ctx.ReplyTextAndAt("插件 - ChatGPT\n获取apiKey失败")
 			return
