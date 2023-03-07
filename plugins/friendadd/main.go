@@ -20,7 +20,7 @@ func init() {
 			f := ctx.Event.FriendVerify
 			// 判断一下好友验证消息
 			nickname := robot.GetBot().GetConfig().BotNickname
-			if strings.ToLower(f.Content) != strings.ToLower(nickname) {
+			if !strings.Contains(strings.ToLower(f.Content), strings.ToLower(nickname)) {
 				return
 			}
 			if err := ctx.AgreeFriendVerify(f.V3, f.V4, f.Scene); err != nil {
