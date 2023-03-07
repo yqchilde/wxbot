@@ -97,8 +97,12 @@ func getSetu(category string, num int) (string, []string) {
 	title := entries[rand.Intn(len(entries))].Name()
 	topicPath := GetPath(categoryPath, title)
 	files, err := ReadDir(topicPath)
-	if err != nil || len(files) == 0 {
+	if err != nil {
 		return "", nil
+	}
+	if len(files) == 0 {
+		// empty, then retry
+		return getSetu(storageFolder, category, num)
 	}
 
 	imageFiles := make([]os.DirEntry, 0, len(files))
