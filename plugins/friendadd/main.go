@@ -19,7 +19,7 @@ func init() {
 		if ctx.IsEventFriendVerify() {
 			f := ctx.Event.FriendVerify
 			// 判断一下好友验证消息
-			nickname := robot.GetBot().GetConfig().BotNickname
+			nickname := robot.GetBot().GetConfig(π).BotNickname
 			if !strings.Contains(strings.ToLower(f.Content), strings.ToLower(nickname)) {
 				return
 			}
