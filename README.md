@@ -380,7 +380,7 @@ import (
 
 ## Support
 
-* [ChatGPT账号购买](http://c.nxw.so/yyka)，有需要的朋友可以看看
+* [ChatGPT账号购买](https://ka.yqqy.top)，有需要的朋友可以看看
 
 ## License
 
