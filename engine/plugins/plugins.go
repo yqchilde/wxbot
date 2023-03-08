@@ -7,9 +7,6 @@ import (
 	// 百度百科
 	_ "github.com/yqchilde/wxbot/plugins/baidubaike"
 
-	// GPT聊天
-	_ "github.com/yqchilde/wxbot/plugins/chatgpt"
-
 	// 肯德基疯狂星期四骚话
 	_ "github.com/yqchilde/wxbot/plugins/crazykfc"
 
@@ -54,4 +51,7 @@ import (
 
 	// 自动加好友
 	_ "github.com/yqchilde/wxbot/plugins/friendadd"
+
+	// ChatGPT聊天，优先级必须放到最低
+	_ "github.com/yqchilde/wxbot/plugins/chatgpt"
 )
