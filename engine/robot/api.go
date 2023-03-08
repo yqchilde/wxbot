@@ -190,6 +190,7 @@ func (ctx *Ctx) SendImage(wxId, path string) error {
 		}
 		path = bot.config.ServerAddress + "/wxbot/static?file=" + filename
 	}
+	log.Debugf("[SendImage] Path: %s", path)
 	return ctx.framework.SendImage(wxId, path)
 }
 
@@ -209,11 +210,12 @@ func (ctx *Ctx) SendShareLink(wxId, title, desc, imageUrl, jumpUrl string) error
 		}
 		filename, err := cryptor.EncryptFilename(fileSecret, imageUrl[8:])
 		if err != nil {
-			log.Errorf("[SendImage] 加密文件名失败: %v", err)
+			log.Errorf("[SendShareLink] 加密文件名失败: %v", err)
 			return err
 		}
 		imageUrl = bot.config.ServerAddress + "/wxbot/static?file=" + filename
 	}
+	log.Debugf("[SendShareLink] imageUrl: %s", imageUrl)
 	return ctx.framework.SendShareLink(wxId, title, desc, imageUrl, jumpUrl)
 }
 

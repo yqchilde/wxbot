@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"path/filepath"
 	"strings"
 
 	"github.com/yqchilde/wxbot/engine/pkg/cryptor"
@@ -48,10 +47,13 @@ func runServer(c *Config) {
 		}
 		filename, err := cryptor.DecryptFilename(fileSecret, c.Query("file"))
 		if err != nil {
+			log.Errorf("[http] 静态文件解密失败: %s", err.Error())
 			c.String(http.StatusInternalServerError, "Warning: 非法访问")
 			return
 		}
-		if !strings.HasPrefix(filename, filepath.Join("data", "plugins")) && !strings.HasPrefix(filename, filepath.Join(".", "data", "plugins")) {
+		if !strings.HasPrefix(filename, "data/plugins") && !strings.HasPrefix(filename, "./data/plugins") &&
+			!strings.HasPrefix(filename, "data\\plugins") && !strings.HasPrefix(filename, ".\\data\\plugins") {
+			log.Errorf("[http] 非法访问静态文件: %s", filename)
 			c.String(http.StatusInternalServerError, "Warning: 非法访问")
 			return
 		}
