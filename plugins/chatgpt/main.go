@@ -175,13 +175,11 @@ func init() {
 		case strings.HasPrefix(msg, "创建角色"):
 			matched := regexp.MustCompile(`创建角色\s*(\S+)\s*(\S+)`).FindStringSubmatch(msg)
 			role := matched[1]
-			log.Println("role", role)
 			if _, ok := SystemRole.Get(role); ok {
 				ctx.ReplyTextAndAt(fmt.Sprintf("角色[%s]已存在", role))
 				return
 			}
 			desc := matched[2]
-			log.Printf("desc: %s", desc)
 			if err := db.Orm.Table("roles").Create(&SystemRoles{Role: role, Desc: desc}).Error; err != nil {
 				ctx.ReplyTextAndAt("创建角色失败")
 				return
@@ -217,7 +215,6 @@ func init() {
 				role:     role,
 				content:  []openai.ChatCompletionMessage{},
 			}
-			log.Printf("%#+v", chatRoom)
 			chatRoomCtx.Store(chatRoom.chatId, chatRoom)
 			ctx.ReplyTextAndAt("切换角色成功")
 			return
