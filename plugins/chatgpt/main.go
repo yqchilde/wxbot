@@ -3,6 +3,7 @@ package chatgpt
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -17,28 +18,30 @@ import (
 )
 
 var (
-	db         sqlite.DB                   // 数据库
-	msgContext sync.Map                    // 群号/私聊:消息上下文
-	chatRoom   = make(map[string]ChatRoom) // 连续会话聊天室
+	db          sqlite.DB // 数据库
+	chatRoomCtx sync.Map  // 聊天室消息上下文
 )
 
+// ChatRoom chatRoomCtx -> ChatRoom => 维系每个人的上下文
 type ChatRoom struct {
-	wxId string
-	done chan struct{}
+	chatId   string                         // 聊天室ID, 格式为: 聊天室ID_发送人ID
+	chatTime time.Time                      // 聊天时间
+	role     string                         // 角色
+	content  []openai.ChatCompletionMessage // 聊天上下文内容
 }
 
-// ApiKey apikey表，存放openai key
+// ApiKey 表名:apikey，存放openai key
 type ApiKey struct {
 	Key string `gorm:"column:key;index"`
 }
 
-// ApiProxy ApiProxy表，存放openai 代理url地址
+// ApiProxy 表名:apiproxy，存放openai 代理url地址
 type ApiProxy struct {
 	Id  uint   `gorm:"column:id;index"`
 	Url string `gorm:"column:url;"`
 }
 
-// GptModel gptmodel表，存放gpt模型相关配置参数
+// GptModel 表名:gptmodel，存放gpt模型相关配置参数
 type GptModel struct {
 	Model            string  `gorm:"column:model"`
 	MaxTokens        int     `gorm:"column:max_tokens"`
@@ -47,6 +50,12 @@ type GptModel struct {
 	PresencePenalty  float64 `gorm:"column:presence_penalty"`
 	FrequencyPenalty float64 `gorm:"column:frequency_penalty"`
 	ImageSize        string  `gorm:"column:image_size"`
+}
+
+// SystemRoles 表名:roles，存放系统角色
+type SystemRoles struct {
+	Role string `gorm:"column:role"`
+	Desc string `gorm:"column:desc"`
 }
 
 var defaultGptModel = GptModel{
@@ -63,18 +72,16 @@ func init() {
 	engine := control.Register("chatgpt", &control.Options{
 		Alias: "ChatGPT",
 		Help: "指令:\n" +
-			"* 开始会话 -> 进行ChatGPT连续会话\n" +
-			"* 提问 [问题] -> 单独提问，没有上下文\n" +
-			"* 作画 [描述] -> 生成图片",
+			"* @机器人 [内容] -> 进行AI对话，计入上下文\n" +
+			"* @机器人 提问 [问题] -> 单独提问，不计入上下文\n" +
+			"* @机器人 作画 [描述] -> 进行AI作画\n" +
+			"* @机器人 清空会话 -> 可清空与您的上下文\n" +
+			"* @机器人 角色列表 -> 获取可切换的AI角色\n" +
+			"* @机器人 当前角色 -> 获取当前用户的AI角色\n" +
+			"* @机器人 创建角色 [角色名] [角色描述]\n" +
+			"* @机器人 删除角色 [角色名]\n" +
+			"* @机器人 切换角色 [角色名]",
 		DataFolder: "chatgpt",
-		OnDisable: func(ctx *robot.Ctx) {
-			ctx.ReplyText("禁用成功")
-			wxId := ctx.Event.FromUniqueID
-			if room, ok := chatRoom[wxId]; ok {
-				close(room.done)
-				delete(chatRoom, wxId)
-			}
-		},
 	})
 
 	if err := sqlite.Open(engine.GetDataFolder()+"/chatgpt.db", &db); err != nil {
@@ -86,145 +93,162 @@ func init() {
 	if err := db.Create("apiproxy", &ApiProxy{}); err != nil {
 		log.Fatalf("create apiproxy table failed: %v", err)
 	}
+	if err := db.Create("roles", &SystemRoles{}); err != nil {
+		log.Fatalf("create roles table failed: %v", err)
+	}
 	// 初始化gpt 模型参数配置
 	initGptModel := defaultGptModel
 	if err := db.CreateAndFirstOrCreate("gptmodel", &initGptModel); err != nil {
 		log.Fatalf("create gptmodel table failed: %v", err)
 	}
+	// 初始化系统角色
+	initRole()
 
-	// 连续会话
-	engine.OnFullMatch("开始会话").SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		wxId := ctx.Event.FromUniqueID
-		// 检查是否已经在进行会话
-		if _, ok := chatRoom[wxId]; ok {
-			ctx.ReplyTextAndAt("当前已经在会话中了")
-			return
-		}
-
+	// 群聊并且艾特机器人
+	engine.OnMessage(robot.OnlyAtMe).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var (
-			nullMessage []openai.ChatCompletionMessage
-			room        = ChatRoom{
-				wxId: wxId,
-				done: make(chan struct{}),
+			now = time.Now().Local()
+			msg = ctx.MessageString()
+
+			chatRoom = ChatRoom{
+				chatId:   fmt.Sprintf("%s_%s", ctx.Event.FromWxId, ctx.Event.FromWxId),
+				chatTime: time.Now().Local(),
+				content:  []openai.ChatCompletionMessage{},
 			}
 		)
 
-		chatRoom[wxId] = room
-
-		// 开始会话
-		recv, cancel := ctx.EventChannel(ctx.CheckGroupSession()).Repeat()
-		defer cancel()
-		msgContext.LoadOrStore(wxId, nullMessage)
-		ctx.ReplyTextAndAt("收到！已开始ChatGPT连续会话中，输入\"结束会话\"结束会话，或5分钟后自动结束，请开始吧！")
-		for {
-			select {
-			case <-time.After(time.Minute * 5):
-				msgContext.LoadAndDelete(wxId)
-				delete(chatRoom, wxId)
-				ctx.ReplyTextAndAt("😊检测到您已有5分钟不再提问，那我先主动结束会话咯")
-				return
-			case <-room.done:
-				if room.wxId == wxId {
-					msgContext.LoadAndDelete(wxId)
-					ctx.ReplyTextAndAt("已退出ChatGPT")
-					return
-				}
-			case ctx := <-recv:
-				wxId := ctx.Event.FromUniqueID
-				msg := ctx.MessageString()
-				if msg == "" {
-					continue
-				} else if msg == "结束会话" {
-					msgContext.LoadAndDelete(wxId)
-					delete(chatRoom, wxId)
-					ctx.ReplyTextAndAt("已结束聊天的上下文语境，您可以重新发起提问")
-					return
-				} else if msg == "清空会话" {
-					msgContext.Store(wxId, nullMessage)
-					ctx.ReplyTextAndAt("已清空会话，您可以继续提问新的问题")
-					continue
-				} else if strings.HasPrefix(msg, "作画") {
-					b64, err := AskChatGptWithImage(msg, time.Second)
-					if err != nil {
-						log.Errorf("ChatGPT出错了，Err：%s", err.Error())
-						ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
-						continue
-					}
-					filename := fmt.Sprintf("%s/%s.png", engine.GetCacheFolder(), msg)
-					if err := utils.Base64ToImage(b64, filename); err != nil {
-						log.Errorf("作画失败，Err: %s", err.Error())
-						ctx.ReplyTextAndAt("作画失败，请重试")
-						return
-					}
-					ctx.ReplyImage("local://" + filename)
-					continue
-				}
-
-				var messages []openai.ChatCompletionMessage
-				if c, ok := msgContext.Load(wxId); ok {
-					messages = append(c.([]openai.ChatCompletionMessage), openai.ChatCompletionMessage{
-						Role:    "user",
-						Content: msg,
-					})
+		// 预判断
+		switch {
+		case strings.TrimSpace(msg) == "菜单" || strings.TrimSpace(msg) == "帮助":
+			ctx.ReplyTextAndAt("请发送菜单查看我还有哪些功能，无需@我哦")
+			return
+		case strings.TrimSpace(msg) == "清空会话":
+			chatRoomCtx.Store(chatRoom.chatId, chatRoom)
+			ctx.ReplyTextAndAt("已清空和您的上下文会话")
+			return
+		case strings.HasPrefix(msg, "提问"):
+			messages := []openai.ChatCompletionMessage{{Role: "user", Content: msg}}
+			answer, err := AskChatGpt(ctx, messages, time.Second)
+			if err != nil {
+				if errors.Is(err, ErrNoKey) {
+					ctx.ReplyTextAndAt(err.Error())
 				} else {
-					messages = []openai.ChatCompletionMessage{
-						{
-							Role:    "user",
-							Content: msg,
-						},
-					}
-				}
-
-				answer, err := AskChatGpt(messages, 2*time.Second)
-				if err != nil {
 					ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
-					continue
 				}
-				messages = append(messages, openai.ChatCompletionMessage{
-					Role:    "assistant",
-					Content: answer,
-				})
-				msgContext.Store(wxId, messages)
-				ctx.ReplyTextAndAt(answer)
+				return
 			}
-		}
-	})
+			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", msg, answer))
+			return
+		case strings.HasPrefix(msg, "作画"):
+			b64, err := AskChatGptWithImage(ctx, msg, time.Second)
+			if err != nil {
+				log.Errorf("ChatGPT出错了，Err：%s", err.Error())
+				ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
+				return
+			}
+			filename := fmt.Sprintf("%s/%s.png", engine.GetCacheFolder(), msg)
+			if err := utils.Base64ToImage(b64, filename); err != nil {
+				log.Errorf("作画失败，Err: %s", err.Error())
+				ctx.ReplyTextAndAt("作画失败，请重试")
+				return
+			}
+			ctx.ReplyImage("local://" + filename)
+			return
+		case strings.TrimSpace(msg) == "角色列表":
+			replyMsg := "角色列表:\n"
+			SystemRole.Each(func(key string, value interface{}) {
+				replyMsg += fmt.Sprintf("%s\n", key)
+			})
+			ctx.ReplyTextAndAt(replyMsg)
+			return
+		case strings.TrimSpace(msg) == "当前角色":
+			var role string
+			if val, ok := chatRoomCtx.Load(ctx.Event.FromUniqueID + "_" + ctx.Event.FromWxId); ok {
+				role = val.(ChatRoom).role
+			}
+			if role == "" {
+				ctx.ReplyTextAndAt("当前角色为: 默认")
+			} else {
+				ctx.ReplyTextAndAt("当前角色为: " + role)
+			}
+			return
+		case strings.HasPrefix(msg, "创建角色"):
+			matched := regexp.MustCompile(`创建角色\s*(\S+)\s*(\S+)`).FindStringSubmatch(msg)
+			role := matched[1]
+			if _, ok := SystemRole.Get(role); ok {
+				ctx.ReplyTextAndAt(fmt.Sprintf("角色[%s]已存在", role))
+				return
+			}
+			desc := matched[2]
+			if err := db.Orm.Table("roles").Create(&SystemRoles{Role: role, Desc: desc}).Error; err != nil {
+				ctx.ReplyTextAndAt("创建角色失败")
+				return
+			}
+			SystemRole.Set(role, desc)
+			ctx.ReplyTextAndAt("创建角色成功")
+			return
+		case strings.HasPrefix(msg, "删除角色"):
+			matched := regexp.MustCompile(`删除角色\s*(\S+)`).FindStringSubmatch(msg)
+			role := matched[1]
+			if _, ok := SystemRole.Get(role); !ok {
+				ctx.ReplyTextAndAt(fmt.Sprintf("角色[%s]不存在", role))
+				return
+			}
+			if err := db.Orm.Table("roles").Where("role = ?", role).Delete(&SystemRoles{}).Error; err != nil {
+				ctx.ReplyTextAndAt("删除角色失败")
+				return
+			}
+			SystemRole.Delete(role)
+			ctx.ReplyTextAndAt("删除角色成功")
+			return
+		case strings.HasPrefix(msg, "切换角色"):
+			matched := regexp.MustCompile(`切换角色\s*(\S+)`).FindStringSubmatch(msg)
+			role := matched[1]
+			if _, ok := SystemRole.Get(role); !ok {
+				ctx.ReplyTextAndAt(fmt.Sprintf("角色[%s]不存在", role))
+				return
+			}
 
-	// 单独提问，没有上下文处理
-	engine.OnRegex(`^提问 (.*)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		question := ctx.State["regex_matched"].([]string)[1]
-
-		messages := []openai.ChatCompletionMessage{
-			{
-				Role:    "user",
-				Content: question,
-			},
+			var chatRoom = ChatRoom{
+				chatId:   fmt.Sprintf("%s_%s", ctx.Event.FromUniqueID, ctx.Event.FromWxId),
+				chatTime: time.Now().Local(),
+				role:     role,
+				content:  []openai.ChatCompletionMessage{},
+			}
+			chatRoomCtx.Store(chatRoom.chatId, chatRoom)
+			ctx.ReplyTextAndAt("切换角色成功")
+			return
 		}
-		answer, err := AskChatGpt(messages, time.Second)
+
+		// 正式处理
+		if c, ok := chatRoomCtx.Load(chatRoom.chatId); ok {
+			// 判断距离上次聊天是否超过10分钟了
+			if now.Sub(c.(ChatRoom).chatTime) > 10*time.Minute {
+				chatRoomCtx.Store(chatRoom.chatId, chatRoom)
+				chatRoom.content = []openai.ChatCompletionMessage{{Role: "user", Content: msg}}
+			} else {
+				chatRoom.content = append(c.(ChatRoom).content, openai.ChatCompletionMessage{Role: "user", Content: msg})
+			}
+		} else {
+			chatRoom.content = []openai.ChatCompletionMessage{{Role: "user", Content: msg}}
+		}
+
+		answer, err := AskChatGpt(ctx, chatRoom.content, time.Second)
 		if err != nil {
-			log.Errorf("ChatGPT出错了，Err：%s", err.Error())
-			ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
+			switch {
+			case errors.Is(err, ErrNoKey):
+				ctx.ReplyTextAndAt(err.Error())
+			case errors.Is(err, ErrMaxTokens):
+				ctx.ReplyTextAndAt("和你的聊天上下文内容太多啦，我的记忆好像在消退.. 糟糕，我忘记了..，请重新问我吧")
+				chatRoomCtx.Store(chatRoom.chatId, chatRoom)
+			default:
+				ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
+			}
 			return
 		}
-		ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", question, answer))
-	})
-
-	// AI作画
-	engine.OnRegex(`^作画 (.*)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		prompt := ctx.State["regex_matched"].([]string)[1]
-		b64, err := AskChatGptWithImage(prompt, time.Second)
-		if err != nil {
-			log.Errorf("ChatGPT出错了，Err：%s", err.Error())
-			ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
-			return
-		}
-		filename := fmt.Sprintf("%s/%s.png", engine.GetCacheFolder(), prompt)
-		if err := utils.Base64ToImage(b64, filename); err != nil {
-			log.Errorf("作画失败，Err: %s", err.Error())
-			ctx.ReplyTextAndAt("作画失败，请重试")
-			return
-		}
-		ctx.ReplyImage("local://" + filename)
+		chatRoom.content = append(chatRoom.content, openai.ChatCompletionMessage{Role: "assistant", Content: answer})
+		chatRoomCtx.Store(chatRoom.chatId, chatRoom)
+		ctx.ReplyTextAndAt(answer)
 	})
 
 	// 设置openai api 代理
@@ -379,56 +403,4 @@ func init() {
 		}
 		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - ChatGPT\n%s", replyMsg))
 	})
-}
-
-// apikey缓存
-var apiKeys []ApiKey
-
-// 获取gpt3客户端
-func getGptClient() (*openai.Client, error) {
-	var keys []ApiKey
-	if err := db.Orm.Table("apikey").Find(&keys).Error; err != nil {
-		log.Errorf("[ChatGPT] 获取apikey失败, error:%s", err.Error())
-		return nil, errors.New("获取apiKey失败")
-	}
-	if len(keys) == 0 {
-		log.Errorf("[ChatGPT] 未设置apikey")
-		return nil, fmt.Errorf("请先私聊机器人配置apiKey\n指令：set chatgpt apiKey __(多个key用;符号隔开)\napiKey获取请到https://beta.openai.com获取")
-	}
-	apiKeys = keys
-
-	var proxy ApiProxy
-	if err := db.Orm.Table("apiproxy").Find(&proxy).Error; err != nil {
-		log.Errorf("[ChatGPT] 获取apiProxy失败, error:%s", err.Error())
-		return nil, errors.New("获取apiProxy失败")
-	}
-
-	config := openai.DefaultConfig(keys[0].Key)
-	if len(proxy.Url) > 0 {
-		config.BaseURL = proxy.Url
-	}
-
-	return openai.NewClientWithConfig(config), nil
-}
-
-// 获取gpt3模型配置
-func getGptModel() (*GptModel, error) {
-	var gptModel GptModel
-	if err := db.Orm.Table("gptmodel").Limit(1).Find(&gptModel).Error; err != nil {
-		log.Errorf("[ChatGPT] 获取模型配置失败, err: %s", err.Error())
-		return nil, errors.New("获取模型配置失败")
-	}
-	if gptModel.ImageSize == "" {
-		gptModel.ImageSize = openai.CreateImageSize512x512
-	}
-	return &gptModel, nil
-}
-
-// 重置gpt3模型配置
-func resetGptModel() error {
-	if err := db.Orm.Table("gptmodel").Where("1=1").Updates(&defaultGptModel).Error; err != nil {
-		log.Errorf("[ChatGPT] 重置模型配置失败, err: %s", err.Error())
-		return err
-	}
-	return nil
 }
