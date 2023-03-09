@@ -169,6 +169,31 @@ func (ctx *Ctx) SendTextAndAt(groupWxId, wxId, text string) error {
 	return ctx.framework.SendTextAndAt(groupWxId, wxId, "", text)
 }
 
+// SendTextAndListen 发送文本消息到指定好友并监听发送的文本消息
+func (ctx *Ctx) SendTextAndListen(wxId, text string) error {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	if text == "" {
+		return nil
+	}
+	err := ctx.framework.SendText(wxId, text)
+	if err != nil {
+		return err
+	}
+
+	// 加入消息监听队列
+	event := Event{
+		Type:         EventSelfMessage,
+		FromUniqueID: wxId,
+		Message: &Message{
+			Type:    MsgTypeText,
+			Content: text,
+		},
+	}
+	eventBuffer.ProcessEvent(&event, ctx.framework)
+	return nil
+}
+
 // SendImage 发送图片消息到指定好友
 // 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) SendImage(wxId, path string) error {
@@ -310,22 +335,7 @@ func (ctx *Ctx) ReplyTextAndListen(text string) error {
 	if text == "" {
 		return nil
 	}
-	err := ctx.SendText(ctx.Event.FromUniqueID, text)
-	if err != nil {
-		return err
-	}
-
-	// 加入消息监听队列
-	event := Event{
-		Type:         EventSelfMessage,
-		FromUniqueID: ctx.Event.FromUniqueID,
-		Message: &Message{
-			Type:    MsgTypeText,
-			Content: text,
-		},
-	}
-	eventBuffer.ProcessEvent(&event, ctx.framework)
-	return nil
+	return ctx.SendTextAndListen(ctx.Event.FromUniqueID, text)
 }
 
 // ReplyImage 回复图片消息
