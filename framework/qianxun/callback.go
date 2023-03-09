@@ -129,7 +129,8 @@ func buildEvent(resp string) *robot.Event {
 		}
 	case eventSelfMessage:
 		event = robot.Event{
-			Type: robot.EventSelfMessage,
+			Type:         robot.EventSelfMessage,
+			FromUniqueID: gjson.Get(resp, "data.data.fromWxid").String(),
 			Message: &robot.Message{
 				Type:    gjson.Get(resp, "data.data.msgType").Int(),
 				Content: gjson.Get(resp, "data.data.msg").String(),
