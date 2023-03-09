@@ -197,6 +197,8 @@ func registerCronjob() {
 			switch cronJobs[i].Type {
 			case JobTypeRemind:
 				jobInfo += fmt.Sprintf("任务ID: %d\n任务类型: %s\n任务描述: %s\n任务内容: %s\n\n", cronJobs[i].Id, cronJobs[i].Type, cronJobs[i].Desc, cronJobs[i].Remind)
+			case JobTypePlugin:
+				jobInfo += fmt.Sprintf("任务ID: %d\n任务类型: %s\n任务描述: %s\n任务内容: %s\n\n", cronJobs[i].Id, cronJobs[i].Type, cronJobs[i].Desc, cronJobs[i].Remind)
 			}
 		}
 		if len(cronJobs) == 0 {
