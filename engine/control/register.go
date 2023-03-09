@@ -22,19 +22,3 @@ func Register(service string, o *Options) *Engine {
 	log.Printf("插件[%s]已注册, 优先级: %d", service, priority)
 	return newEngine(service, o)
 }
-
-// GetOptionsOnCronjob 获取定时任务插件控制器配置
-func GetOptionsOnCronjob() map[string]*Control {
-	var (
-		services      = managers.LookupAll()
-		servicesClone = make(map[string]*Control)
-	)
-
-	for i := range services {
-		if services[i].Options.OnCronjob == nil {
-			continue
-		}
-		servicesClone[services[i].Service] = services[i]
-	}
-	return servicesClone
-}

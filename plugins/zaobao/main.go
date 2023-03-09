@@ -16,7 +16,6 @@ import (
 var (
 	db            sqlite.DB
 	zaoBao        ZaoBao
-	cronjobMutex  sync.Mutex
 	waitSendImage sync.Map
 )
 
@@ -40,12 +39,6 @@ func init() {
 		OnDisable: func(ctx *robot.Ctx) {
 			// todo 停止将定时任务从定时任务列表移除
 			ctx.ReplyText("禁用成功")
-		},
-		OnCronjob: func(ctx *robot.Ctx) {
-			wxId := ctx.Event.FromUniqueID
-			cronjobMutex.Lock()
-			defer cronjobMutex.Unlock()
-			waitSendImage.Store(wxId, ctx)
 		},
 	})
 
@@ -75,6 +68,17 @@ func init() {
 			}
 		}
 		ctx.ReplyImage("local://" + imgCache)
+	})
+
+	// 专门用于定时任务的指令，请不要在其他地方使用
+	engine.OnFullMatch("早报定时").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		imgCache := filepath.Join(engine.GetCacheFolder(), time.Now().Local().Format("20060102")+".jpg")
+		if utils.IsImageFile(imgCache) {
+			ctx.ReplyImage("local://" + imgCache)
+			return
+		} else {
+			waitSendImage.Store(ctx.Event.FromUniqueID, ctx)
+		}
 	})
 
 	engine.OnRegex("set zaobao token ([0-9a-zA-Z]{16})", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
