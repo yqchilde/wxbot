@@ -484,7 +484,7 @@ func registerCronjob() {
 	})
 
 	// 删除任务 任务ID
-	engine.OnRegex(`^删除任务 ?(\d+)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(`^删除任务 ?(\d+)$`, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		jobId := ctx.State["regex_matched"].([]string)[1]
 		var jobTag string
 		if err := db.Orm.Table("cronjob").Where("id = ?", jobId).Pluck("tag", &jobTag).Error; err != nil {
@@ -505,7 +505,7 @@ func registerCronjob() {
 	})
 
 	// 删除所有提醒任务
-	engine.OnFullMatchGroup([]string{"删除全部提醒任务", "删除所有提醒任务"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnFullMatchGroup([]string{"删除全部提醒任务", "删除所有提醒任务"}, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var jobTags []string
 		if err := db.Orm.Table("cronjob").Where("group_id = ? AND type = ?", ctx.Event.FromUniqueID, JobTypeRemind).Pluck("tag", &jobTags).Error; err != nil {
 			log.Errorf("[CronJob] 删除全部提醒任务失败: %v", err)
@@ -525,7 +525,7 @@ func registerCronjob() {
 	})
 
 	// 删除所有插件任务
-	engine.OnFullMatchGroup([]string{"删除全部插件任务", "删除所有插件任务"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnFullMatchGroup([]string{"删除全部插件任务", "删除所有插件任务"}, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var jobTags []string
 		if err := db.Orm.Table("cronjob").Where("group_id = ? AND type = ?", ctx.Event.FromUniqueID, JobTypePlugin).Pluck("tag", &jobTags).Error; err != nil {
 			log.Errorf("[CronJob] 删除全部插件任务失败: %v", err)
@@ -545,7 +545,7 @@ func registerCronjob() {
 	})
 
 	// 删除全部任务
-	engine.OnFullMatchGroup([]string{"删除全部任务", "删除所有任务"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnFullMatchGroup([]string{"删除全部任务", "删除所有任务"}, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var jobTags []string
 		if err := db.Orm.Table("cronjob").Where("group_id = ?", ctx.Event.FromUniqueID).Pluck("tag", &jobTags).Error; err != nil {
 			log.Errorf("[CronJob] 删除全部任务失败: %v", err)

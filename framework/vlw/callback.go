@@ -140,7 +140,9 @@ func buildEvent(resp string) *robot.Event {
 		contentType := gjson.Get(resp, "content.type").Int()
 		if contentType == 1 {
 			event = robot.Event{
-				Type: robot.EventSelfMessage, // 可能不准确，待反馈
+				Type:         robot.EventSelfMessage, // 可能不准确，待反馈
+				FromUniqueID: gjson.Get(resp, "content.from_wxid").String(),
+				FromWxId:     gjson.Get(resp, "content.from_wxid").String(),
 				Message: &robot.Message{
 					Id:      gjson.Get(resp, "content.msg_id").String(),
 					Type:    gjson.Get(resp, "content.type").Int(),
