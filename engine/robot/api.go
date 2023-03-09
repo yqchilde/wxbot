@@ -305,6 +305,29 @@ func (ctx *Ctx) ReplyTextAndAt(text string) error {
 	return ctx.SendTextAndAt(ctx.Event.FromGroup, ctx.Event.FromWxId, text)
 }
 
+// ReplyTextAndListen 回复文本消息并监听回复的文本消息
+func (ctx *Ctx) ReplyTextAndListen(text string) error {
+	if text == "" {
+		return nil
+	}
+	err := ctx.SendText(ctx.Event.FromUniqueID, text)
+	if err != nil {
+		return err
+	}
+
+	// 加入消息监听队列
+	event := Event{
+		Type:         EventSelfMessage,
+		FromUniqueID: ctx.Event.FromUniqueID,
+		Message: &Message{
+			Type:    MsgTypeText,
+			Content: text,
+		},
+	}
+	eventBuffer.ProcessEvent(&event, ctx.framework)
+	return nil
+}
+
 // ReplyImage 回复图片消息
 // 支持本地文件，图片路径以local://开头
 func (ctx *Ctx) ReplyImage(path string) error {

@@ -46,6 +46,9 @@ import (
 	// coser
 	_ "github.com/yqchilde/wxbot/plugins/coser"
 
+	// 自动加好友
+	_ "github.com/yqchilde/wxbot/plugins/friendadd"
+
 	// ChatGPT聊天，优先级必须放到最低
 	_ "github.com/yqchilde/wxbot/plugins/chatgpt"
 )

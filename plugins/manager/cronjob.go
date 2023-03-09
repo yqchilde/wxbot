@@ -167,7 +167,7 @@ func registerCronjob() {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddRemindOfEveryMonth(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
+				if _, err := AddRemindOfEveryMonth(ctx, jobTag, matched, func() { ctx.ReplyTextAndListen(remind) }); err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
@@ -210,7 +210,7 @@ func registerCronjob() {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddRemindOfEveryWeek(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
+				if _, err := AddRemindOfEveryWeek(ctx, jobTag, matched, func() { ctx.ReplyTextAndListen(remind) }); err != nil {
 					ctx.ReplyText(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
@@ -253,7 +253,7 @@ func registerCronjob() {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddRemindOfEveryDay(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
+				if _, err := AddRemindOfEveryDay(ctx, jobTag, matched, func() { ctx.ReplyTextAndListen(remind) }); err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
@@ -296,7 +296,7 @@ func registerCronjob() {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddRemindForInterval(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
+				if _, err := AddRemindForInterval(ctx, jobTag, matched, func() { ctx.ReplyTextAndListen(remind) }); err != nil {
 					ctx.ReplyText(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
@@ -339,7 +339,7 @@ func registerCronjob() {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddRemindForSpecifyTime(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
+				if _, err := AddRemindForSpecifyTime(ctx, jobTag, matched, func() { ctx.ReplyTextAndListen(remind) }); err != nil {
 					ctx.ReplyText(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
@@ -382,7 +382,7 @@ func registerCronjob() {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddRemindForExpression(ctx, jobTag, matched, func() { ctx.ReplyText(remind) }); err != nil {
+				if _, err := AddRemindForExpression(ctx, jobTag, matched, func() { ctx.ReplyTextAndListen(remind) }); err != nil {
 					ctx.ReplyText(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}

@@ -235,8 +235,10 @@ type IFramework interface {
   * `import _ "github.com/yqchilde/wxbot/plugins/chaid"`
 * [x] [有道翻译-点击查看使用说明](plugins/youdaofanyi)
   * `import _ "github.com/yqchilde/wxbot/plugins/youdaofanyi"`
-* [x] [coser-点击查看使用说明](plugins/coser)
+* [x] [获取 Cosplay 作品-点击查看使用说明](plugins/coser)
   * `import _ "github.com/yqchilde/wxbot/plugins/coser"`
+* [x] [自动通过好友添加请求-点击查看使用说明](plugins/friendadd)
+  * `import _ "github.com/yqchilde/wxbot/plugins/friendadd"`
 
 </details>
 
@@ -314,6 +316,8 @@ docker run -d \
 - "github.com/yqchilde/wxbot/plugins/zaobao"       # 每日早报
 - "github.com/yqchilde/wxbot/plugins/wordcloud"    # 聊天热词
 - "github.com/yqchilde/wxbot/plugins/chaid"        # 查wxId
+- "github.com/yqchilde/wxbot/plugins/youdaofanyi"  # 有道翻译
+- "github.com/yqchilde/wxbot/plugins/coser"        # coser
 ```
 
 ### 参考案例
