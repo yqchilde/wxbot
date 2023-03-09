@@ -16,7 +16,11 @@ type Command struct {
 
 func registerCommand() {
 	engine := control.Register("command", &control.Options{
-		HideMenu: true,
+		Alias: "菜单管理",
+		Help: "权限:\n" +
+			"仅限机器人管理员\n\n" +
+			"指令:\n" +
+			"* 设置菜单模式[1|2] -> 默认为模式1文本输出，模式2为网页输出(需要配置公网地址)",
 	})
 
 	if err := db.CreateAndFirstOrCreate("command", &command); err != nil {
