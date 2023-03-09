@@ -11,7 +11,6 @@ type Options struct {
 	DataFolder       string               // 数据文件夹
 	OnEnable         func(ctx *robot.Ctx) // 自定义启用插件后执行的操作
 	OnDisable        func(ctx *robot.Ctx) // 自定义禁用插件后执行的操作
-	OnCronjob        func(ctx *robot.Ctx) // 自定义定时任务，用于被定时调用
 }
 
 // PluginConfig 插件配置表

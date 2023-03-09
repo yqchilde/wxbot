@@ -12,6 +12,12 @@ import (
 
 var job = gocron.NewScheduler(time.Local)
 
+func init() {
+	// 设置最大并发任务数，防止并发太大对账号有影响
+	// SetMaxConcurrentJobs函数可能有重复的可能，待观察，https://github.com/go-co-op/gocron/blob/main/executor.go#L16
+	job.SetMaxConcurrentJobs(10, gocron.WaitMode)
+}
+
 // AddRemindOfEveryMonth 添加每月提醒
 func AddRemindOfEveryMonth(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
 	timeSplit := strings.Split(matched[2], ":")
@@ -82,9 +88,4 @@ func AddRemindForSpecifyTime(ctx *robot.Ctx, jobTag string, matched []string, f 
 // AddRemindForExpression 添加表达式提醒
 func AddRemindForExpression(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
 	return job.CronWithSeconds(matched[1]).Tag(jobTag).Do(func() { f() })
-}
-
-// AddPluginOfEveryDay 添加每天执行的插件
-func AddPluginOfEveryDay(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
-	return job.Every(1).Day().At(matched[1]).Tag(jobTag).Do(func() { f() })
 }
