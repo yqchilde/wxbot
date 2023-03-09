@@ -3,7 +3,6 @@ package zaobao
 import (
 	"fmt"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/yqchilde/wxbot/engine/control"
@@ -14,10 +13,8 @@ import (
 )
 
 var (
-	db            sqlite.DB
-	zaoBao        ZaoBao
-	cronjobMutex  sync.Mutex
-	waitSendImage sync.Map
+	db     sqlite.DB
+	zaoBao ZaoBao
 )
 
 type ZaoBao struct {
@@ -40,12 +37,6 @@ func init() {
 		OnDisable: func(ctx *robot.Ctx) {
 			// todo 停止将定时任务从定时任务列表移除
 			ctx.ReplyText("禁用成功")
-		},
-		OnCronjob: func(ctx *robot.Ctx) {
-			wxId := ctx.Event.FromUniqueID
-			cronjobMutex.Lock()
-			defer cronjobMutex.Unlock()
-			waitSendImage.Store(wxId, ctx)
 		},
 	})
 
@@ -105,18 +96,6 @@ func pollingTask() {
 	<-timer.C
 	timer.Stop()
 
-	// 任务
-	doSendImage := func(imgCache string) {
-		waitSendImage.Range(func(key, val interface{}) bool {
-			ctx := val.(*robot.Ctx)
-			ctx.SendImage(key.(string), "local://"+imgCache)
-			waitSendImage.Delete(key)
-			// 有时候连续发图片会有问题，所以延迟10s
-			time.Sleep(10 * time.Second)
-			return true
-		})
-	}
-
 	// 轮询任务
 	ticker := time.NewTicker(10 * time.Minute)
 	for range ticker.C {
@@ -136,8 +115,6 @@ func pollingTask() {
 			if err := flushZaoBao(zaoBao.Token, imgCache); err != nil {
 				continue
 			}
-			doSendImage(imgCache)
 		}
-		doSendImage(imgCache)
 	}
 }
