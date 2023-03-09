@@ -305,7 +305,7 @@ func (ctx *Ctx) ReplyTextAndAt(text string) error {
 	return ctx.SendTextAndAt(ctx.Event.FromGroup, ctx.Event.FromWxId, text)
 }
 
-// ReplyText 回复文本消息并监听回复的文本消息
+// ReplyTextAndListen 回复文本消息并监听回复的文本消息
 func (ctx *Ctx) ReplyTextAndListen(text string) error {
 	if text == "" {
 		return nil
