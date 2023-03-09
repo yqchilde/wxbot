@@ -48,12 +48,13 @@ func SetPluginCommand(engine *control.Engine) {
 
 				// 存起来便于服务启动恢复
 				if err := db.Orm.Table("cronjob").Create(&CronJob{
-					Id:      jobId,
-					Tag:     jobTag,
-					Type:    JobTypePlugin,
-					Desc:    jobDesc,
-					GroupId: ctx.Event.FromUniqueID,
-					Remind:  remind,
+					Id:     jobId,
+					Tag:    jobTag,
+					Type:   JobTypePlugin,
+					Desc:   jobDesc,
+					WxId:   ctx.Event.FromUniqueID,
+					WxName: ctx.Event.FromUniqueName,
+					Remind: remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
@@ -91,12 +92,13 @@ func SetPluginCommand(engine *control.Engine) {
 
 				// 存起来便于服务启动恢复
 				if err := db.Orm.Table("cronjob").Create(&CronJob{
-					Id:      jobId,
-					Tag:     jobTag,
-					Type:    JobTypePlugin,
-					Desc:    jobDesc,
-					GroupId: ctx.Event.FromUniqueID,
-					Remind:  remind,
+					Id:     jobId,
+					Tag:    jobTag,
+					Type:   JobTypePlugin,
+					Desc:   jobDesc,
+					WxId:   ctx.Event.FromUniqueID,
+					WxName: ctx.Event.FromUniqueName,
+					Remind: remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
@@ -134,12 +136,13 @@ func SetPluginCommand(engine *control.Engine) {
 
 				// 存起来便于服务启动恢复
 				if err := db.Orm.Table("cronjob").Create(&CronJob{
-					Id:      jobId,
-					Tag:     jobTag,
-					Type:    JobTypePlugin,
-					Desc:    jobDesc,
-					GroupId: ctx.Event.FromUniqueID,
-					Remind:  remind,
+					Id:     jobId,
+					Tag:    jobTag,
+					Type:   JobTypePlugin,
+					Desc:   jobDesc,
+					WxId:   ctx.Event.FromUniqueID,
+					WxName: ctx.Event.FromUniqueName,
+					Remind: remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
@@ -177,12 +180,13 @@ func SetPluginCommand(engine *control.Engine) {
 
 				// 存起来便于服务启动恢复
 				if err := db.Orm.Table("cronjob").Create(&CronJob{
-					Id:      jobId,
-					Tag:     jobTag,
-					Type:    JobTypePlugin,
-					Desc:    jobDesc,
-					GroupId: ctx.Event.FromUniqueID,
-					Remind:  remind,
+					Id:     jobId,
+					Tag:    jobTag,
+					Type:   JobTypePlugin,
+					Desc:   jobDesc,
+					WxId:   ctx.Event.FromUniqueID,
+					WxName: ctx.Event.FromUniqueName,
+					Remind: remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
@@ -220,12 +224,13 @@ func SetPluginCommand(engine *control.Engine) {
 
 				// 存起来便于服务启动恢复
 				if err := db.Orm.Table("cronjob").Create(&CronJob{
-					Id:      jobId,
-					Tag:     jobTag,
-					Type:    JobTypePlugin,
-					Desc:    jobDesc,
-					GroupId: ctx.Event.FromUniqueID,
-					Remind:  remind,
+					Id:     jobId,
+					Tag:    jobTag,
+					Type:   JobTypePlugin,
+					Desc:   jobDesc,
+					WxId:   ctx.Event.FromUniqueID,
+					WxName: ctx.Event.FromUniqueName,
+					Remind: remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
@@ -263,12 +268,13 @@ func SetPluginCommand(engine *control.Engine) {
 
 				// 存起来便于服务启动恢复
 				if err := db.Orm.Table("cronjob").Create(&CronJob{
-					Id:      jobId,
-					Tag:     jobTag,
-					Type:    JobTypePlugin,
-					Desc:    jobDesc,
-					GroupId: ctx.Event.FromUniqueID,
-					Remind:  remind,
+					Id:     jobId,
+					Tag:    jobTag,
+					Type:   JobTypePlugin,
+					Desc:   jobDesc,
+					WxId:   ctx.Event.FromUniqueID,
+					WxName: ctx.Event.FromUniqueName,
+					Remind: remind,
 				}).Error; err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
@@ -283,12 +289,12 @@ func SetPluginCommand(engine *control.Engine) {
 	// 删除所有插件任务
 	engine.OnFullMatchGroup([]string{"删除全部插件任务", "删除所有插件任务"}, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var jobTags []string
-		if err := db.Orm.Table("cronjob").Where("group_id = ? AND type = ?", ctx.Event.FromUniqueID, JobTypePlugin).Pluck("tag", &jobTags).Error; err != nil {
+		if err := db.Orm.Table("cronjob").Where("wx_id = ? AND type = ?", ctx.Event.FromUniqueID, JobTypePlugin).Pluck("tag", &jobTags).Error; err != nil {
 			log.Errorf("[CronJob] 删除全部插件任务失败: %v", err)
 			ctx.ReplyTextAndAt("删除全部插件任务失败")
 			return
 		}
-		if err := db.Orm.Table("cronjob").Where("group_id = ? AND type = ?", ctx.Event.FromUniqueID, JobTypePlugin).Delete(&CronJob{}).Error; err != nil {
+		if err := db.Orm.Table("cronjob").Where("wx_id = ? AND type = ?", ctx.Event.FromUniqueID, JobTypePlugin).Delete(&CronJob{}).Error; err != nil {
 			log.Errorf("[CronJob] 删除全部插件任务失败: %v", err)
 			ctx.ReplyTextAndAt("删除全部插件任务失败")
 			return
