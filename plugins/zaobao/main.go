@@ -3,6 +3,7 @@ package zaobao
 import (
 	"fmt"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/yqchilde/wxbot/engine/control"
@@ -13,8 +14,9 @@ import (
 )
 
 var (
-	db     sqlite.DB
-	zaoBao ZaoBao
+	db            sqlite.DB
+	zaoBao        ZaoBao
+	waitSendImage sync.Map
 )
 
 type ZaoBao struct {
@@ -68,6 +70,17 @@ func init() {
 		ctx.ReplyImage("local://" + imgCache)
 	})
 
+	// 专门用于定时任务的指令，请不要在其他地方使用
+	engine.OnFullMatch("早报定时").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		imgCache := filepath.Join(engine.GetCacheFolder(), time.Now().Local().Format("20060102")+".jpg")
+		if utils.IsImageFile(imgCache) {
+			ctx.ReplyImage("local://" + imgCache)
+			return
+		} else {
+			waitSendImage.Store(ctx.Event.FromUniqueID, ctx)
+		}
+	})
+
 	engine.OnRegex("set zaobao token ([0-9a-zA-Z]{16})", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		token := ctx.State["regex_matched"].([]string)[1]
 		if err := db.Orm.Table("zaobao").Where("1 = 1").Update("token", token).Error; err != nil {
@@ -96,6 +109,18 @@ func pollingTask() {
 	<-timer.C
 	timer.Stop()
 
+	// 任务
+	doSendImage := func(imgCache string) {
+		waitSendImage.Range(func(key, val interface{}) bool {
+			ctx := val.(*robot.Ctx)
+			ctx.SendImage(key.(string), "local://"+imgCache)
+			waitSendImage.Delete(key)
+			// 有时候连续发图片会有问题，所以延迟10s
+			time.Sleep(10 * time.Second)
+			return true
+		})
+	}
+
 	// 轮询任务
 	ticker := time.NewTicker(10 * time.Minute)
 	for range ticker.C {
@@ -115,6 +140,8 @@ func pollingTask() {
 			if err := flushZaoBao(zaoBao.Token, imgCache); err != nil {
 				continue
 			}
+			doSendImage(imgCache)
 		}
+		doSendImage(imgCache)
 	}
 }
