@@ -16,17 +16,17 @@ import (
 
 func init() {
 	engine := control.Register("coser", &control.Options{
-		Alias: "coser",
+		Alias: "获取 Cosplay 作品",
 		Help: "指令:\n" +
-			"* coser -> 获取1张coser作品\n" +
-			"* coser 5 -> 获取5张coser作品，限制10张",
+			"* coser|cosplay -> 获取 1 张 Cosplay 作品\n" +
+			"* coser|cosplay 5 -> 获取 5 张 Cosplay 作品，限制 10 张",
 	})
 
-	engine.OnFullMatch("coser").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnFullMatchGroup([]string{"coser", "cosplay"}).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		reply(ctx, 1)
 	})
 
-	engine.OnRegex(`^coser ?(\d+)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnRegex(`^coser|cosplay ?(\d+)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		if num, err := strconv.Atoi(ctx.State["regex_matched"].([]string)[1]); err == nil {
 			reply(ctx, num)
 		}
@@ -39,7 +39,7 @@ func reply(ctx *robot.Ctx, num int) {
 	}
 
 	if title, imageUrls := GetCoserInfo(num); title == "" {
-		ctx.ReplyTextAndAt("获取 coser 作品失败")
+		ctx.ReplyTextAndAt("获取 Cosplay 作品失败")
 	} else {
 		ctx.ReplyTextAndAt(title)
 		for _, url := range imageUrls {

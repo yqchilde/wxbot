@@ -14,4 +14,5 @@
 * [聊天热词](wordcloud)
 * [查wxId](chaid)
 * [有道翻译](youdaofanyi)
-* [获取Coser作品](coser)
+* [获取 Cosplay 作品](coser)
+* [自动通过好友添加请求](friendadd)

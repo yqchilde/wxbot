@@ -2,9 +2,10 @@ package robot
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/yqchilde/wxbot/engine/pkg/cryptor"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
