@@ -26,8 +26,8 @@ func init() {
 		reply(ctx, 1)
 	})
 
-	engine.OnRegex(`^coser|cosplay ?(\d+)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		if num, err := strconv.Atoi(ctx.State["regex_matched"].([]string)[1]); err == nil {
+	engine.OnRegex(`^(coser|cosplay) ?(\d+)$`).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		if num, err := strconv.Atoi(ctx.State["regex_matched"].([]string)[2]); err == nil {
 			reply(ctx, num)
 		}
 	})
