@@ -18,16 +18,16 @@ func init() {
 	job.SetMaxConcurrentJobs(10, gocron.WaitMode)
 }
 
-// AddRemindOfEveryMonth 添加每月提醒
-func AddRemindOfEveryMonth(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
+// AddCronjobOfEveryMonth 添加每月提醒
+func AddCronjobOfEveryMonth(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
 	timeSplit := strings.Split(matched[2], ":")
 	hour, minute, second := timeSplit[0], timeSplit[1], timeSplit[2]
 	taskCron := fmt.Sprintf("%s %s %s %s * *", second, minute, hour, matched[1])
 	return job.CronWithSeconds(taskCron).Tag(jobTag).Do(func() { f() })
 }
 
-// AddRemindOfEveryWeek 添加每周提醒
-func AddRemindOfEveryWeek(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
+// AddCronjobOfEveryWeek 添加每周提醒
+func AddCronjobOfEveryWeek(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
 	week, timed := matched[1], matched[2]
 	switch week {
 	case "一":
@@ -48,13 +48,13 @@ func AddRemindOfEveryWeek(ctx *robot.Ctx, jobTag string, matched []string, f fun
 	return job.Tag(jobTag).Do(func() { f() })
 }
 
-// AddRemindOfEveryDay 添加每天提醒
-func AddRemindOfEveryDay(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
+// AddCronjobOfEveryDay 添加每天提醒
+func AddCronjobOfEveryDay(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
 	return job.Every(1).Day().At(matched[1]).Tag(jobTag).Do(func() { f() })
 }
 
-// AddRemindForInterval 添加间隔提醒
-func AddRemindForInterval(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
+// AddCronjobForInterval 添加间隔提醒
+func AddCronjobForInterval(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
 	duration, unit := matched[1], matched[2]
 	switch unit {
 	case "秒", "s":
@@ -73,8 +73,8 @@ func AddRemindForInterval(ctx *robot.Ctx, jobTag string, matched []string, f fun
 	return job.Tag(jobTag).Do(func() { f() })
 }
 
-// AddRemindForSpecifyTime 添加指定时间提醒
-func AddRemindForSpecifyTime(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
+// AddCronjobForSpecifyTime 添加指定时间提醒
+func AddCronjobForSpecifyTime(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
 	parseTime, _ := time.ParseInLocation("2006-01-02 15:04:05", matched[1], time.Local)
 	if parseTime.Before(time.Now()) {
 		return nil, fmt.Errorf("请不要设置过去的时间")
@@ -85,7 +85,7 @@ func AddRemindForSpecifyTime(ctx *robot.Ctx, jobTag string, matched []string, f 
 	})
 }
 
-// AddRemindForExpression 添加表达式提醒
-func AddRemindForExpression(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
+// AddCronjobForExpression 添加表达式提醒
+func AddCronjobForExpression(ctx *robot.Ctx, jobTag string, matched []string, f func()) (*gocron.Job, error) {
 	return job.CronWithSeconds(matched[1]).Tag(jobTag).Do(func() { f() })
 }
