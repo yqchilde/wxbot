@@ -76,7 +76,7 @@ func registerCronjob() {
 				// 恢复每月的提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindEveryMonth).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddRemindOfEveryMonth(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndListen(cronJob.GroupId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每月提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -85,7 +85,7 @@ func registerCronjob() {
 				// 恢复每周的提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindEveryWeek).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddRemindOfEveryWeek(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndListen(cronJob.GroupId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每周提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -94,7 +94,7 @@ func registerCronjob() {
 				// 恢复每天的提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindEveryDay).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddRemindOfEveryDay(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndListen(cronJob.GroupId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每天提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -103,7 +103,7 @@ func registerCronjob() {
 				// 恢复间隔提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindInterval).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddRemindForInterval(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndListen(cronJob.GroupId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复间隔提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -112,7 +112,7 @@ func registerCronjob() {
 				// 恢复指定时间提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindSpecifyTime).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddRemindForSpecifyTime(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndListen(cronJob.GroupId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复指定时间提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -121,7 +121,7 @@ func registerCronjob() {
 				// 恢复表达式提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindExpression).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddRemindForExpression(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndListen(cronJob.GroupId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复表达式提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
