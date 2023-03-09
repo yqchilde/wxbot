@@ -318,7 +318,7 @@ func (ctx *Ctx) ReplyTextAndListen(text string) error {
 	// 加入
 	event := Event{
 		Type:         EventSelfMessage,
-		FromUniqueID: ctx.Event.RobotWxId,
+		FromUniqueID: ctx.Event.FromUniqueID,
 		Message: &Message{
 			Type:    MsgTypeText,
 			Content: text,
