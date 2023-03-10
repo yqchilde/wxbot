@@ -253,7 +253,7 @@ type IFramework interface {
 1. 克隆代码
 
 ```bash
-git clone --recurse-submodules https://github.com/yqchilde/wxbot.git
+git clone https://github.com/yqchilde/wxbot.git
 ```
 
 2. 配置`config.yaml`
