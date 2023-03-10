@@ -64,7 +64,7 @@ func (f *Framework) GetRobotInfo() (*robot.User, error) {
 }
 
 func (f *Framework) GetMemePictures(msg *robot.Message) string {
-	var emoji EmojiXML
+	var emoji EmojiXml
 	if err := xml.Unmarshal([]byte(msg.Content), &emoji); err != nil {
 		return ""
 	}

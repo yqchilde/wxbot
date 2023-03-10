@@ -2,7 +2,8 @@ package qianxun
 
 import "encoding/xml"
 
-type EmojiXML struct {
+// EmojiXml emoji xml
+type EmojiXml struct {
 	XMLName xml.Name `xml:"msg"`
 	Text    string   `xml:",chardata"`
 	Emoji   struct {
