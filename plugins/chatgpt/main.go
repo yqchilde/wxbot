@@ -3,7 +3,6 @@ package chatgpt
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -13,7 +12,6 @@ import (
 	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/pkg/sqlite"
-	"github.com/yqchilde/wxbot/engine/pkg/utils"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
@@ -30,44 +28,6 @@ type ChatRoom struct {
 	content  []openai.ChatCompletionMessage // 聊天上下文内容
 }
 
-// ApiKey 表名:apikey，存放openai key
-type ApiKey struct {
-	Key string `gorm:"column:key;index"`
-}
-
-// ApiProxy 表名:apiproxy，存放openai 代理url地址
-type ApiProxy struct {
-	Id  uint   `gorm:"column:id;index"`
-	Url string `gorm:"column:url;"`
-}
-
-// GptModel 表名:gptmodel，存放gpt模型相关配置参数
-type GptModel struct {
-	Model            string  `gorm:"column:model"`
-	MaxTokens        int     `gorm:"column:max_tokens"`
-	Temperature      float64 `gorm:"column:temperature"`
-	TopP             float64 `gorm:"column:top_p"`
-	PresencePenalty  float64 `gorm:"column:presence_penalty"`
-	FrequencyPenalty float64 `gorm:"column:frequency_penalty"`
-	ImageSize        string  `gorm:"column:image_size"`
-}
-
-// SystemRoles 表名:roles，存放系统角色
-type SystemRoles struct {
-	Role string `gorm:"column:role"`
-	Desc string `gorm:"column:desc"`
-}
-
-var defaultGptModel = GptModel{
-	Model:            "gpt-3.5-turbo",
-	MaxTokens:        4096,
-	Temperature:      0.8,
-	TopP:             1.0,
-	PresencePenalty:  0.0,
-	FrequencyPenalty: 0.6,
-	ImageSize:        "512x512",
-}
-
 func init() {
 	engine := control.Register("chatgpt", &control.Options{
 		Alias: "ChatGPT",
@@ -80,7 +40,18 @@ func init() {
 			"* @机器人 当前角色 -> 获取当前用户的AI角色\n" +
 			"* @机器人 创建角色 [角色名] [角色描述]\n" +
 			"* @机器人 删除角色 [角色名]\n" +
-			"* @机器人 切换角色 [角色名]",
+			"* @机器人 切换角色 [角色名]\n\n" +
+			"*管理员指令(详细说明请看文档):\n" +
+			"* set chatgpt apikey [keys]\n" +
+			"* del chatgpt apikey [keys]\n" +
+			"* set chatgpt model [key=val]\n" +
+			"* set chatgpt model reset\n" +
+			"* get chatgpt info\n" +
+			"* set chatgpt proxy [url]\n" +
+			"* del chatgpt proxy\n" +
+			"* get chatgpt (sensitive|敏感词)\n" +
+			"* set chatgpt (sensitive|敏感词) [敏感词]\n" +
+			"* del chatgpt (sensitive|敏感词) [敏感词]",
 		DataFolder: "chatgpt",
 	})
 
@@ -96,6 +67,9 @@ func init() {
 	if err := db.Create("roles", &SystemRoles{}); err != nil {
 		log.Fatalf("create roles table failed: %v", err)
 	}
+	if err := db.Create("sensitive", &SensitiveWords{}); err != nil {
+		log.Fatalf("create sensitive_words table failed: %v", err)
+	}
 	// 初始化gpt 模型参数配置
 	initGptModel := defaultGptModel
 	if err := db.CreateAndFirstOrCreate("gptmodel", &initGptModel); err != nil {
@@ -103,6 +77,10 @@ func init() {
 	}
 	// 初始化系统角色
 	initRole()
+	// 初始化敏感词
+	initSensitiveWords()
+	// 设置敏感词指令
+	setSensitiveCommand(engine)
 
 	// 群聊并且艾特机器人
 	engine.OnMessage(robot.OnlyAtMe).SetBlock(true).Handle(func(ctx *robot.Ctx) {
@@ -117,6 +95,12 @@ func init() {
 			}
 		)
 
+		// 敏感词检测提问
+		if checkSensitiveWords(msg) {
+			ctx.ReplyTextAndAt(fmt.Sprintf("很抱歉，您的问题含有敏感词，%s拒绝回答这个问题", robot.GetBot().GetConfig().BotNickname))
+			return
+		}
+
 		// 预判断
 		switch {
 		case strings.TrimSpace(msg) == "菜单" || strings.TrimSpace(msg) == "帮助":
@@ -127,96 +111,25 @@ func init() {
 			ctx.ReplyTextAndAt("已清空和您的上下文会话")
 			return
 		case strings.HasPrefix(msg, "提问"):
-			messages := []openai.ChatCompletionMessage{{Role: "user", Content: msg}}
-			answer, err := AskChatGpt(ctx, messages, time.Second)
-			if err != nil {
-				if errors.Is(err, ErrNoKey) {
-					ctx.ReplyTextAndAt(err.Error())
-				} else {
-					ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
-				}
-				return
-			}
-			ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", msg, answer))
+			setSingleCommand(ctx, msg, "提问")
 			return
 		case strings.HasPrefix(msg, "作画"):
-			b64, err := AskChatGptWithImage(ctx, msg, time.Second)
-			if err != nil {
-				log.Errorf("ChatGPT出错了，Err：%s", err.Error())
-				ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
-				return
-			}
-			filename := fmt.Sprintf("%s/%s.png", engine.GetCacheFolder(), msg)
-			if err := utils.Base64ToImage(b64, filename); err != nil {
-				log.Errorf("作画失败，Err: %s", err.Error())
-				ctx.ReplyTextAndAt("作画失败，请重试")
-				return
-			}
-			ctx.ReplyImage("local://" + filename)
+			setImageCommand(ctx, msg, "作画")
 			return
 		case strings.TrimSpace(msg) == "角色列表":
-			replyMsg := "角色列表:\n"
-			SystemRole.Each(func(key string, value interface{}) {
-				replyMsg += fmt.Sprintf("%s\n", key)
-			})
-			ctx.ReplyTextAndAt(replyMsg)
+			setRoleCommand(ctx, msg, "角色列表")
 			return
 		case strings.TrimSpace(msg) == "当前角色":
-			var role string
-			if val, ok := chatRoomCtx.Load(ctx.Event.FromUniqueID + "_" + ctx.Event.FromWxId); ok {
-				role = val.(ChatRoom).role
-			}
-			if role == "" {
-				ctx.ReplyTextAndAt("当前角色为: 默认")
-			} else {
-				ctx.ReplyTextAndAt("当前角色为: " + role)
-			}
+			setRoleCommand(ctx, msg, "当前角色")
 			return
 		case strings.HasPrefix(msg, "创建角色"):
-			matched := regexp.MustCompile(`创建角色\s*(\S+)\s*(\S+)`).FindStringSubmatch(msg)
-			role := matched[1]
-			if _, ok := SystemRole.Get(role); ok {
-				ctx.ReplyTextAndAt(fmt.Sprintf("角色[%s]已存在", role))
-				return
-			}
-			desc := matched[2]
-			if err := db.Orm.Table("roles").Create(&SystemRoles{Role: role, Desc: desc}).Error; err != nil {
-				ctx.ReplyTextAndAt("创建角色失败")
-				return
-			}
-			SystemRole.Set(role, desc)
-			ctx.ReplyTextAndAt("创建角色成功")
+			setRoleCommand(ctx, msg, "创建角色")
 			return
 		case strings.HasPrefix(msg, "删除角色"):
-			matched := regexp.MustCompile(`删除角色\s*(\S+)`).FindStringSubmatch(msg)
-			role := matched[1]
-			if _, ok := SystemRole.Get(role); !ok {
-				ctx.ReplyTextAndAt(fmt.Sprintf("角色[%s]不存在", role))
-				return
-			}
-			if err := db.Orm.Table("roles").Where("role = ?", role).Delete(&SystemRoles{}).Error; err != nil {
-				ctx.ReplyTextAndAt("删除角色失败")
-				return
-			}
-			SystemRole.Delete(role)
-			ctx.ReplyTextAndAt("删除角色成功")
+			setRoleCommand(ctx, msg, "删除角色")
 			return
 		case strings.HasPrefix(msg, "切换角色"):
-			matched := regexp.MustCompile(`切换角色\s*(\S+)`).FindStringSubmatch(msg)
-			role := matched[1]
-			if _, ok := SystemRole.Get(role); !ok {
-				ctx.ReplyTextAndAt(fmt.Sprintf("角色[%s]不存在", role))
-				return
-			}
-
-			var chatRoom = ChatRoom{
-				chatId:   fmt.Sprintf("%s_%s", ctx.Event.FromUniqueID, ctx.Event.FromWxId),
-				chatTime: time.Now().Local(),
-				role:     role,
-				content:  []openai.ChatCompletionMessage{},
-			}
-			chatRoomCtx.Store(chatRoom.chatId, chatRoom)
-			ctx.ReplyTextAndAt("切换角色成功")
+			setRoleCommand(ctx, msg, "切换角色")
 			return
 		}
 
@@ -246,6 +159,13 @@ func init() {
 			}
 			return
 		}
+
+		// 敏感词检测回答
+		if checkSensitiveWords(answer) {
+			ctx.ReplyTextAndAt(fmt.Sprintf("%s不被允许回答该类敏感问题，很抱歉", robot.GetBot().GetConfig().BotNickname))
+			return
+		}
+
 		chatRoom.content = append(chatRoom.content, openai.ChatCompletionMessage{Role: "assistant", Content: answer})
 		chatRoomCtx.Store(chatRoom.chatId, chatRoom)
 		ctx.ReplyTextAndAt(answer)

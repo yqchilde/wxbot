@@ -16,6 +16,9 @@
     * [x] `get chatgpt info` 获取ChatGPT的信息
     * [x] `set chatgpt proxy [url]` 设置api.openai.com的代理地址，需要完整的如：https://api.googlevideo.dev/v1
     * [x] `del chatgpt proxy` 删除api.openai.com 代理地址
+    * [x] `get chatgpt (sensitive|敏感词)`，获取敏感词列表，内置了一些敏感词，如果不想使用，请使用下面删除指令
+    * [x] `set chatgpt (sensitive|敏感词) [敏感词]`，设置敏感词，多个敏感词用`,`符号隔开 
+    * [x] `del chatgpt (sensitive|敏感词) [敏感词]`，删除敏感词，仅支持单个敏感词
 * 附录：
   * `k`，`v`可选值参考下面表格：
     |     k 可选值     | v 类型  | v 可选值                                                     |
