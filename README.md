@@ -300,8 +300,9 @@ docker run -d \
 
 🤔如果您想要扩展其他框架，可以参考`frameworks`目录下的框架
 
-🤔如果您需要增减插件，可编辑 [plugins.yaml](plugins.yaml) 中代码中去掉对应插件的导入或者添加对应插件的导入，照猫画虎即可，
-执行一次`make plugins` 或 `go generate -tags plugins ./engine/plugins` 生成对应的`plugins.go`文件再去编译
+🤔如果您需要增减插件，可编辑 [plugins.yaml](plugins.yaml) 中代码中去掉对应插件的导入或者添加对应插件的导入，照猫画虎即可
+
+🔴修改完`plugins.yaml`后需要执行一次`make plugins`或`go generate -tags plugins ./engine/plugins`生成对应的`plugins.go`文件再去编译
 
 ```yaml
 - "github.com/yqchilde/wxbot/plugins/baidubaike"   # 百度百科
