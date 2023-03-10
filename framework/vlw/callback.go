@@ -94,7 +94,7 @@ func buildEvent(resp string) *robot.Event {
 					FromUniqueName: gjson.Get(resp, "content.from_name").String(),
 					FromWxId:       gjson.Get(resp, "content.from_wxid").String(),
 					FromName:       gjson.Get(resp, "content.from_name").String(),
-					SubscriptionMessage: &robot.Message{
+					MPMessage: &robot.Message{
 						Id:      gjson.Get(resp, "content.msg_id").String(),
 						Type:    gjson.Get(resp, "content.type").Int(),
 						Content: gjson.Get(resp, "content.msg").String(),
@@ -113,7 +113,7 @@ func buildEvent(resp string) *robot.Event {
 				FromUniqueID: gjson.Get(resp, "content.from_wxid").String(),
 				FromWxId:     gjson.Get(resp, "content.from_wxid").String(),
 				FromName:     gjson.Get(resp, "content.from_name").String(),
-				Transfer: &robot.Transfer{
+				TransferMessage: &robot.TransferMessage{
 					FromWxId:   gjson.Get(resp, "content.from_wxid").String(),
 					MsgSource:  gjson.Get(gjson.Get(resp, "content.msg").String(), "paysubtype").Int(),
 					Money:      gjson.Get(gjson.Get(resp, "content.msg").String(), "money").String(),

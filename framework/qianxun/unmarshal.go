@@ -45,3 +45,60 @@ type EmojiXml struct {
 		Content string `xml:"content,attr"`
 	} `xml:"gameext"`
 }
+
+// ReferenceXml 引用消息xml
+type ReferenceXml struct {
+	XMLName xml.Name `xml:"msg"`
+	Text    string   `xml:",chardata"`
+	Appmsg  struct {
+		Text          string `xml:",chardata"`
+		Appid         string `xml:"appid,attr"`
+		Sdkver        string `xml:"sdkver,attr"`
+		Title         string `xml:"title"`
+		Des           string `xml:"des"`
+		Action        string `xml:"action"`
+		Type          string `xml:"type"`
+		Showtype      string `xml:"showtype"`
+		Soundtype     string `xml:"soundtype"`
+		Mediatagname  string `xml:"mediatagname"`
+		Messageext    string `xml:"messageext"`
+		Messageaction string `xml:"messageaction"`
+		Content       string `xml:"content"`
+		Contentattr   string `xml:"contentattr"`
+		URL           string `xml:"url"`
+		Lowurl        string `xml:"lowurl"`
+		Dataurl       string `xml:"dataurl"`
+		Lowdataurl    string `xml:"lowdataurl"`
+		Appattach     struct {
+			Text        string `xml:",chardata"`
+			Totallen    string `xml:"totallen"`
+			Attachid    string `xml:"attachid"`
+			Emoticonmd5 string `xml:"emoticonmd5"`
+			Fileext     string `xml:"fileext"`
+			Aeskey      string `xml:"aeskey"`
+		} `xml:"appattach"`
+		Extinfo           string `xml:"extinfo"`
+		Sourceusername    string `xml:"sourceusername"`
+		Sourcedisplayname string `xml:"sourcedisplayname"`
+		Thumburl          string `xml:"thumburl"`
+		Md5               string `xml:"md5"`
+		Statextstr        string `xml:"statextstr"`
+		Refermsg          *struct {
+			Text        string `xml:",chardata"`
+			Type        string `xml:"type"`
+			Svrid       string `xml:"svrid"`
+			Fromusr     string `xml:"fromusr"`
+			Chatusr     string `xml:"chatusr"`
+			Displayname string `xml:"displayname"`
+			Content     string `xml:"content"`
+		} `xml:"refermsg"`
+	} `xml:"appmsg"`
+	Fromusername string `xml:"fromusername"`
+	Scene        string `xml:"scene"`
+	Appinfo      struct {
+		Text    string `xml:",chardata"`
+		Version string `xml:"version"`
+		Appname string `xml:"appname"`
+	} `xml:"appinfo"`
+	Commenturl string `xml:"commenturl"`
+}

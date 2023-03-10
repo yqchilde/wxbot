@@ -232,7 +232,9 @@ loop:
 func preProcessMessageEvent(ctx *Ctx, e *Event) {
 	switch e.Type {
 	case EventPrivateChat:
-		if ctx.IsText() {
+		if ctx.IsReference() {
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])引用消息 ==> %v", e.FromName, e.FromWxId, "引用: "+e.ReferenceMessage.Content+" 回复: "+e.Message.Content))
+		} else if ctx.IsText() {
 			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])文本消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
 		} else if ctx.IsImage() {
 			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s]图片消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
@@ -252,7 +254,9 @@ func preProcessMessageEvent(ctx *Ctx, e *Event) {
 			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])未整理消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
 		}
 	case EventGroupChat:
-		if ctx.IsText() {
+		if ctx.IsReference() {
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])引用消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, "引用: "+e.ReferenceMessage.Content+" 回复: "+e.Message.Content))
+		} else if ctx.IsText() {
 			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])文本消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
 		} else if ctx.IsImage() {
 			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])图片消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
@@ -276,18 +280,18 @@ func preProcessMessageEvent(ctx *Ctx, e *Event) {
 	case EventSelfMessage:
 		log.Println(fmt.Sprintf("[回调]收到自己发送的消息 ==> %v", e.Message.Content))
 	case EventFriendVerify:
-		log.Println(fmt.Sprintf("[回调]收到好友验证消息, wxId:%s, nick:%s, content:%s", e.FriendVerify.WxId, e.FriendVerify.Nick, e.FriendVerify.Content))
+		log.Println(fmt.Sprintf("[回调]收到好友验证消息, wxId:%s, nick:%s, content:%s", e.FriendVerifyMessage.WxId, e.FriendVerifyMessage.Nick, e.FriendVerifyMessage.Content))
 	case EventTransfer:
-		if len(e.Transfer.Memo) > 0 {
-			log.Println(fmt.Sprintf("[回调]收到转账消息, wxId:%s, money:%s, memo:%s", e.Transfer.FromWxId, e.Transfer.Money, e.Transfer.Memo))
+		if len(e.TransferMessage.Memo) > 0 {
+			log.Println(fmt.Sprintf("[回调]收到转账消息, wxId:%s, money:%s, memo:%s", e.TransferMessage.FromWxId, e.TransferMessage.Money, e.TransferMessage.Memo))
 		} else {
-			log.Println(fmt.Sprintf("[回调]收到转账消息, wxId:%s, money:%s", e.Transfer.FromWxId, e.Transfer.Money))
+			log.Println(fmt.Sprintf("[回调]收到转账消息, wxId:%s, money:%s", e.TransferMessage.FromWxId, e.TransferMessage.Money))
 		}
 	case EventMessageWithdraw:
-		if e.Withdraw.FromType == 1 {
-			log.Println(fmt.Sprintf("[回调]收到撤回私聊(%s)消息", e.Withdraw.FromWxId))
-		} else if e.Withdraw.FromType == 2 {
-			log.Println(fmt.Sprintf("[回调]收到撤回群聊(%s[%s])消息", e.Withdraw.FromGroup, e.Withdraw.FromWxId))
+		if e.WithdrawMessage.FromType == 1 {
+			log.Println(fmt.Sprintf("[回调]收到撤回私聊(%s)消息", e.WithdrawMessage.FromWxId))
+		} else if e.WithdrawMessage.FromType == 2 {
+			log.Println(fmt.Sprintf("[回调]收到撤回群聊(%s[%s])消息", e.WithdrawMessage.FromGroup, e.WithdrawMessage.FromWxId))
 		}
 	case EventSystem:
 		log.Println(fmt.Sprintf("[回调]收到系统消息 ==> %s", e.Message.Content))

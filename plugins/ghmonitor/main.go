@@ -130,7 +130,7 @@ func init() {
 				switch data.Mode {
 				case 1: // 模式1实现
 					if data.GhWxId == ctx.Event.FromWxId {
-						content := ctx.Event.SubscriptionMessage.Content
+						content := ctx.Event.MPMessage.Content
 						var msgModel SubscriptionMsgModel
 						if err := xml.Unmarshal([]byte(content), &msgModel); err != nil {
 							return
@@ -143,7 +143,7 @@ func init() {
 						}
 					}
 				case 2: // 模式2实现
-					content := ctx.Event.SubscriptionMessage.Content
+					content := ctx.Event.MPMessage.Content
 					var msgModel SubscriptionMsgModel
 					if err := xml.Unmarshal([]byte(content), &msgModel); err != nil {
 						return

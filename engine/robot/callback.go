@@ -89,7 +89,7 @@ func (ctx *Ctx) IsRecalled() bool {
 
 // IsReference 判断消息类型是否是消息引用
 func (ctx *Ctx) IsReference() bool {
-	return ctx.Event.Message != nil && ctx.Event.Message.Type == MsgTypeReference
+	return ctx.Event.Message != nil && ctx.Event.ReferenceMessage != nil
 }
 
 // IsAt 判断是否被@了，仅在群聊中有效，私聊也算被@了
