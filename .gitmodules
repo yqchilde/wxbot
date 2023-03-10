@@ -1,3 +1,0 @@
-[submodule "web/dist"]
-	path = web/dist
-	url = https://github.com/yqchilde/wxbot-web-dist.git
