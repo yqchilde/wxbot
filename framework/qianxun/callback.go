@@ -1,6 +1,7 @@
 package qianxun
 
 import (
+	"encoding/xml"
 	"fmt"
 	"net/http"
 	"strings"
@@ -53,15 +54,42 @@ func buildEvent(resp string) *robot.Event {
 	case eventAccountChange:
 		// todo
 	case eventGroupChat:
-		msgType := gjson.Get(resp, "data.data.msgType").Int()
-		if msgType == 10000 { // 系统消息
+		switch gjson.Get(resp, "data.data.msgType").Int() {
+		case 10000: // 系统消息
 			event = robot.Event{
 				Type: robot.EventSystem,
 				Message: &robot.Message{
 					Content: gjson.Get(resp, "data.data.msg").String(),
 				},
 			}
-		} else { // 群聊
+		case 49: // 群聊发app应用消息
+			event = robot.Event{
+				Type:          robot.EventGroupChat,
+				FromUniqueID:  gjson.Get(resp, "data.data.fromWxid").String(),
+				FromGroup:     gjson.Get(resp, "data.data.fromWxid").String(),
+				FromGroupName: "",
+				FromWxId:      gjson.Get(resp, "data.data.finalFromWxid").String(),
+				FromName:      "",
+				Message: &robot.Message{
+					Type:    gjson.Get(resp, "data.data.msgType").Int(),
+					Content: gjson.Get(resp, "data.data.msg").String(),
+				},
+			}
+
+			var refer ReferenceXml
+			if err := xml.Unmarshal([]byte(gjson.Get(resp, "data.data.msg").String()), &refer); err == nil {
+				if refer.Appmsg.Refermsg != nil { // 引用消息
+					event.Message.Type = robot.MsgTypeText // 方便匹配
+					event.Message.Content = refer.Appmsg.Title
+					event.ReferenceMessage = &robot.ReferenceMessage{
+						FromUser:    refer.Appmsg.Refermsg.Fromusr,
+						ChatUser:    refer.Appmsg.Refermsg.Chatusr,
+						DisplayName: refer.Appmsg.Refermsg.Displayname,
+						Content:     refer.Appmsg.Refermsg.Content,
+					}
+				}
+			}
+		default:
 			event = robot.Event{
 				Type:          robot.EventGroupChat,
 				FromUniqueID:  gjson.Get(resp, "data.data.fromWxid").String(),
@@ -88,14 +116,14 @@ func buildEvent(resp string) *robot.Event {
 			}
 		}
 	case eventPrivateChat:
-		fromType := gjson.Get(resp, "data.data.fromType").Int()
-		if fromType == 3 { // 公众号
+		switch gjson.Get(resp, "data.data.fromType").Int() {
+		case 3: // 公众号
 			event = robot.Event{
 				Type:         robot.EventMPChat,
 				FromUniqueID: gjson.Get(resp, "data.data.fromWxid").String(),
 				FromWxId:     gjson.Get(resp, "data.data.fromWxid").String(),
 				FromName:     "",
-				SubscriptionMessage: &robot.Message{
+				MPMessage: &robot.Message{
 					Type:    gjson.Get(resp, "data.data.msgType").Int(),
 					Content: gjson.Get(resp, "data.data.msg").String(),
 				},
@@ -107,23 +135,51 @@ func buildEvent(resp string) *robot.Event {
 					break
 				}
 			}
-		} else { // 私聊
-			event = robot.Event{
-				Type:         robot.EventPrivateChat,
-				FromUniqueID: gjson.Get(resp, "data.data.fromWxid").String(),
-				FromWxId:     gjson.Get(resp, "data.data.fromWxid").String(),
-				FromName:     "",
-				IsAtMe:       true,
-				Message: &robot.Message{
-					Type:    gjson.Get(resp, "data.data.msgType").Int(),
-					Content: gjson.Get(resp, "data.data.msg").String(),
-				},
-			}
-			for _, data := range robot.GetBot().Friends() {
-				if data.WxId == event.FromWxId {
-					event.FromName = data.Nick
-					event.FromUniqueName = data.Nick
-					break
+		default: // 私聊
+			switch gjson.Get(resp, "data.data.msgType").Int() {
+			case 49: // 私聊发app应用消息
+				event = robot.Event{
+					Type:         robot.EventPrivateChat,
+					FromUniqueID: gjson.Get(resp, "data.data.fromWxid").String(),
+					FromWxId:     gjson.Get(resp, "data.data.fromWxid").String(),
+					FromName:     "",
+					Message: &robot.Message{
+						Type:    gjson.Get(resp, "data.data.msgType").Int(),
+						Content: gjson.Get(resp, "data.data.msg").String(),
+					},
+				}
+
+				var refer ReferenceXml
+				if err := xml.Unmarshal([]byte(gjson.Get(resp, "data.data.msg").String()), &refer); err == nil {
+					if refer.Appmsg.Refermsg != nil { // 引用消息
+						event.Message.Type = robot.MsgTypeText // 方便匹配
+						event.Message.Content = refer.Appmsg.Title
+						event.ReferenceMessage = &robot.ReferenceMessage{
+							FromUser:    refer.Appmsg.Refermsg.Fromusr,
+							ChatUser:    refer.Appmsg.Refermsg.Chatusr,
+							DisplayName: refer.Appmsg.Refermsg.Displayname,
+							Content:     refer.Appmsg.Refermsg.Content,
+						}
+					}
+				}
+			default:
+				event = robot.Event{
+					Type:         robot.EventPrivateChat,
+					FromUniqueID: gjson.Get(resp, "data.data.fromWxid").String(),
+					FromWxId:     gjson.Get(resp, "data.data.fromWxid").String(),
+					FromName:     "",
+					IsAtMe:       true,
+					Message: &robot.Message{
+						Type:    gjson.Get(resp, "data.data.msgType").Int(),
+						Content: gjson.Get(resp, "data.data.msg").String(),
+					},
+				}
+				for _, data := range robot.GetBot().Friends() {
+					if data.WxId == event.FromWxId {
+						event.FromName = data.Nick
+						event.FromUniqueName = data.Nick
+						break
+					}
 				}
 			}
 		}
@@ -140,7 +196,7 @@ func buildEvent(resp string) *robot.Event {
 	case eventTransfer:
 		event = robot.Event{
 			Type: robot.EventTransfer,
-			Transfer: &robot.Transfer{
+			TransferMessage: &robot.TransferMessage{
 				FromWxId:     gjson.Get(resp, "data.data.fromWxid").String(),
 				MsgSource:    gjson.Get(resp, "data.data.msgSource").Int(),
 				TransferType: gjson.Get(resp, "data.data.transType").Int(),
@@ -155,7 +211,7 @@ func buildEvent(resp string) *robot.Event {
 		if fromType == 1 {
 			event = robot.Event{
 				Type: robot.EventMessageWithdraw,
-				Withdraw: &robot.Withdraw{
+				WithdrawMessage: &robot.WithdrawMessage{
 					FromType:  fromType,
 					FromWxId:  gjson.Get(resp, "data.data.fromWxid").String(),
 					MsgSource: gjson.Get(resp, "data.data.msgSource").Int(),
@@ -165,7 +221,7 @@ func buildEvent(resp string) *robot.Event {
 		} else if fromType == 2 {
 			event = robot.Event{
 				Type: robot.EventMessageWithdraw,
-				Withdraw: &robot.Withdraw{
+				WithdrawMessage: &robot.WithdrawMessage{
 					FromType:  fromType,
 					FromGroup: gjson.Get(resp, "data.data.fromWxid").String(),
 					FromWxId:  gjson.Get(resp, "data.data.finalFromWxid").String(),
@@ -177,7 +233,7 @@ func buildEvent(resp string) *robot.Event {
 	case eventFriendVerify:
 		event = robot.Event{
 			Type: robot.EventFriendVerify,
-			FriendVerify: &robot.FriendVerify{
+			FriendVerifyMessage: &robot.FriendVerifyMessage{
 				WxId:      gjson.Get(resp, "data.data.wxid").String(),
 				Nick:      gjson.Get(resp, "data.data.nick").String(),
 				V3:        gjson.Get(resp, "data.data.v3").String(),

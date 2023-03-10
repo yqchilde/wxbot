@@ -17,7 +17,7 @@ func init() {
 	engine.OnMessage().SetBlock(false).Handle(func(ctx *robot.Ctx) {
 		// 监听加好友事件
 		if ctx.IsEventFriendVerify() {
-			f := ctx.Event.FriendVerify
+			f := ctx.Event.FriendVerifyMessage
 			// 判断一下好友验证消息是否为"wxbot"
 			if strings.ToLower(f.Content) != "wxbot" {
 				return
