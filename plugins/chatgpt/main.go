@@ -278,6 +278,33 @@ func init() {
 		return
 	})
 
+	// 设置http代理
+	engine.OnRegex("set chatgpt http_proxy (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		url := ctx.State["regex_matched"].([]string)[1]
+		data := ApiProxy{
+			Id:  2,
+			Url: url,
+		}
+		if err := db.Orm.Table("apiproxy").Save(&data).Error; err != nil {
+			ctx.ReplyText(fmt.Sprintf("设置http代理地址失败: %v", url))
+			return
+		}
+		gptClient = nil
+		ctx.ReplyText("http代理设置成功")
+		return
+	})
+
+	// 删除http代理
+	engine.OnRegex("del chatgpt http_proxy", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		if err := db.Orm.Table("apiproxy").Where("id = 2").Delete(&ApiProxy{}).Error; err != nil {
+			ctx.ReplyText(fmt.Sprintf("删除http代理地址失败: %v", err.Error()))
+			return
+		}
+		gptClient = nil
+		ctx.ReplyText("http代理删除成功")
+		return
+	})
+
 	// 设置openai api key
 	engine.OnRegex("set chatgpt api[K|k]ey (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		keys := strings.Split(ctx.State["regex_matched"].([]string)[1], ";")

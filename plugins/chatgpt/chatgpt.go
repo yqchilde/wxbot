@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -38,15 +40,34 @@ func getGptClient() (*openai.Client, error) {
 	}
 	apiKeys = keys
 
-	var proxy ApiProxy
-	if err := db.Orm.Table("apiproxy").Find(&proxy).Error; err != nil {
+	var proxy = &ApiProxy{Id: 1}
+	if err := db.Orm.Table("apiproxy").First(&proxy).Error; err != nil {
 		log.Errorf("[ChatGPT] 获取apiProxy失败, error:%s", err.Error())
 		return nil, errors.New("获取apiProxy失败")
+	}
+	var http_proxy = &ApiProxy{Id: 2}
+	if err := db.Orm.Table("apiproxy").First(&http_proxy).Error; err != nil {
+		log.Errorf("[ChatGPT] 获取httpProxy失败, error:%s", err.Error())
+		return nil, errors.New("获取httpProxy失败")
 	}
 
 	config := openai.DefaultConfig(keys[0].Key)
 	if len(proxy.Url) > 0 {
 		config.BaseURL = proxy.Url
+	}
+	if len(http_proxy.Url) > 0{
+		proxyUrl, err := url.Parse(http_proxy.Url)
+		if err != nil {
+			log.Errorf("[ChatGPT] 解析http_proxy失败, error:%s", err.Error())
+			return nil, errors.New("解析http_proxy失败")
+		}
+		transport := &http.Transport{
+			Proxy: http.ProxyURL(proxyUrl),
+		}
+		config.HTTPClient = &http.Client{
+			Transport: transport,
+			Timeout: time.Minute * 2,
+		}
 	}
 
 	return openai.NewClientWithConfig(config), nil
