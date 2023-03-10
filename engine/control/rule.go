@@ -2,6 +2,7 @@ package control
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/yqchilde/wxbot/engine/pkg/log"
@@ -165,6 +166,41 @@ func init() {
 				return
 			} else {
 				ctx.ReplyText("关闭全局模式成功")
+			}
+		})
+
+		// 在某个群ban、unban某个用户
+		robot.OnCommandGroup([]string{"ban", "unban"}, robot.UserOrGroupAdmin).SetBlock(true).FirstPriority().Handle(func(ctx *robot.Ctx) {
+			args := strings.Split(ctx.State["args"].(string), " ")
+			if len(args) == 0 {
+				return
+			}
+
+			serv, wxId, grp := args[0], "", ctx.Event.FromUniqueID
+			if ctx.IsReference() {
+				wxId = ctx.Event.ReferenceMessage.ChatUser
+			} else {
+				wxId = args[1]
+			}
+
+			service, ok := managers.Lookup(serv)
+			if !ok {
+				ctx.ReplyTextAndAt("没有找到对应插件服务")
+				return
+			}
+			switch ctx.State["command"].(string) {
+			case "ban":
+				if err := service.Ban(wxId, grp); err != nil {
+					ctx.ReplyText(err.Error())
+					return
+				}
+				ctx.ReplyText("ban成功")
+			case "unban":
+				if err := service.UnBan(wxId, grp); err != nil {
+					ctx.ReplyText(err.Error())
+					return
+				}
+				ctx.ReplyText("unban成功")
 			}
 		})
 	})

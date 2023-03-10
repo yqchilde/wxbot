@@ -15,13 +15,13 @@ const (
 )
 
 type CronJob struct {
-	Id      int64  `gorm:"primary_key"`     // 任务ID
-	Tag     string `gorm:"column:tag"`      // 任务标签
-	Type    string `gorm:"column:type"`     // 任务类型
-	Desc    string `gorm:"column:desc"`     // 任务描述
-	GroupId string `gorm:"column:group_id"` // 群ID
-	Remind  string `gorm:"column:remind"`   // 提醒内容
-	Service string `gorm:"column:service"`  // 插件服务名
+	Id     int64  `gorm:"primary_key"`    // 任务ID
+	Tag    string `gorm:"column:tag"`     // 任务标签
+	Type   string `gorm:"column:type"`    // 任务类型
+	Desc   string `gorm:"column:desc"`    // 任务描述
+	WxId   string `gorm:"column:wx_id"`   // 微信ID
+	WxName string `gorm:"column:wx_name"` // 微信昵称
+	Remind string `gorm:"column:remind"`  // 提醒内容
 }
 
 func registerCronjob() {
@@ -70,7 +70,7 @@ func registerCronjob() {
 				// 恢复每月的提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindEveryMonth).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobOfEveryMonth(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendText(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每月提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -79,7 +79,7 @@ func registerCronjob() {
 				// 恢复每周的提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindEveryWeek).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobOfEveryWeek(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendText(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每周提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -88,7 +88,7 @@ func registerCronjob() {
 				// 恢复每天的提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindEveryDay).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobOfEveryDay(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendText(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每天提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -97,7 +97,7 @@ func registerCronjob() {
 				// 恢复间隔提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindInterval).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobForInterval(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendText(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复间隔提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -106,7 +106,7 @@ func registerCronjob() {
 				// 恢复指定时间提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindSpecifyTime).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobForSpecifyTime(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendText(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复指定时间提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -115,7 +115,7 @@ func registerCronjob() {
 				// 恢复表达式提醒任务
 				if matched := regexp.MustCompile(RegexOfRemindExpression).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobForExpression(ctx, cronJob.Tag, matched, func() {
-						ctx.SendText(cronJob.GroupId, cronJob.Remind)
+						ctx.SendText(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复表达式提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -124,7 +124,7 @@ func registerCronjob() {
 				// 恢复每月的插件任务
 				if matched := regexp.MustCompile(RegexOfPluginEveryMonth).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobOfEveryMonth(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每月插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -133,7 +133,7 @@ func registerCronjob() {
 				// 恢复每周的插件任务
 				if matched := regexp.MustCompile(RegexOfPluginEveryWeek).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobOfEveryWeek(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每周插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -142,7 +142,7 @@ func registerCronjob() {
 				// 恢复每天的插件任务
 				if matched := regexp.MustCompile(RegexOfPluginEveryDay).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobOfEveryDay(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每天插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -151,7 +151,7 @@ func registerCronjob() {
 				// 恢复间隔插件任务
 				if matched := regexp.MustCompile(RegexOfPluginInterval).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobForInterval(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复间隔插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -160,7 +160,7 @@ func registerCronjob() {
 				// 恢复指定时间插件任务
 				if matched := regexp.MustCompile(RegexOfPluginSpecifyTime).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobForSpecifyTime(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复指定时间插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -169,7 +169,7 @@ func registerCronjob() {
 				// 恢复表达式插件任务
 				if matched := regexp.MustCompile(RegexOfPluginExpression).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobForExpression(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.GroupId, cronJob.Remind)
+						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复表达式插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -188,7 +188,7 @@ func registerCronjob() {
 	// 列出当前所有定时任务
 	engine.OnFullMatch("列出所有任务").SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var cronJobs []CronJob
-		if err := db.Orm.Table("cronjob").Where("group_id = ?", ctx.Event.FromUniqueID).Find(&cronJobs).Error; err != nil {
+		if err := db.Orm.Table("cronjob").Where("wx_id = ?", ctx.Event.FromUniqueID).Find(&cronJobs).Error; err != nil {
 			ctx.ReplyTextAndAt("查询定时任务失败")
 			return
 		}
@@ -196,6 +196,8 @@ func registerCronjob() {
 		for i := range cronJobs {
 			switch cronJobs[i].Type {
 			case JobTypeRemind:
+				jobInfo += fmt.Sprintf("任务ID: %d\n任务类型: %s\n任务描述: %s\n任务内容: %s\n\n", cronJobs[i].Id, cronJobs[i].Type, cronJobs[i].Desc, cronJobs[i].Remind)
+			case JobTypePlugin:
 				jobInfo += fmt.Sprintf("任务ID: %d\n任务类型: %s\n任务描述: %s\n任务内容: %s\n\n", cronJobs[i].Id, cronJobs[i].Type, cronJobs[i].Desc, cronJobs[i].Remind)
 			}
 		}
@@ -230,12 +232,12 @@ func registerCronjob() {
 	// 删除全部任务
 	engine.OnFullMatchGroup([]string{"删除全部任务", "删除所有任务"}, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		var jobTags []string
-		if err := db.Orm.Table("cronjob").Where("group_id = ?", ctx.Event.FromUniqueID).Pluck("tag", &jobTags).Error; err != nil {
+		if err := db.Orm.Table("cronjob").Where("wx_id = ?", ctx.Event.FromUniqueID).Pluck("tag", &jobTags).Error; err != nil {
 			log.Errorf("[CronJob] 删除全部任务失败: %v", err)
 			ctx.ReplyTextAndAt("删除全部任务失败")
 			return
 		}
-		if err := db.Orm.Table("cronjob").Where("group_id = ?", ctx.Event.FromUniqueID).Delete(&CronJob{}).Error; err != nil {
+		if err := db.Orm.Table("cronjob").Where("wx_id = ?", ctx.Event.FromUniqueID).Delete(&CronJob{}).Error; err != nil {
 			log.Errorf("[CronJob] 删除全部任务失败: %v", err)
 			ctx.ReplyTextAndAt("删除全部任务失败")
 			return
