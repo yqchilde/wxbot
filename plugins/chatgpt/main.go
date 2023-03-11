@@ -52,9 +52,9 @@ func init() {
 			"* get chatgpt (sensitive|敏感词)\n" +
 			"* set chatgpt (sensitive|敏感词) [敏感词]\n" +
 			"* reset chatgpt (sensitive|敏感词)\n" +
-			"* del chatgpt (sensitive|敏感词) system\n" +
-			"* del chatgpt (sensitive|敏感词) user\n" +
-			"* del chatgpt (sensitive|敏感词) all",
+			"* del chatgpt system (sensitive|敏感词)\n" +
+			"* del chatgpt user (sensitive|敏感词)\n" +
+			"* del chatgpt all (sensitive|敏感词)",
 		DataFolder: "chatgpt",
 	})
 
