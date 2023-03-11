@@ -233,7 +233,7 @@ func preProcessMessageEvent(ctx *Ctx, e *Event) {
 	switch e.Type {
 	case EventPrivateChat:
 		if ctx.IsReference() {
-			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])引用消息 ==> %v", e.FromName, e.FromWxId, "引用: "+e.ReferenceMessage.Content+" 回复: "+e.Message.Content))
+			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])引用消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
 		} else if ctx.IsText() {
 			log.Println(fmt.Sprintf("[回调]收到私聊(%s[%s])文本消息 ==> %v", e.FromName, e.FromWxId, e.Message.Content))
 		} else if ctx.IsImage() {
@@ -255,7 +255,7 @@ func preProcessMessageEvent(ctx *Ctx, e *Event) {
 		}
 	case EventGroupChat:
 		if ctx.IsReference() {
-			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])引用消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, "引用: "+e.ReferenceMessage.Content+" 回复: "+e.Message.Content))
+			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])引用消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
 		} else if ctx.IsText() {
 			log.Println(fmt.Sprintf("[回调]收到群聊(%s[%s])>用户(%s[%s])文本消息 ==> %v", e.FromGroupName, e.FromGroup, e.FromName, e.FromWxId, e.Message.Content))
 		} else if ctx.IsImage() {
