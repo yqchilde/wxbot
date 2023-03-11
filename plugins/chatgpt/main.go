@@ -83,7 +83,7 @@ func init() {
 	setSensitiveCommand(engine)
 
 	// 群聊并且艾特机器人
-	engine.OnMessage(robot.OnlyAtMe).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnMessage(robot.OnlyAtMe).SetBlock(true).SetPriority(9999).Handle(func(ctx *robot.Ctx) {
 		var (
 			now = time.Now().Local()
 			msg = ctx.MessageString()
@@ -238,17 +238,6 @@ func init() {
 	// 设置gpt3模型参数
 	engine.OnRegex("set chatgpt model (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		args := ctx.State["regex_matched"].([]string)[1]
-		if args == "reset" {
-			if err := resetGptModel(); err != nil {
-				ctx.ReplyText("重置模型参数失败, err: " + err.Error())
-				return
-			} else {
-				gptModel = nil
-				ctx.ReplyText("重置模型参数成功")
-				return
-			}
-		}
-
 		kv := strings.Split(args, "=")
 		if len(kv) != 2 {
 			ctx.ReplyText("参数格式错误")
@@ -283,6 +272,18 @@ func init() {
 		}
 		gptModel = nil
 		ctx.ReplyTextAndAt("更新成功")
+	})
+
+	// 重置gpt3模型参数
+	engine.OnFullMatch("reset chatgpt model", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		if err := resetGptModel(); err != nil {
+			ctx.ReplyText("重置模型参数失败, err: " + err.Error())
+			return
+		} else {
+			gptModel = nil
+			ctx.ReplyText("重置模型参数成功")
+			return
+		}
 	})
 
 	// 获取插件配置
