@@ -45,13 +45,16 @@ func init() {
 			"* set chatgpt apikey [keys]\n" +
 			"* del chatgpt apikey [keys]\n" +
 			"* set chatgpt model [key=val]\n" +
-			"* set chatgpt model reset\n" +
+			"* reset chatgpt model\n" +
 			"* get chatgpt info\n" +
 			"* set chatgpt proxy [url]\n" +
 			"* del chatgpt proxy\n" +
 			"* get chatgpt (sensitive|敏感词)\n" +
 			"* set chatgpt (sensitive|敏感词) [敏感词]\n" +
-			"* del chatgpt (sensitive|敏感词) [敏感词]",
+			"* reset chatgpt (sensitive|敏感词)\n" +
+			"* del chatgpt (sensitive|敏感词) system\n" +
+			"* del chatgpt (sensitive|敏感词) user\n" +
+			"* del chatgpt (sensitive|敏感词) all",
 		DataFolder: "chatgpt",
 	})
 

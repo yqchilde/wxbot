@@ -20,6 +20,9 @@
     * [x] `set chatgpt (sensitive|敏感词) [敏感词]`，设置敏感词，多个敏感词用`,`符号隔开 
     * [x] `del chatgpt (sensitive|敏感词) [敏感词]`，删除敏感词，仅支持单个敏感词
     * [x] `reset chatgpt (sensitive|敏感词)`，重置系统敏感词
+    * [x] `del chatgpt (sensitive|敏感词) system`，删除系统敏感词
+    * [x] `del chatgpt (sensitive|敏感词) user`，删除用户敏感词
+    * [x] `del chatgpt (sensitive|敏感词) all`，删除所有敏感词
 * 附录：
   * `k`，`v`可选值参考下面表格：
     |     k 可选值     | v 类型  | v 可选值                                                     |

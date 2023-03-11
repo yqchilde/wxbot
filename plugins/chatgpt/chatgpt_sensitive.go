@@ -108,4 +108,60 @@ func setSensitiveCommand(engine *control.Engine) {
 		initSensitiveWords()
 		ctx.ReplyTextAndAt("重置敏感词成功")
 	})
+
+	// 删除系统敏感词
+	engine.OnRegex("del chatgpt (sensitive|敏感词) system", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		tx := db.Orm.Begin()
+		if err := tx.Table("sensitive").Where("type = 1").Update("deleted", 1).Error; err != nil {
+			tx.Rollback()
+			log.Errorf("[ChatGPT] 删除敏感词失败, error:%s", err.Error())
+			ctx.ReplyTextAndAt("删除敏感词失败")
+			return
+		}
+		var words []SensitiveWords
+		if err := tx.Table("sensitive").Where("deleted = 0").Find(&words).Error; err != nil {
+			tx.Rollback()
+			log.Errorf("[ChatGPT] 删除敏感词失败, error:%s", err.Error())
+			ctx.ReplyTextAndAt("删除敏感词失败")
+			return
+		}
+		sensitiveWords = []string{}
+		for _, word := range words {
+			sensitiveWords = append(sensitiveWords, word.Word)
+		}
+		tx.Commit()
+	})
+
+	// 删除用户自定义敏感词
+	engine.OnRegex("del chatgpt (sensitive|敏感词) user", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		tx := db.Orm.Begin()
+		if err := tx.Table("sensitive").Where("type = 2").Update("deleted", 1).Error; err != nil {
+			tx.Rollback()
+			log.Errorf("[ChatGPT] 删除敏感词失败, error:%s", err.Error())
+			ctx.ReplyTextAndAt("删除敏感词失败")
+			return
+		}
+		var words []SensitiveWords
+		if err := tx.Table("sensitive").Where("deleted = 0").Find(&words).Error; err != nil {
+			tx.Rollback()
+			log.Errorf("[ChatGPT] 删除敏感词失败, error:%s", err.Error())
+			ctx.ReplyTextAndAt("删除敏感词失败")
+			return
+		}
+		sensitiveWords = []string{}
+		for _, word := range words {
+			sensitiveWords = append(sensitiveWords, word.Word)
+		}
+		tx.Commit()
+	})
+
+	// 删除所有敏感词
+	engine.OnRegex("del chatgpt (sensitive|敏感词) all", robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		if err := db.Orm.Table("sensitive").Delete(&SensitiveWords{}).Error; err != nil {
+			log.Errorf("[ChatGPT] 删除敏感词失败, error:%s", err.Error())
+			ctx.ReplyTextAndAt("删除敏感词失败")
+			return
+		}
+		sensitiveWords = []string{}
+	})
 }
