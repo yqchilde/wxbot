@@ -77,7 +77,7 @@ func (m *Control) IsBannedIn(uid, gid string) bool {
 		err = m.Manager.D.Table(m.Service+"ban").Where("label = ?", label).Find(&b).Error
 		m.Manager.RUnlock()
 		if err == nil && gid == b.GroupID && uid == b.UserID {
-			log.Debugf("[control] plugin %s is banned in group %d for user %d.", m.Service, b.GroupID, b.UserID)
+			log.Debugf("[control] plugin %s is banned in group %s for user %s", m.Service, b.GroupID, b.UserID)
 			m.Manager.Lock()
 			banCache[label] = struct{}{}
 			m.Manager.Unlock()
@@ -93,7 +93,7 @@ func (m *Control) IsBannedIn(uid, gid string) bool {
 	err = m.Manager.D.Table(m.Service+"ban").Where("label = ?", label).Find(&b).Error
 	m.Manager.RUnlock()
 	if err == nil && b.GroupID == "all" && uid == b.UserID {
-		log.Debugf("[control] plugin %s is banned in all group for user %d.", m.Service, b.UserID)
+		log.Debugf("[control] plugin %s is banned in all group for user %s", m.Service, b.UserID)
 		m.Manager.Lock()
 		banCache[label] = struct{}{}
 		m.Manager.Unlock()
