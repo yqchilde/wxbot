@@ -1,13 +1,20 @@
 package manager
 
 import (
+	"embed"
 	"fmt"
 	"regexp"
+	"time"
+
+	"github.com/tidwall/gjson"
 
 	"github.com/yqchilde/wxbot/engine/control"
 	"github.com/yqchilde/wxbot/engine/pkg/log"
 	"github.com/yqchilde/wxbot/engine/robot"
 )
+
+//go:embed data
+var holidayData embed.FS
 
 const (
 	JobTypeRemind = "remind" // 提醒类任务
@@ -37,6 +44,7 @@ func registerCronjob() {
 			"* 设置每隔[]的提醒任务 -> 例如：设置每隔1小时的提醒任务\n" +
 			"* 设置[]的提醒任务 -> 例如：设置2023-01-01 15:00:00的提醒任务\n" +
 			"* 设置表达式[]的提醒任务 -> 例如：设置表达式(*/10 * * * * *)的提醒任务\n" +
+			"* 设置工作日[]的提醒任务 -> 例如：设置工作日10:00:00的提醒任务\n" +
 			"* 删除全部提醒任务\n\n" +
 			"插件类任务指令:\n" +
 			"* 设置每月[]号[]的插件任务 -> 例如：设置每月8号10:00:00的插件任务\n" +
@@ -45,6 +53,7 @@ func registerCronjob() {
 			"* 设置每隔[]的插件任务 -> 例如：设置每隔1小时的插件任务\n" +
 			"* 设置[]的插件任务 -> 例如：设置2023-01-01 15:00:00的插件任务\n" +
 			"* 设置表达式[]的插件任务 -> 例如：设置表达式(*/10 * * * * *)的插件任务\n" +
+			"* 设置工作日[]的插件任务 -> 例如：设置工作日10:00:00的插件任务\n" +
 			"* 删除全部插件任务\n\n" +
 			"其他指令:\n" +
 			"* 列出所有任务\n" +
@@ -120,6 +129,38 @@ func registerCronjob() {
 						log.Errorf("恢复表达式提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
 				}
+
+				// 恢复工作日提醒任务
+				if matched := regexp.MustCompile(RegexOfRemindWorkDay).FindStringSubmatch(cronJob.Desc); matched != nil {
+					if _, err := AddCronjobOfEveryDay(ctx, cronJob.Tag, matched, func() {
+						data, err := holidayData.ReadFile(fmt.Sprintf("data/holiday_%d.json", time.Now().Year()))
+						if err != nil {
+							log.Errorf("获取节假日数据失败: %v", err)
+							ctx.ReplyText("很抱歉今天提醒您，由于节假日数据获取失败了，我无法确定今天是否是工作日")
+							return
+						}
+						var now = time.Now().Local()
+						var isWorkDay, isHoliday bool
+						gjson.GetBytes(data, "days").ForEach(func(key, val gjson.Result) bool {
+							if val.Get("date").String() == now.Format("2006-01-02") {
+								isWorkDay = !val.Get("isOffDay").Bool()
+								isHoliday = val.Get("isOffDay").Bool()
+								return false
+							}
+							return true
+						})
+						if !isHoliday && !isWorkDay {
+							if now.Weekday() != time.Saturday && now.Weekday() != time.Sunday {
+								isWorkDay = true
+							}
+						}
+						if isWorkDay {
+							ctx.SendText(cronJob.WxId, cronJob.Remind)
+						}
+					}); err != nil {
+						log.Errorf("恢复表达式提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
+					}
+				}
 			case JobTypePlugin:
 				// 恢复每月的插件任务
 				if matched := regexp.MustCompile(RegexOfPluginEveryMonth).FindStringSubmatch(cronJob.Desc); matched != nil {
@@ -172,6 +213,38 @@ func registerCronjob() {
 						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复表达式插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
+					}
+				}
+
+				// 恢复工作日插件任务
+				if matched := regexp.MustCompile(RegexOfPluginWorkDay).FindStringSubmatch(cronJob.Desc); matched != nil {
+					if _, err := AddCronjobOfEveryDay(ctx, cronJob.Tag, matched, func() {
+						data, err := holidayData.ReadFile(fmt.Sprintf("data/holiday_%d.json", time.Now().Year()))
+						if err != nil {
+							log.Errorf("获取节假日数据失败: %v", err)
+							ctx.SendText(cronJob.WxId, "很抱歉今天提醒您，由于节假日数据获取失败了，我无法确定今天是否是工作日")
+							return
+						}
+						var now = time.Now().Local()
+						var isWorkDay, isHoliday bool
+						gjson.GetBytes(data, "days").ForEach(func(key, val gjson.Result) bool {
+							if val.Get("date").String() == now.Format("2006-01-02") {
+								isWorkDay = !val.Get("isOffDay").Bool()
+								isHoliday = val.Get("isOffDay").Bool()
+								return false
+							}
+							return true
+						})
+						if !isHoliday && !isWorkDay {
+							if now.Weekday() != time.Saturday && now.Weekday() != time.Sunday {
+								isWorkDay = true
+							}
+						}
+						if isWorkDay {
+							ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
+						}
+					}); err != nil {
+						log.Errorf("恢复表达式提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
 				}
 			}
