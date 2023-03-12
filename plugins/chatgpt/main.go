@@ -49,6 +49,8 @@ func init() {
 			"* get chatgpt info\n" +
 			"* set chatgpt proxy [url]\n" +
 			"* del chatgpt proxy\n" +
+			"* set chatgpt http_proxy [url]\n" +
+			"* del chatgpt http_proxy\n" +
 			"* get chatgpt (sensitive|敏感词)\n" +
 			"* set chatgpt (sensitive|敏感词) [敏感词]\n" +
 			"* reset chatgpt (sensitive|敏感词)\n" +
@@ -201,6 +203,33 @@ func init() {
 		return
 	})
 
+	// 设置http代理
+	engine.OnRegex("set chatgpt http_proxy (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		url := ctx.State["regex_matched"].([]string)[1]
+		data := ApiProxy{
+			Id:  2,
+			Url: url,
+		}
+		if err := db.Orm.Table("apiproxy").Save(&data).Error; err != nil {
+			ctx.ReplyText(fmt.Sprintf("设置http代理地址失败: %v", url))
+			return
+		}
+		gptClient = nil
+		ctx.ReplyText("http代理设置成功")
+		return
+	})
+
+	// 删除http代理
+	engine.OnRegex("del chatgpt http_proxy", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		if err := db.Orm.Table("apiproxy").Where("id = 2").Delete(&ApiProxy{}).Error; err != nil {
+			ctx.ReplyText(fmt.Sprintf("删除http代理地址失败: %v", err.Error()))
+			return
+		}
+		gptClient = nil
+		ctx.ReplyText("http代理删除成功")
+		return
+	})
+
 	// 设置openai api key
 	engine.OnRegex("set chatgpt api[K|k]ey (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		keys := strings.Split(ctx.State["regex_matched"].([]string)[1], ";")
@@ -316,14 +345,19 @@ func init() {
 			replyMsg += fmt.Sprintf("apiKey: %s\n", keys[i].Key)
 		}
 		// Proxy查询
-		var proxy ApiProxy
+		var proxy []ApiProxy
 		if err := db.Orm.Table("apiproxy").Find(&proxy).Error; err != nil {
 			log.Errorf("[ChatGPT] 获取apiproxy失败, err: %s", err.Error())
 			ctx.ReplyTextAndAt("插件 - ChatGPT\n获取apiProxy失败")
 			return
 		}
-		if len(proxy.Url) > 0 {
-			replyMsg += fmt.Sprintf("apiProxy: %s\n", proxy.Url)
+		for i := range proxy {
+			if proxy[i].Id == 1 {
+				replyMsg += fmt.Sprintf("apiProxy: %s\n", proxy[i].Url)
+			}
+			if proxy[i].Id == 2 {
+				replyMsg += fmt.Sprintf("httpProxy: %s\n", proxy[i].Url)
+			}
 		}
 		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - ChatGPT\n%s", replyMsg))
 	})
