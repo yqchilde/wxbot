@@ -45,13 +45,18 @@ func init() {
 			"* set chatgpt apikey [keys]\n" +
 			"* del chatgpt apikey [keys]\n" +
 			"* set chatgpt model [key=val]\n" +
-			"* set chatgpt model reset\n" +
+			"* reset chatgpt model\n" +
 			"* get chatgpt info\n" +
 			"* set chatgpt proxy [url]\n" +
 			"* del chatgpt proxy\n" +
+			"* set chatgpt http_proxy [url]\n" +
+			"* del chatgpt http_proxy\n" +
 			"* get chatgpt (sensitive|敏感词)\n" +
 			"* set chatgpt (sensitive|敏感词) [敏感词]\n" +
-			"* del chatgpt (sensitive|敏感词) [敏感词]",
+			"* reset chatgpt (sensitive|敏感词)\n" +
+			"* del chatgpt system (sensitive|敏感词)\n" +
+			"* del chatgpt user (sensitive|敏感词)\n" +
+			"* del chatgpt all (sensitive|敏感词)",
 		DataFolder: "chatgpt",
 	})
 
@@ -83,7 +88,7 @@ func init() {
 	setSensitiveCommand(engine)
 
 	// 群聊并且艾特机器人
-	engine.OnMessage(robot.OnlyAtMe).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	engine.OnMessage(robot.OnlyAtMe).SetBlock(true).SetPriority(9999).Handle(func(ctx *robot.Ctx) {
 		var (
 			now = time.Now().Local()
 			msg = ctx.MessageString()
@@ -198,6 +203,33 @@ func init() {
 		return
 	})
 
+	// 设置http代理
+	engine.OnRegex("set chatgpt http_proxy (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		url := ctx.State["regex_matched"].([]string)[1]
+		data := ApiProxy{
+			Id:  2,
+			Url: url,
+		}
+		if err := db.Orm.Table("apiproxy").Save(&data).Error; err != nil {
+			ctx.ReplyText(fmt.Sprintf("设置http代理地址失败: %v", url))
+			return
+		}
+		gptClient = nil
+		ctx.ReplyText("http代理设置成功")
+		return
+	})
+
+	// 删除http代理
+	engine.OnRegex("del chatgpt http_proxy", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		if err := db.Orm.Table("apiproxy").Where("id = 2").Delete(&ApiProxy{}).Error; err != nil {
+			ctx.ReplyText(fmt.Sprintf("删除http代理地址失败: %v", err.Error()))
+			return
+		}
+		gptClient = nil
+		ctx.ReplyText("http代理删除成功")
+		return
+	})
+
 	// 设置openai api key
 	engine.OnRegex("set chatgpt api[K|k]ey (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		keys := strings.Split(ctx.State["regex_matched"].([]string)[1], ";")
@@ -238,17 +270,6 @@ func init() {
 	// 设置gpt3模型参数
 	engine.OnRegex("set chatgpt model (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		args := ctx.State["regex_matched"].([]string)[1]
-		if args == "reset" {
-			if err := resetGptModel(); err != nil {
-				ctx.ReplyText("重置模型参数失败, err: " + err.Error())
-				return
-			} else {
-				gptModel = nil
-				ctx.ReplyText("重置模型参数成功")
-				return
-			}
-		}
-
 		kv := strings.Split(args, "=")
 		if len(kv) != 2 {
 			ctx.ReplyText("参数格式错误")
@@ -285,6 +306,18 @@ func init() {
 		ctx.ReplyTextAndAt("更新成功")
 	})
 
+	// 重置gpt3模型参数
+	engine.OnFullMatch("reset chatgpt model", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		if err := resetGptModel(); err != nil {
+			ctx.ReplyText("重置模型参数失败, err: " + err.Error())
+			return
+		} else {
+			gptModel = nil
+			ctx.ReplyText("重置模型参数成功")
+			return
+		}
+	})
+
 	// 获取插件配置
 	engine.OnFullMatch("get chatgpt info", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		// 获取模型配置
@@ -312,14 +345,19 @@ func init() {
 			replyMsg += fmt.Sprintf("apiKey: %s\n", keys[i].Key)
 		}
 		// Proxy查询
-		var proxy ApiProxy
+		var proxy []ApiProxy
 		if err := db.Orm.Table("apiproxy").Find(&proxy).Error; err != nil {
 			log.Errorf("[ChatGPT] 获取apiproxy失败, err: %s", err.Error())
 			ctx.ReplyTextAndAt("插件 - ChatGPT\n获取apiProxy失败")
 			return
 		}
-		if len(proxy.Url) > 0 {
-			replyMsg += fmt.Sprintf("apiProxy: %s\n", proxy.Url)
+		for i := range proxy {
+			if proxy[i].Id == 1 {
+				replyMsg += fmt.Sprintf("apiProxy: %s\n", proxy[i].Url)
+			}
+			if proxy[i].Id == 2 {
+				replyMsg += fmt.Sprintf("httpProxy: %s\n", proxy[i].Url)
+			}
 		}
 		ctx.ReplyTextAndAt(fmt.Sprintf("插件 - ChatGPT\n%s", replyMsg))
 	})

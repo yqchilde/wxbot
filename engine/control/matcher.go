@@ -10,6 +10,12 @@ func (m *Matcher) SetBlock(block bool) *Matcher {
 	return m
 }
 
+// SetPriority 设置当前Matcher优先级
+func (m *Matcher) SetPriority(priority uint64) *Matcher {
+	_ = (*robot.Matcher)(m).SetPriority(priority)
+	return m
+}
+
 // Handle 直接处理事件
 func (m *Matcher) Handle(handler robot.Handler) {
 	_ = (*robot.Matcher)(m).Handle(handler)

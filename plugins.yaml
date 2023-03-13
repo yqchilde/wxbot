@@ -11,6 +11,5 @@
 - "github.com/yqchilde/wxbot/plugins/wordcloud"    # 聊天热词
 - "github.com/yqchilde/wxbot/plugins/chaid"        # 查wxId
 - "github.com/yqchilde/wxbot/plugins/youdaofanyi"  # 有道翻译
-- "github.com/yqchilde/wxbot/plugins/coser"        # coser
 - "github.com/yqchilde/wxbot/plugins/friendadd"    # 自动加好友
 - "github.com/yqchilde/wxbot/plugins/chatgpt"      # ChatGPT聊天，优先级必须放到最低

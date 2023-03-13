@@ -12,13 +12,19 @@
     * [x] `set chatgpt apiKey [keys]`，(多个key用`;`符号隔开)，设置ChatGPT的apiKey，`apiKey`可小写`apikey`
     * [x] `del chatgpt apiKey [keys]`，(多个key用`;`符号隔开)， 删除ChatGPT的apiKey，`apiKey`可小写`apikey`
     * [x] `set chatgpt model [key=val]`，`k`和`v`请参考下面表格，没做过多校验，请保证设置正确
-    * [x] `set chatgpt model reset`，重置GPT的模型配置
+    * [x] `reset chatgpt model`，重置GPT的模型配置
     * [x] `get chatgpt info` 获取ChatGPT的信息
-    * [x] `set chatgpt proxy [url]` 设置api.openai.com的代理地址，需要完整的如：https://api.googlevideo.dev/v1
-    * [x] `del chatgpt proxy` 删除api.openai.com 代理地址
+    * [x] `set chatgpt proxy [url]`，设置api.openai.com的代理地址，需要完整的如：https://api.googlevideo.dev/v1
+    * [x] `del chatgpt proxy`，删除api.openai.com 代理地址
+    * [x] `set chatgpt http_proxy [url]`，设置本地http代理地址，clash如：http://127.0.0.1:7890
+    * [x] `del chatgpt http_proxy`，删除本地http代理地址
     * [x] `get chatgpt (sensitive|敏感词)`，获取敏感词列表，内置了一些敏感词，如果不想使用，请使用下面删除指令
     * [x] `set chatgpt (sensitive|敏感词) [敏感词]`，设置敏感词，多个敏感词用`,`符号隔开 
     * [x] `del chatgpt (sensitive|敏感词) [敏感词]`，删除敏感词，仅支持单个敏感词
+    * [x] `reset chatgpt (sensitive|敏感词)`，重置系统敏感词
+    * [x] `del chatgpt system (sensitive|敏感词)`，删除系统敏感词
+    * [x] `del chatgpt user (sensitive|敏感词)`，删除用户敏感词
+    * [x] `del chatgpt all (sensitive|敏感词)`，删除所有敏感词
 * 附录：
   * `k`，`v`可选值参考下面表格：
     |     k 可选值     | v 类型  | v 可选值                                                     |
