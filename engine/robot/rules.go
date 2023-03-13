@@ -15,6 +15,9 @@ func PrefixRule(prefixes ...string) Rule {
 		if !ctx.IsText() {
 			return false
 		}
+		if bot.config.WakeUpRequire == "at" && !ctx.IsAt() {
+			return false
+		}
 		msg := ctx.MessageString()
 		for _, prefix := range prefixes {
 			if strings.HasPrefix(msg, prefix) {
@@ -32,6 +35,9 @@ func PrefixRule(prefixes ...string) Rule {
 func SuffixRule(suffixes ...string) Rule {
 	return func(ctx *Ctx) bool {
 		if !ctx.IsText() {
+			return false
+		}
+		if bot.config.WakeUpRequire == "at" && !ctx.IsAt() {
 			return false
 		}
 		msg := ctx.MessageString()
@@ -76,6 +82,9 @@ func RegexRule(regexPattern string) Rule {
 		if !ctx.IsText() {
 			return false
 		}
+		if bot.config.WakeUpRequire == "at" && !ctx.IsAt() {
+			return false
+		}
 		msg := ctx.MessageString()
 		if matched := regex.FindStringSubmatch(msg); matched != nil {
 			ctx.State["regex_matched"] = matched
@@ -89,6 +98,9 @@ func RegexRule(regexPattern string) Rule {
 func KeywordRule(src ...string) Rule {
 	return func(ctx *Ctx) bool {
 		if !ctx.IsText() {
+			return false
+		}
+		if bot.config.WakeUpRequire == "at" && !ctx.IsAt() {
 			return false
 		}
 		msg := ctx.MessageString()
@@ -106,6 +118,9 @@ func KeywordRule(src ...string) Rule {
 func FullMatchRule(src ...string) Rule {
 	return func(ctx *Ctx) bool {
 		if !ctx.IsText() {
+			return false
+		}
+		if bot.config.WakeUpRequire == "at" && !ctx.IsAt() {
 			return false
 		}
 		msg := ctx.MessageString()
