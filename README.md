@@ -239,6 +239,8 @@ type IFramework interface {
   * `import _ "github.com/yqchilde/wxbot/plugins/coser"`
 * [x] [自动通过好友添加请求-点击查看使用说明](plugins/friendadd)
   * `import _ "github.com/yqchilde/wxbot/plugins/friendadd"`
+* [x] [选择困难症帮手-点击查看使用说明](plugins/choose)
+  * `import _ "github.com/yqchilde/wxbot/plugins/choose"`
 
 </details>
 
