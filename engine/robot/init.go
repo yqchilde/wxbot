@@ -11,22 +11,25 @@ import (
 	"github.com/yqchilde/wxbot/web"
 )
 
-var configTemplate = `# 机器人WxId，修改为自己的机器人WxId
-botWxId: "wxid_lbzw1d5b3pwl29"
+var configTemplate = `# 机器人WxId，修改为自己的机器人wxId
+botWxId: "你的机器人wxId"
 # 机器人名字
-botNickname: "YY Bot(个人助手)"
-# 管理员WxId，多个管理员依次添加
+botNickname: "Q宝"
+# 管理员wxId，多个管理员依次添加，用于管理机器人的wxId
 superUsers:
-  - "wxid_5cvtxuwufytd21"
-# 管理员命令前缀
+  - "你自己的wxId"
+# 管理员命令前缀，匹配系统内置管理员指令需要
 commandPrefix: "/"
+# 唤醒机器人限制，可选:at，表示群聊必须at机器人才可匹配指令，留空时为默认规则(无特殊要求建议留空)
+wakeUpRequire: ""
+
 # 本项目运行时会启动一个HTTP服务，包含一个接收事件回调服务，该配置项为HTTP服务端口
-# 在所接入的VX框架中请将回调地址改为 http://[本项目运行服务器IP]:[serverPort]/wxbot/callback，本地测试ip可写localhost
+# 在所接入的VX框架中请将回调地址改为 http://[本项目运行服务器IP]:[serverPort]/wxbot/callback
 serverPort: 9528
 # 本项目运行时会启动一个HTTP服务，包含一个静态图片文件服务，用于将本地图片作为网络图片
 # 仅当在插件中使用ctx.ReplyImage(local://[图片路径时])才会用到该项
 # 本项目和VX框架运行在同一台服务器时，请填写http://[本机IP]:[serverPort]，否则请填写本项目运行服务器IP，也可以使用域名
-serverAddress: ""
+serverAddress: "http://192.168.31.12:9528"
 
 # 接入框架配置
 framework:
