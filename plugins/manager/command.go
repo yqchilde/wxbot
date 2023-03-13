@@ -75,9 +75,8 @@ func registerCommand() {
 				menu += "服务名: %s\n"
 				menu += "别称: %s\n"
 				menu += "默认开启状态: %v\n"
-				menu += "当前开启状态: %v\n"
-				menu += "插件描述: %s\n\n"
-				menus += fmt.Sprintf(menu, options.Menus[i].Name, options.Menus[i].Alias, options.Menus[i].DefStatus, options.Menus[i].CurStatus, options.Menus[i].Describe)
+				menu += "当前开启状态: %v\n\n"
+				menus += fmt.Sprintf(menu, options.Menus[i].Name, options.Menus[i].Alias, options.Menus[i].DefStatus, options.Menus[i].CurStatus)
 			}
 			ctx.ReplyTextAndAt(menus)
 		case "2":
