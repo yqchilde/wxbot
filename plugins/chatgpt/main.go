@@ -112,7 +112,7 @@ func init() {
 			ctx.ReplyTextAndAt("请发送菜单查看我还有哪些功能，无需@我哦")
 			return
 		case strings.TrimSpace(msg) == "清空会话":
-			chatRoomCtx.Store(chatRoom.chatId, chatRoom)
+			chatRoomCtx.LoadAndDelete(chatRoom.chatId)
 			ctx.ReplyTextAndAt("已清空和您的上下文会话")
 			return
 		case strings.HasPrefix(msg, "提问"):
@@ -142,7 +142,7 @@ func init() {
 		if c, ok := chatRoomCtx.Load(chatRoom.chatId); ok {
 			// 判断距离上次聊天是否超过10分钟了
 			if now.Sub(c.(ChatRoom).chatTime) > 10*time.Minute {
-				chatRoomCtx.Store(chatRoom.chatId, chatRoom)
+				chatRoomCtx.LoadAndDelete(chatRoom.chatId)
 				chatRoom.content = []openai.ChatCompletionMessage{{Role: "user", Content: msg}}
 			} else {
 				chatRoom.content = append(c.(ChatRoom).content, openai.ChatCompletionMessage{Role: "user", Content: msg})
@@ -158,7 +158,7 @@ func init() {
 				ctx.ReplyTextAndAt(err.Error())
 			case errors.Is(err, ErrMaxTokens):
 				ctx.ReplyTextAndAt("和你的聊天上下文内容太多啦，我的记忆好像在消退.. 糟糕，我忘记了..，请重新问我吧")
-				chatRoomCtx.Store(chatRoom.chatId, chatRoom)
+				chatRoomCtx.LoadAndDelete(chatRoom.chatId)
 			default:
 				ctx.ReplyTextAndAt("ChatGPT出错了，Err：" + err.Error())
 			}
