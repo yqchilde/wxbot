@@ -13,12 +13,12 @@ func init() {
 	engine := control.Register("choose", &control.Options{
 		Alias: "选择困难症帮手",
 		Help: "指令:\n" +
-			"* 选择[选项1]还是[选项2]还是[选项3]还是[选项4]\n" +
+			"* 帮我选择[选项1]还是[选项2]还是[选项3]还是[选项4]\n" +
 			"例:\n" +
-			"* 选择可口可乐还是百事可乐\n" +
-			"* 选择肯德基还是麦当劳还是必胜客",
+			"* 帮我选择可口可乐还是百事可乐\n" +
+			"* 帮我选择肯德基还是麦当劳还是必胜客",
 	})
-	engine.OnPrefix("选择").SetBlock(true).Handle(handle)
+	engine.OnPrefix("帮我选择").SetBlock(true).Handle(handle)
 }
 
 func handle(ctx *robot.Ctx) {
