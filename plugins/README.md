@@ -16,3 +16,4 @@
 * [有道翻译](youdaofanyi)
 * [获取 Cosplay 作品](coser)
 * [自动通过好友添加请求](friendadd)
+* [选择困难症帮手](choose)
