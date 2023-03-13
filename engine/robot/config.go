@@ -7,6 +7,7 @@ type Config struct {
 	BotNickname    string        `mapstructure:"botNickname"`   // 机器人名称
 	SuperUsers     []string      `mapstructure:"superUsers"`    // 超级用户(管理员)
 	CommandPrefix  string        `mapstructure:"commandPrefix"` // 管理员触发命令
+	WakeUpRequire  string        `mapstructure:"wakeUpRequire"` // 唤醒机器人要求
 	ServerPort     uint          `mapstructure:"serverPort"`    // 启动HTTP服务端口
 	ServerAddress  string        `mapstructure:"serverAddress"` // 启动HTTP服务地址
 	BufferLen      uint          `mapstructure:"-"`             // 事件缓冲区长度, 默认4096
