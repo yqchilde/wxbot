@@ -71,6 +71,20 @@ func init() {
 		ctx.ReplyImage("local://" + imgCache)
 	})
 
+	// 不从本地缓存读取图片，重新调用api拉取图片
+	engine.OnFullMatch("刷新早报").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		if zaoBao.Token == "" {
+			ctx.ReplyTextAndAt("请先私聊机器人配置token\n指令：set zaobao token __\n相关秘钥申请地址：https://admin.alapi.cn")
+			return
+		}
+		imgCache := filepath.Join(engine.GetCacheFolder(), time.Now().Local().Format("20060102")+".jpg")
+		if err := flushZaoBao(zaoBao.Token, imgCache); err != nil {
+			ctx.ReplyTextAndAt("获取早报失败")
+			return
+		}
+		ctx.ReplyImage("local://" + imgCache)
+	})
+
 	// 专门用于定时任务的指令，请不要在其他地方使用
 	engine.OnFullMatch("早报定时").SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		imgCache := filepath.Join(engine.GetCacheFolder(), time.Now().Local().Format("20060102")+".jpg")
