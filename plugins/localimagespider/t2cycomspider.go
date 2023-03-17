@@ -1,33 +1,27 @@
-package heisiwu
+package localimagespider
 
 import (
 	"fmt"
-	"github.com/yqchilde/wxbot/engine/pkg/log"
-	"math/rand"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/yqchilde/wxbot/engine/pkg/log"
+	"github.com/yqchilde/wxbot/plugins/localimage"
 )
 
 const (
-	HeisiwuURL          = "http://hs.heisiwu.com/"
-	CategoryURLTemplate = HeisiwuURL + "%s/page/%v"
-	StorageFolder       = "heisiwu"
-	PageInfoFile        = "pageinfo"
+	PageInfoFile         = "pageinfo"
+	T2cyComUrl           = "https://t2cy.com"
+	CosplayUri           = "/acg/cos"
+	CosplayPagerTemplate = "/index_%v.html"
 )
 
-var (
-	cats = []string{"heisi", "baisi", "juru", "jk", "mcn", "meizu"}
-)
-
-func start() {
-	crawlCategory(cats[rand.Intn(len(cats))])
-}
-
-func crawlCategory(category string) {
+func crawlCosplay(storageFolder string) {
 	// 文件夹路径
-	folderPath := GetPath(StorageFolder, category)
-	if !Exist(folderPath) && !MakeDir(folderPath) {
+	folderPath := filepath.Join(storageFolder, "cosplay")
+	if !localimage.Exist(folderPath) && !localimage.MakeDir(folderPath) {
 		return
 	}
 
@@ -37,15 +31,18 @@ func crawlCategory(category string) {
 	}
 	currentPageNum += 1
 
-	url := fmt.Sprintf(CategoryURLTemplate, category, currentPageNum)
-	linkMap := GetTextLink(url)
+	url := T2cyComUrl + CosplayUri
+	if currentPageNum > 1 {
+		url += fmt.Sprintf(CosplayPagerTemplate, currentPageNum)
+	}
+	linkMap := GetTextLinkInContainer(url, "ul[class=\"cy2-coslist clr\"]")
 	if len(linkMap) == 0 {
 		// 为空说明当前分类爬完了，重置页码，这样新增数据之后，可以重新爬到
-		WriteFile(GetPath(folderPath, PageInfoFile), "0")
+		localimage.WriteFile(filepath.Join(folderPath, PageInfoFile), "0")
 		return
 	}
 
-	dirEntries, err := ReadDir(folderPath)
+	dirEntries, err := localimage.GetSubFolder(folderPath)
 	if err != nil {
 		return
 	}
@@ -59,23 +56,21 @@ func crawlCategory(category string) {
 			continue
 		}
 
-		topicFolderPath := GetPath(folderPath, topicId+"-"+title)
-		if !MakeDir(topicFolderPath) {
+		replaces := []string{"*", "_", ".", "_", "\"", "_", "/", "_", "\"", "_", "[", "_", "]", "_", ":", "_", ";", "_", "|", "_", ",", "_"}
+		title = strings.NewReplacer(replaces...).Replace(title)
+		topicFolderPath := filepath.Join(folderPath, topicId+"-"+title)
+		if !localimage.MakeDir(topicFolderPath) {
 			return
 		}
-		crawlTopic(link, topicFolderPath)
+		crawlTopic(T2cyComUrl+link, topicFolderPath)
 	}
 
-	WriteFile(GetPath(folderPath, PageInfoFile), strconv.Itoa(currentPageNum))
+	localimage.WriteFile(filepath.Join(folderPath, PageInfoFile), strconv.Itoa(currentPageNum))
 }
 
 func convert(dirEntries []os.DirEntry) map[string]string {
 	existTopicMap := make(map[string]string)
 	for _, entry := range dirEntries {
-		if !entry.IsDir() {
-			continue
-		}
-
 		topicInfo := strings.Split(entry.Name(), "-")
 		if len(topicInfo) != 2 {
 			continue
@@ -87,15 +82,15 @@ func convert(dirEntries []os.DirEntry) map[string]string {
 }
 
 func crawlTopic(link, topicFolderPath string) {
-	imageLinks := GetImageLink(link, "img[loading=\"lazy\"]")
+	imageLinks := GetImageLinkInContainer(link, "div[class=\"w maxImg tc\"]")
 	for _, imageLink := range imageLinks {
-		DownloadImage(imageLink, link, topicFolderPath)
+		DownloadImage(T2cyComUrl+imageLink, link, topicFolderPath)
 	}
 }
 
 func getCurrentPageNum(folderPath string) (int, error) {
-	pageInfoFilePath := GetPath(folderPath, PageInfoFile)
-	if !Exist(pageInfoFilePath) {
+	pageInfoFilePath := filepath.Join(folderPath, PageInfoFile)
+	if !localimage.Exist(pageInfoFilePath) {
 		return 0, nil
 	}
 

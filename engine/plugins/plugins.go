@@ -49,6 +49,12 @@ import (
 	// 选择困难症帮手
 	_ "github.com/yqchilde/wxbot/plugins/choose"
 
+	// 读取本地图片
+	_ "github.com/yqchilde/wxbot/plugins/localimage"
+
+	// 爬取图片到本地
+	_ "github.com/yqchilde/wxbot/plugins/localimagespider"
+
 	// ChatGPT聊天，优先级必须放到最低
 	_ "github.com/yqchilde/wxbot/plugins/chatgpt"
 )

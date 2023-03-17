@@ -13,4 +13,6 @@
 - "github.com/yqchilde/wxbot/plugins/youdaofanyi"  # 有道翻译
 - "github.com/yqchilde/wxbot/plugins/friendadd"    # 自动加好友
 - "github.com/yqchilde/wxbot/plugins/choose"       # 选择困难症帮手
+- "github.com/yqchilde/wxbot/plugins/localimage"   # 读取本地图片
+- "github.com/yqchilde/wxbot/plugins/localimagespider"   # 爬取图片到本地
 - "github.com/yqchilde/wxbot/plugins/chatgpt"      # ChatGPT聊天，优先级必须放到最低
