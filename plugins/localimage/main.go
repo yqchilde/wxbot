@@ -105,24 +105,11 @@ func dir(folders []os.DirEntry) []string {
 		}
 
 		info, _ := folder.Info()
-		//获取文件大小
-		var size string
-		fileSize := info.Size()
-		if fileSize < 1024 {
-			size = fmt.Sprintf("%dB", fileSize)
-		} else if fileSize < 1048576 {
-			size = fmt.Sprintf("%.2fKB", float64(fileSize)/1024)
-		} else if fileSize < 1073741824 {
-			size = fmt.Sprintf("%.2fMB", float64(fileSize)/1048576)
-		} else {
-			size = fmt.Sprintf("%.2fGB", float64(fileSize)/1073741824)
-		}
-
 		//获取文件修改时间
 		modTime := info.ModTime().Local()
 
 		//格式化输出结果
-		fileInfo := fmt.Sprintf("%s %s %s", name, size, modTime.Format("2006-01-02 15:04"))
+		fileInfo := fmt.Sprintf("%s %s", name, modTime.Format("2006-01-02 15:04"))
 		folderInfos = append(folderInfos, fileInfo)
 	}
 	return folderInfos
