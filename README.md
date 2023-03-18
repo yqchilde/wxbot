@@ -241,6 +241,10 @@ type IFramework interface {
   * `import _ "github.com/yqchilde/wxbot/plugins/friendadd"`
 * [x] [选择困难症帮手-点击查看使用说明](plugins/choose)
   * `import _ "github.com/yqchilde/wxbot/plugins/choose"`
+* [x] [读取本地图片-点击查看使用说明](plugins/localimage)
+  * `import _ "github.com/yqchilde/wxbot/plugins/localimage"`
+* [x] [爬取图片到本地-点击查看使用说明](plugins/localimagespider)
+  * `import _ "github.com/yqchilde/wxbot/plugins/localimagespider"`
 
 </details>
 
