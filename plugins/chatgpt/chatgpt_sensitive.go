@@ -23,7 +23,6 @@ func initSensitiveWords() {
 		}
 		sensitiveWords = append(sensitiveWords, line)
 	}
-	log.Printf("[ChatGPT] 共加载%d个系统敏感词", len(sensitiveWords))
 
 	// insert system sensitive words
 	for _, word := range sensitiveWords {
@@ -125,6 +124,7 @@ func setSensitiveCommand(engine *control.Engine) {
 			ctx.ReplyTextAndAt("删除敏感词失败")
 			return
 		}
+		sensitiveWords = []string{}
 		initSensitiveWords()
 		ctx.ReplyTextAndAt("重置敏感词成功")
 	})
