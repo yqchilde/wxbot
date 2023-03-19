@@ -8,14 +8,24 @@ import (
 	"github.com/yqchilde/wxbot/engine/robot"
 )
 
-var (
-	systemSensitiveWords = []string{"中国", "党", "杀人", "放火", "毒品", "赌博", "1989", "天安门事件", "政治改革", "镇压", "游行"}
-	sensitiveWords       = make([]string, len(systemSensitiveWords))
-)
+var sensitiveWords []string
 
 func initSensitiveWords() {
+	sensitiveFile, err := chatGptData.ReadFile("data/sensitive.txt")
+	if err != nil {
+		log.Errorf("[ChatGPT] 读取敏感词文件失败, error:%s", err.Error())
+		return
+	}
+	// 逐行读取敏感词
+	for _, line := range strings.Split(string(sensitiveFile), "\n") {
+		if line == "" {
+			continue
+		}
+		sensitiveWords = append(sensitiveWords, line)
+	}
+	log.Printf("[ChatGPT] 共加载%d个系统敏感词", len(sensitiveWords))
+
 	// insert system sensitive words
-	copy(sensitiveWords, systemSensitiveWords)
 	for _, word := range sensitiveWords {
 		db.Orm.Table("sensitive").FirstOrCreate(&SensitiveWords{Type: 1, Word: word}, "word = ?", word)
 	}
