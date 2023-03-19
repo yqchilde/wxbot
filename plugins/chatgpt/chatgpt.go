@@ -21,8 +21,11 @@ var (
 )
 
 var (
-	ErrNoKey     = fmt.Errorf("请先私聊机器人配置apiKey\n指令：set chatgpt apikey __(多个key用;符号隔开)\napiKey获取请到https://beta.openai.com获取")
-	ErrMaxTokens = errors.New("OpenAi免费上下文长度限制为4097个词组，您的上下文长度已超出限制")
+	ErrNoKey              = fmt.Errorf("请先私聊机器人配置apiKey\n指令：set chatgpt apikey __(多个key用;符号隔开)\napiKey获取请到https://beta.openai.com获取")
+	ErrMaxTokens          = errors.New("OpenAi免费上下文长度限制为4097个词组，您的上下文长度已超出限制")
+	ErrExceededQuota      = errors.New("OpenAi配额已用完，请联系管理员")
+	ErrIncorrectKey       = errors.New("OpenAi ApiKey错误，请联系管理员")
+	ErrServiceUnavailable = errors.New("ChatGPT服务异常，请稍后再试")
 )
 
 // apikey缓存
@@ -148,7 +151,7 @@ func AskChatGpt(ctx *robot.Ctx, messages []openai.ChatCompletionMessage, delay .
 			log.Printf("当前apiKey[%s]配额已用完, 将删除并切换到下一个", apiKeys[0].Key)
 			db.Orm.Table("apikey").Where("key = ?", apiKeys[0].Key).Delete(&ApiKey{})
 			if len(apiKeys) == 1 {
-				return "", errors.New("OpenAi配额已用完，请联系管理员")
+				return "", ErrExceededQuota
 			}
 			apiKeys = apiKeys[1:]
 			gptClient = openai.NewClient(apiKeys[0].Key)
@@ -158,9 +161,15 @@ func AskChatGpt(ctx *robot.Ctx, messages []openai.ChatCompletionMessage, delay .
 			return "", ErrMaxTokens
 		}
 		if strings.Contains(err.Error(), "Incorrect API key") {
-			return "", errors.New("OpenAi ApiKey错误，请联系管理员")
+			return "", ErrIncorrectKey
+		}
+		if strings.Contains(err.Error(), "invalid character") {
+			return "", ErrServiceUnavailable
 		}
 		return "", err
+	}
+	if len(resp.Choices) == 0 {
+		return "", ErrServiceUnavailable
 	}
 	return resp.Choices[0].Message.Content, nil
 }
@@ -193,8 +202,31 @@ func AskChatGptWithImage(ctx *robot.Ctx, prompt string, delay ...time.Duration) 
 		Size:           gptModel.ImageSize,
 		ResponseFormat: openai.CreateImageResponseFormatB64JSON,
 	})
+	// 处理响应回来的错误
 	if err != nil {
+		if strings.Contains(err.Error(), "You exceeded your current quota") {
+			log.Printf("当前apiKey[%s]配额已用完, 将删除并切换到下一个", apiKeys[0].Key)
+			db.Orm.Table("apikey").Where("key = ?", apiKeys[0].Key).Delete(&ApiKey{})
+			if len(apiKeys) == 1 {
+				return "", ErrExceededQuota
+			}
+			apiKeys = apiKeys[1:]
+			gptClient = openai.NewClient(apiKeys[0].Key)
+			return AskChatGptWithImage(ctx, prompt, delay...)
+		}
+		if strings.Contains(err.Error(), "Please reduce your prompt") || strings.Contains(err.Error(), "Please reduce the length of the messages") {
+			return "", ErrMaxTokens
+		}
+		if strings.Contains(err.Error(), "Incorrect API key") {
+			return "", ErrIncorrectKey
+		}
+		if strings.Contains(err.Error(), "invalid character") {
+			return "", ErrServiceUnavailable
+		}
 		return "", err
+	}
+	if len(resp.Data) == 0 {
+		return "", ErrServiceUnavailable
 	}
 	return resp.Data[0].B64JSON, nil
 }

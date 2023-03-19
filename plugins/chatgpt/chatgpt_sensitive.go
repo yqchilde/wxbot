@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	systemSensitiveWords = []string{"中国", "党", "杀人", "放火", "炸弹", "枪", "毒品", "赌博", "1989", "天安门事件", "政治改革", "镇压", "死亡", "民主运动", "军队", "游行"}
-	sensitiveWords       = []string{}
+	systemSensitiveWords = []string{"中国", "党", "杀人", "放火", "毒品", "赌博", "1989", "天安门事件", "政治改革", "镇压", "游行"}
+	sensitiveWords       = make([]string, len(systemSensitiveWords))
 )
 
 func initSensitiveWords() {
@@ -40,6 +40,16 @@ func checkSensitiveWords(content string) bool {
 		}
 	}
 	return false
+}
+
+// 将敏感词替换为*
+func replaceSensitiveWords(content string) string {
+	for _, word := range sensitiveWords {
+		if strings.Contains(content, word) {
+			content = strings.ReplaceAll(content, word, strings.Repeat("*", len([]rune(word))))
+		}
+	}
+	return content
 }
 
 // 设置敏感词相关指令

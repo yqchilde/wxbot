@@ -24,13 +24,7 @@ func setSingleCommand(ctx *robot.Ctx, msg string, command string) {
 			}
 			return
 		}
-
-		// 敏感词检测回答
-		if checkSensitiveWords(answer) {
-			ctx.ReplyTextAndAt(fmt.Sprintf("%s不被允许回答该类敏感问题，很抱歉", robot.GetBot().GetConfig().BotNickname))
-			return
-		}
-
+		answer = replaceSensitiveWords(answer)
 		ctx.ReplyTextAndAt(fmt.Sprintf("问：%s \n--------------------\n答：%s", msg, answer))
 	}
 }

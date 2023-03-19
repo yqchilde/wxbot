@@ -165,14 +165,9 @@ func init() {
 			return
 		}
 
-		// 敏感词检测回答
-		if checkSensitiveWords(answer) {
-			ctx.ReplyTextAndAt(fmt.Sprintf("%s不被允许回答该类敏感问题，很抱歉", robot.GetBot().GetConfig().BotNickname))
-			return
-		}
-
 		chatRoom.content = append(chatRoom.content, openai.ChatCompletionMessage{Role: "assistant", Content: answer})
 		chatRoomCtx.Store(chatRoom.chatId, chatRoom)
+		answer = replaceSensitiveWords(answer)
 		ctx.ReplyTextAndAt(answer)
 	})
 
