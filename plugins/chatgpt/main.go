@@ -263,14 +263,9 @@ func init() {
 	})
 
 	// 设置gpt3模型参数
-	engine.OnRegex("set chatgpt model (.*)", robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
-		args := ctx.State["regex_matched"].([]string)[1]
-		kv := strings.Split(args, "=")
-		if len(kv) != 2 {
-			ctx.ReplyText("参数格式错误")
-			return
-		}
-		k, v := kv[0], kv[1]
+	engine.OnRegex(`set\s+chatgpt\s+model\s+([\w.-]+)=([\w.-]+)`, robot.OnlyPrivate, robot.AdminPermission).SetBlock(true).Handle(func(ctx *robot.Ctx) {
+		args := ctx.State["regex_matched"].([]string)
+		k, v := args[1], args[2]
 		updates := make(map[string]interface{})
 
 		switch k {
