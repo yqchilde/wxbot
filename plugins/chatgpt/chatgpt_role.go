@@ -48,7 +48,7 @@ func setRoleCommand(ctx *robot.Ctx, msg string, command string) {
 			ctx.ReplyTextAndAt("当前角色为: " + role)
 		}
 	case "创建角色":
-		matched := regexp.MustCompile(`创建角色\s*(\S+)\s*(\S+)`).FindStringSubmatch(msg)
+		matched := regexp.MustCompile(`^创建角色\s+(\S+)\s+(.+)$`).FindStringSubmatch(msg)
 		role := matched[1]
 		if _, ok := SystemRole.Get(role); ok {
 			ctx.ReplyTextAndAt(fmt.Sprintf("角色[%s]已存在", role))
