@@ -318,10 +318,10 @@ func (ctx *Ctx) ReplyText(text string) error {
 	return ctx.SendText(ctx.Event.FromUniqueID, text)
 }
 
-// ReplyTextAndAt 回复文本消息并@某人，如果在私聊中则不会@某人
+// ReplyTextAndAt 回复文本消息并@某人，如果在私聊中或自己的消息则不会@
 func (ctx *Ctx) ReplyTextAndAt(text string) error {
-	if ctx.IsEventPrivateChat() {
-		return ctx.SendText(ctx.Event.FromWxId, text)
+	if ctx.IsEventPrivateChat() || ctx.IsEventSelfMessage() {
+		return ctx.ReplyText(text)
 	}
 	return ctx.SendTextAndAt(ctx.Event.FromGroup, ctx.Event.FromWxId, text)
 }

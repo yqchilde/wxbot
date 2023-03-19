@@ -206,3 +206,8 @@ func OnlyPrivate(ctx *Ctx) bool {
 func OnlyAtMe(ctx *Ctx) bool {
 	return ctx.IsAt()
 }
+
+// OnlyMe 只允许机器人自己使用
+func OnlyMe(ctx *Ctx) bool {
+	return ctx.IsEventSelfMessage()
+}
