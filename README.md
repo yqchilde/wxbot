@@ -26,6 +26,9 @@
 
 * 🤨框架可无侵入扩展，现已接入`千寻框架`和`vlw框架`，请参考`framework`目录
 * 🤨功能可无侵入扩展，现已集成`plugins`目录下的功能，请参考`plugins`目录
+* 🤨新手视频教程 📺
+    * BiliBili：[https://www.bilibili.com/video/BV1Q84y1c7iF](https://www.bilibili.com/video/BV1Q84y1c7iF)
+    * YouTube：[https://www.youtube.com/watch?v=JMeEa7ETIL0](https://www.youtube.com/watch?v=JMeEa7ETIL0)
 
 **🔔 注意：**
 
@@ -389,7 +392,7 @@ import (
 
 ## Support
 
-* [ChatGPT账号购买](https://ka.yqqy.top)，有需要的朋友可以看看
+* [ChatGPT成品账号](https://ka.closeai.me)
 
 ## License
 
