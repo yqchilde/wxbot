@@ -37,27 +37,31 @@ func initMessageRecordDB() error {
 	return nil
 }
 
-// GetHistoryByWxId 根据wxId获取消息记录
-func (ctx *Ctx) GetHistoryByWxId(wxId string) ([]MessageRecord, error) {
-	if err := initMessageRecordDB(); err != nil {
-		return nil, err
-	}
-
-	var msgRecord []MessageRecord
-	if err := db.Orm.Table("__message").Where("from_wxid = ?", wxId).Find(&msgRecord).Error; err != nil {
-		return nil, err
-	}
-	return msgRecord, nil
+// RecordConditions 历史记录搜索条件
+type RecordConditions struct {
+	FromWxId   string // 消息来源wxid，群消息为群wxid，私聊消息为对方wxid
+	SenderWxId string // 消息具体发送者wxid
+	CreatedAt  string // 消息创建时间，格式为yyyy-mm-dd
 }
 
-// GetHistoryByWxIdAndDate 根据wxId和日期获取消息记录
-func (ctx *Ctx) GetHistoryByWxIdAndDate(wxId, date string) ([]MessageRecord, error) {
+// GetRecordHistory 获取消息记录
+func (ctx *Ctx) GetRecordHistory(cond *RecordConditions) ([]MessageRecord, error) {
 	if err := initMessageRecordDB(); err != nil {
 		return nil, err
 	}
+	recordDB := db.Orm.Table("__message")
+	if cond != nil && cond.FromWxId != "" {
+		recordDB.Where("from_wxid = ?", cond.FromWxId)
+	}
+	if cond != nil && cond.SenderWxId != "" {
+		recordDB.Where("sender_wxid = ?", cond.SenderWxId)
+	}
+	if cond != nil && cond.CreatedAt != "" {
+		recordDB.Where("STRFTIME('%Y-%m-%d', created_at, 'localtime') = ?", cond.CreatedAt)
+	}
 
 	var msgRecord []MessageRecord
-	if err := db.Orm.Table("__message").Where("from_wxid = ? AND STRFTIME('%Y-%m-%d', created_at, 'localtime') = ?", wxId, date).Find(&msgRecord).Error; err != nil {
+	if err := recordDB.Find(&msgRecord).Error; err != nil {
 		return nil, err
 	}
 	return msgRecord, nil
