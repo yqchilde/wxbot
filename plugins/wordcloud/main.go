@@ -24,7 +24,8 @@ func init() {
 			"* 热词 -> 获取当前聊天室热词，默认当前聊天室Top30条\n" +
 			"* 热词 top [10] -> 获取当前聊天室热词前10条\n" +
 			"* 热词 id [xxx] -> 获取指定聊天室热词\n" +
-			"* 热词 id [xxx] top [10] -> 获取指定聊天室热词前10条\n",
+			"* 热词 id [xxx] top [10] -> 获取指定聊天室热词前10条\n" +
+			"* 引用群里某个人消息并回复 热词，获取该用户在群里的热词",
 		DataFolder: "wordcloud",
 	})
 
@@ -46,11 +47,30 @@ func init() {
 		}
 
 		// 获取历史记录-文本消息
-		record, err := ctx.GetHistoryByWxIdAndDate(id, time.Now().Local().Format("2006-01-02"))
-		if err != nil {
-			log.Errorf("获取[%s]热词失败: %v", id, err)
-			ctx.ReplyText("获取热词失败")
-			return
+		var record []robot.MessageRecord
+		if ctx.IsReference() { // 查询聊天室指定用户
+			r, err := ctx.GetRecordHistory(&robot.RecordConditions{
+				FromWxId:   id,
+				SenderWxId: ctx.Event.ReferenceMessage.ChatUser,
+				CreatedAt:  time.Now().Local().Format("2006-01-02"),
+			})
+			if err != nil {
+				log.Errorf("获取[%s]热词失败: %v", id, err)
+				ctx.ReplyText("获取热词失败")
+				return
+			}
+			record = r
+		} else { // 查询聊天室所有消息
+			r, err := ctx.GetRecordHistory(&robot.RecordConditions{
+				FromWxId:  id,
+				CreatedAt: time.Now().Local().Format("2006-01-02"),
+			})
+			if err != nil {
+				log.Errorf("获取[%s]热词失败: %v", id, err)
+				ctx.ReplyText("获取热词失败")
+				return
+			}
+			record = r
 		}
 
 		// 整理文本消息
@@ -98,6 +118,9 @@ func init() {
 		}
 
 		// 发送图片
+		if ctx.IsReference() {
+			ctx.ReplyText(fmt.Sprintf("[%s]今天的热词如图", ctx.Event.ReferenceMessage.DisplayName))
+		}
 		ctx.ReplyImage("local://" + filename)
 	})
 }
