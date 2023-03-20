@@ -29,7 +29,7 @@ func handle(ctx *robot.Ctx) {
 
 	var options = make([]string, 0)
 	for count, option := range rawOptions {
-		options = append(options, strconv.Itoa(count+1)+", "+option)
+		options = append(options, strconv.Itoa(count+1)+". "+option)
 	}
 	result := rawOptions[rand.Intn(len(rawOptions))]
 	ctx.ReplyTextAndAt("选项有:\n" + strings.Join(options, "\n") + "\n\n选择结果:\n" + result)
