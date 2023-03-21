@@ -1,7 +1,6 @@
 package friendadd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/yqchilde/wxbot/engine/control"
@@ -27,7 +26,6 @@ func init() {
 				log.Errorf("同意好友请求失败: %v", err)
 				return
 			}
-			ctx.SendText(f.WxId, fmt.Sprintf("你好，我是%s，感谢你发现并使用我，快来与我对话体验 ChatGPT！", nickname))
 		}
 	})
 }

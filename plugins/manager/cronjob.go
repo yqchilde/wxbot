@@ -165,7 +165,7 @@ func registerCronjob() {
 				// 恢复每月的插件任务
 				if matched := regexp.MustCompile(RegexOfPluginEveryMonth).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobOfEveryMonth(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
+						ctx.SendEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每月插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -174,7 +174,7 @@ func registerCronjob() {
 				// 恢复每周的插件任务
 				if matched := regexp.MustCompile(RegexOfPluginEveryWeek).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobOfEveryWeek(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
+						ctx.SendEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每周插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -183,7 +183,7 @@ func registerCronjob() {
 				// 恢复每天的插件任务
 				if matched := regexp.MustCompile(RegexOfPluginEveryDay).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobOfEveryDay(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
+						ctx.SendEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复每天插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -192,7 +192,7 @@ func registerCronjob() {
 				// 恢复间隔插件任务
 				if matched := regexp.MustCompile(RegexOfPluginInterval).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobForInterval(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
+						ctx.SendEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复间隔插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -201,7 +201,7 @@ func registerCronjob() {
 				// 恢复指定时间插件任务
 				if matched := regexp.MustCompile(RegexOfPluginSpecifyTime).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobForSpecifyTime(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
+						ctx.SendEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复指定时间插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -210,7 +210,7 @@ func registerCronjob() {
 				// 恢复表达式插件任务
 				if matched := regexp.MustCompile(RegexOfPluginExpression).FindStringSubmatch(cronJob.Desc); matched != nil {
 					if _, err := AddCronjobForExpression(ctx, cronJob.Tag, matched, func() {
-						ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
+						ctx.SendEvent(cronJob.WxId, cronJob.Remind)
 					}); err != nil {
 						log.Errorf("恢复表达式插件任务失败: jobId: %d, error: %v", cronJob.Id, err)
 					}
@@ -241,7 +241,7 @@ func registerCronjob() {
 							}
 						}
 						if isWorkDay {
-							ctx.SendTextAndPushEvent(cronJob.WxId, cronJob.Remind)
+							ctx.SendEvent(cronJob.WxId, cronJob.Remind)
 						}
 					}); err != nil {
 						log.Errorf("恢复表达式提醒任务失败: jobId: %d, error: %v", cronJob.Id, err)
