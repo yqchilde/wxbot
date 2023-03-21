@@ -44,7 +44,7 @@ func SetPluginCommand(engine *control.Engine) {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddCronjobOfEveryMonth(ctx, jobTag, matched, func() { ctx.ReplyTextAndPushEvent(remind) }); err != nil {
+				if _, err := AddCronjobOfEveryMonth(ctx, jobTag, matched, func() { ctx.PushEvent(remind) }); err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
@@ -88,7 +88,7 @@ func SetPluginCommand(engine *control.Engine) {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddCronjobOfEveryWeek(ctx, jobTag, matched, func() { ctx.ReplyTextAndPushEvent(remind) }); err != nil {
+				if _, err := AddCronjobOfEveryWeek(ctx, jobTag, matched, func() { ctx.PushEvent(remind) }); err != nil {
 					ctx.ReplyText(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
@@ -132,7 +132,7 @@ func SetPluginCommand(engine *control.Engine) {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddCronjobOfEveryDay(ctx, jobTag, matched, func() { ctx.ReplyTextAndPushEvent(remind) }); err != nil {
+				if _, err := AddCronjobOfEveryDay(ctx, jobTag, matched, func() { ctx.PushEvent(remind) }); err != nil {
 					ctx.ReplyTextAndAt(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
@@ -176,7 +176,7 @@ func SetPluginCommand(engine *control.Engine) {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddCronjobForInterval(ctx, jobTag, matched, func() { ctx.ReplyTextAndPushEvent(remind) }); err != nil {
+				if _, err := AddCronjobForInterval(ctx, jobTag, matched, func() { ctx.PushEvent(remind) }); err != nil {
 					ctx.ReplyText(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
@@ -220,7 +220,7 @@ func SetPluginCommand(engine *control.Engine) {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddCronjobForSpecifyTime(ctx, jobTag, matched, func() { ctx.ReplyTextAndPushEvent(remind) }); err != nil {
+				if _, err := AddCronjobForSpecifyTime(ctx, jobTag, matched, func() { ctx.PushEvent(remind) }); err != nil {
 					ctx.ReplyText(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}
@@ -264,7 +264,7 @@ func SetPluginCommand(engine *control.Engine) {
 				remind := ctx.MessageString()
 
 				// 设置定时任务
-				if _, err := AddCronjobForExpression(ctx, jobTag, matched, func() { ctx.ReplyTextAndPushEvent(remind) }); err != nil {
+				if _, err := AddCronjobForExpression(ctx, jobTag, matched, func() { ctx.PushEvent(remind) }); err != nil {
 					ctx.ReplyText(fmt.Errorf("设置失败: %v", err).Error())
 					return
 				}

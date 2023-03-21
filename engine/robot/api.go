@@ -169,12 +169,28 @@ func (ctx *Ctx) SendTextAndAt(groupWxId, wxId, text string) error {
 	return ctx.framework.SendTextAndAt(groupWxId, wxId, "", text)
 }
 
-// SendTextAndPushEvent 发送文本消息到指定好友并将消息推送压入队列进行插件匹配
-func (ctx *Ctx) SendTextAndPushEvent(wxId, text string) error {
+// SendTextAndSendEvent 发送文本消息到指定好友并将文本消息压入队列进行插件匹配
+func (ctx *Ctx) SendTextAndSendEvent(wxId, text string) error {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 	if text == "" {
 		return nil
+	}
+	err := ctx.framework.SendText(wxId, text)
+	if err != nil {
+		return err
+	}
+
+	ctx.SendEvent(wxId, text)
+	return nil
+}
+
+// SendEvent 将文本消息压入队列进行插件匹配
+func (ctx *Ctx) SendEvent(wxId, text string) {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	if text == "" {
+		return
 	}
 
 	// 加入消息监听队列
@@ -187,7 +203,6 @@ func (ctx *Ctx) SendTextAndPushEvent(wxId, text string) error {
 		},
 	}
 	eventBuffer.ProcessEvent(&event, ctx.framework)
-	return nil
 }
 
 // SendImage 发送图片消息到指定好友
@@ -326,12 +341,20 @@ func (ctx *Ctx) ReplyTextAndAt(text string) error {
 	return ctx.SendTextAndAt(ctx.Event.FromGroup, ctx.Event.FromWxId, text)
 }
 
-// ReplyTextAndPushEvent 回复文本消息并将消息推送压入队列进行插件匹配
+// ReplyTextAndPushEvent 回复文本消息并将文本消息压入队列进行插件匹配
 func (ctx *Ctx) ReplyTextAndPushEvent(text string) error {
 	if text == "" {
 		return nil
 	}
-	return ctx.SendTextAndPushEvent(ctx.Event.FromUniqueID, text)
+	return ctx.SendTextAndSendEvent(ctx.Event.FromUniqueID, text)
+}
+
+// PushEvent 将文本消息压入队列进行插件匹配
+func (ctx *Ctx) PushEvent(text string) {
+	if text == "" {
+		return
+	}
+	ctx.SendEvent(ctx.Event.FromUniqueID, text)
 }
 
 // ReplyImage 回复图片消息

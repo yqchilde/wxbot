@@ -32,5 +32,9 @@ func handle(ctx *robot.Ctx) {
 		options = append(options, strconv.Itoa(count+1)+". "+option)
 	}
 	result := rawOptions[rand.Intn(len(rawOptions))]
-	ctx.ReplyTextAndAt("选项有:\n" + strings.Join(options, "\n") + "\n\n选择结果:\n" + result)
+	err := ctx.ReplyTextAndAt("选项有:\n" + strings.Join(options, "\n") + "\n\n选择结果:\n" + result)
+	// 将结果放到匹配队列，触发其它插件
+	if err == nil {
+		ctx.PushEvent(result)
+	}
 }
