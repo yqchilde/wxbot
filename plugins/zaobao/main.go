@@ -85,8 +85,8 @@ func init() {
 		ctx.ReplyImage("local://" + imgCache)
 	})
 
-	// 专门用于定时任务的指令，请不要在其他地方使用
-	engine.OnFullMatch("早报定时").SetBlock(true).Handle(func(ctx *robot.Ctx) {
+	// 专门用于定时任务的指令，只能由机器人调度
+	engine.OnFullMatch("早报定时", robot.OnlyMe).SetBlock(true).Handle(func(ctx *robot.Ctx) {
 		imgCache := filepath.Join(engine.GetCacheFolder(), time.Now().Local().Format("20060102")+".jpg")
 		if utils.IsImageFile(imgCache) {
 			ctx.ReplyImage("local://" + imgCache)
