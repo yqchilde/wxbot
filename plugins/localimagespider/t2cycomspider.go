@@ -28,8 +28,6 @@ func crawlCosplay(storageFolder string) {
 }
 
 func crawl(storageFolderPath, uri, containerSelector string) {
-	// 文件夹路径
-	//folderPath := filepath.Join(storageFolder, "cosplay")
 	if !localimage.Exist(storageFolderPath) && !localimage.MakeDir(storageFolderPath) {
 		return
 	}
