@@ -64,7 +64,7 @@ func init() {
 		imgCache := filepath.Join(engine.GetCacheFolder(), time.Now().Local().Format("20060102")+".jpg")
 		if !utils.IsImageFile(imgCache) {
 			if err := flushZaoBao(zaoBao.Token, imgCache); err != nil {
-				ctx.ReplyTextAndAt("获取早报失败")
+				ctx.ReplyTextAndAt("获取早报失败，Err: " + err.Error())
 				return
 			}
 		}
@@ -79,7 +79,7 @@ func init() {
 		}
 		imgCache := filepath.Join(engine.GetCacheFolder(), time.Now().Local().Format("20060102")+".jpg")
 		if err := flushZaoBao(zaoBao.Token, imgCache); err != nil {
-			ctx.ReplyTextAndAt("获取早报失败")
+			ctx.ReplyTextAndAt("获取早报失败，Err: " + err.Error())
 			return
 		}
 		ctx.ReplyImage("local://" + imgCache)
