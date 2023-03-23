@@ -12,37 +12,44 @@ import (
 )
 
 const (
-	PageInfoFile         = "pageinfo"
-	T2cyComUrl           = "https://t2cy.com"
-	CosplayUri           = "/acg/cos"
-	CosplayPagerTemplate = "/index_%v.html"
+	PageInfoFile  = "pageinfo"
+	T2cyComUrl    = "https://t2cy.com"
+	CosplayUri    = "/acg/cos"
+	CoserUri      = "/acg/daily"
+	PagerTemplate = "/index_%v.html"
 )
 
+func crawlCoser(storageFolder string) {
+	crawl(filepath.Join(storageFolder, "coser"), CoserUri, "ul[class=\"cy_cosList clr\"]")
+}
+
 func crawlCosplay(storageFolder string) {
-	// 文件夹路径
-	folderPath := filepath.Join(storageFolder, "cosplay")
-	if !localimage.Exist(folderPath) && !localimage.MakeDir(folderPath) {
+	crawl(filepath.Join(storageFolder, "cosplay"), CosplayUri, "ul[class=\"cy2-coslist clr\"]")
+}
+
+func crawl(storageFolderPath, uri, containerSelector string) {
+	if !localimage.Exist(storageFolderPath) && !localimage.MakeDir(storageFolderPath) {
 		return
 	}
 
-	currentPageNum, err := getCurrentPageNum(folderPath)
+	currentPageNum, err := getCurrentPageNum(storageFolderPath)
 	if err != nil {
 		return
 	}
 	currentPageNum += 1
 
-	url := T2cyComUrl + CosplayUri
+	url := T2cyComUrl + uri
 	if currentPageNum > 1 {
-		url += fmt.Sprintf(CosplayPagerTemplate, currentPageNum)
+		url += fmt.Sprintf(PagerTemplate, currentPageNum)
 	}
-	linkMap := GetTextLinkInContainer(url, "ul[class=\"cy2-coslist clr\"]")
+	linkMap := GetTextLinkInContainer(url, containerSelector)
 	if len(linkMap) == 0 {
 		// 为空说明当前分类爬完了，重置页码，这样新增数据之后，可以重新爬到
-		localimage.WriteFile(filepath.Join(folderPath, PageInfoFile), "0")
+		localimage.WriteFile(filepath.Join(storageFolderPath, PageInfoFile), "0")
 		return
 	}
 
-	dirEntries, err := localimage.GetSubFolder(folderPath)
+	dirEntries, err := localimage.GetSubFolder(storageFolderPath)
 	if err != nil {
 		return
 	}
@@ -58,14 +65,14 @@ func crawlCosplay(storageFolder string) {
 
 		replaces := []string{"*", "_", ".", "_", "\"", "_", "/", "_", "\"", "_", "[", "_", "]", "_", ":", "_", ";", "_", "|", "_", ",", "_"}
 		title = strings.NewReplacer(replaces...).Replace(title)
-		topicFolderPath := filepath.Join(folderPath, topicId+"-"+title)
+		topicFolderPath := filepath.Join(storageFolderPath, topicId+"-"+title)
 		if !localimage.MakeDir(topicFolderPath) {
 			return
 		}
 		crawlTopic(T2cyComUrl+link, topicFolderPath)
 	}
 
-	localimage.WriteFile(filepath.Join(folderPath, PageInfoFile), strconv.Itoa(currentPageNum))
+	localimage.WriteFile(filepath.Join(storageFolderPath, PageInfoFile), strconv.Itoa(currentPageNum))
 }
 
 func convert(dirEntries []os.DirEntry) map[string]string {

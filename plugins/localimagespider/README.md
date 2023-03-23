@@ -4,8 +4,10 @@
 * 权限：机器人
 * 数据来源：
   * https://t2cy.com/acg/cos
+  * https://t2cy.com/acg/daily
 * 指令：
     * [x] `抓取Cosplay作品`
+    * [x] `抓取Coser日常`
 * 说明: 
   * 本插件目的为抓取网络图片到本地
   * 使用步骤：
