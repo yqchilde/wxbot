@@ -33,7 +33,7 @@ serverAddress: "http://192.168.31.12:9528"
 
 # 接入框架配置
 framework:
-  # 框架选择，可选 千寻、VLW
+  # 框架选择，可选 千寻、VLW、Dean
   name: "千寻"
   # wxbot主动请求微信框架的地址，比如：http://[运行千寻的服务器ip]:[千寻的HTTP端口]
   apiUrl: "http://192.168.31.8:9527"

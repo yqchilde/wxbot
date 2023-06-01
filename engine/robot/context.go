@@ -32,7 +32,7 @@ func (ctx *Ctx) MessageString() string {
 				ctx.message = ctx.Event.Message.Content
 			} else {
 				switch bot.config.Framework.Name {
-				case "千寻", "qianxun":
+				case "千寻", "qianxun", "Dean":
 					ctx.message = strings.TrimPrefix(ctx.Event.Message.Content, "@"+bot.self.Nick)
 					ctx.message = strings.TrimSpace(ctx.message)
 				case "VLW", "vlw":
