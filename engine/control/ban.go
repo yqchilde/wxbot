@@ -30,7 +30,7 @@ func (m *Control) Ban(uid, gid string) error {
 	banCache[label] = struct{}{}
 	m.Manager.Unlock()
 	if err != nil {
-		log.Errorf("(plugin) %s banned in all group for user %s, failed: %v", m.Service, gid, uid, err)
+		log.Errorf("(plugin) %s banned in all group for user %s, failed: %v", m.Service, uid, err)
 		return errors.New("ban失败")
 	}
 	return nil
@@ -57,7 +57,7 @@ func (m *Control) UnBan(uid, gid string) error {
 	delete(banCache, label)
 	m.Manager.Unlock()
 	if err != nil {
-		log.Errorf("(plugin) %s unbanned in all group for user %s, failed: %v", m.Service, gid, uid, err)
+		log.Errorf("(plugin) %s unbanned in all group for user %s, failed: %v", m.Service, uid, err)
 		return errors.New("unban失败")
 	}
 	return nil
