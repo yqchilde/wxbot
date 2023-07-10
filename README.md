@@ -24,7 +24,7 @@
 
 一个还算有意思的wechat robot项目，理想将其设计成一个多功能的机器人助手 😈
 
-* 🤨框架可无侵入扩展，现已接入`Dean DLL`、`千寻框架`、`vlw框架`，请参考`framework`目录
+* 🤨框架可无侵入扩展，现已接入`Dean DLL`、~~`千寻框架`~~、`vlw框架`，请参考`framework`目录
 * 🤨功能可无侵入扩展，现已集成`plugins`目录下的功能，请参考`plugins`目录
 * 🤨新手视频教程 📺
     * BiliBili：[https://www.bilibili.com/video/BV1Q84y1c7iF](https://www.bilibili.com/video/BV1Q84y1c7iF)
@@ -33,7 +33,7 @@
 **🔔 注意：**
 
 1. 使用本项目之前需要您已经配置好相关的 `微信的hook` 类软件，那么只需要在这类软件上设置回调地址即可
-2. 本项目已接入`Dean DLL`、`千寻`、`vlw`三个框架，如果您有其他框架，可自行添加(参考`framework`目录，实现`IFramework`接口即可)，或联系我添加
+2. 本项目已接入`Dean DLL`、~~`千寻`~~、`vlw`三个框架，如果您有其他框架，可自行添加(参考`framework`目录，实现`IFramework`接口即可)，或联系我添加
 3. 本项目不提供任何`hook`类软件，您需要利用搜索引擎自行寻找
 4. 本项目暂时只支持HTTP协议，关于websocket协议支持目前不考虑
 5. 简而言之，本项目是一个消息处理的中间件，微信消息监听获取是从框架获取
@@ -53,9 +53,6 @@
 * [x] [Dean DLL](https://gitee.com/qxvxhook/pc-vx-hook-http-api/tree/36018/DaenWxHook) | [👉对接说明文档👀](docs/deandll.md)
   * 具体配置查看 `config.yaml` 文件注释说明
   * ![img](docs/deandll.png)
-* [x] [千寻框架](https://gitee.com/qxvxhook/pc-vx-hook-http-api/tree/36018/%E5%8D%83%E5%AF%BB%E6%A1%86%E6%9E%B6) | [👉对接说明文档👀](docs/qianxun.md)
-    * 具体配置查看 `config.yaml` 文件注释说明
-    * ![img](docs/qianxun.png)
 * [x] [VLW框架](https://github.com/yqchilde/wxbot)
     * 具体配置查看 `config.yaml` 文件注释说明
     * ![img](docs/vlw.png)
@@ -393,7 +390,7 @@ import (
 
 * 非Hook版机器人核心由 [openwechat](https://github.com/eatmoreapple/openwechat) SDK实现，在`nohook`分支，已暂停维护
 
-* Hook版机器人框架我使用的是 ~~《我的框架》已跑路~~，现在用的是千寻，为hook分支
+* Hook版机器人框架我使用的是 ~~《我的框架》已跑路~~，现在用的是~~千寻~~，Dean DLL，为hook分支
 
 * hook分支大量借鉴了一个十分优秀的项目`ZeroBot-Plugin`的设计方案 👍🏻，其中很多基础代码来自`ZeroBot-Plugin`，在此基础上扩展了支持`wechat`的方式，非常感谢，Thanks♪(･ω･)ﾉ
 

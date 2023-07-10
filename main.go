@@ -8,7 +8,6 @@ import (
 	"github.com/yqchilde/wxbot/engine/pkg/net"
 	"github.com/yqchilde/wxbot/engine/robot"
 	"github.com/yqchilde/wxbot/framework/dean"
-	"github.com/yqchilde/wxbot/framework/qianxun"
 	"github.com/yqchilde/wxbot/framework/vlw"
 
 	// 导入插件, 变更插件请查看README
@@ -28,14 +27,6 @@ func main() {
 
 	f := robot.IFramework(nil)
 	switch c.Framework.Name {
-	case "千寻", "qianxun":
-		f = robot.IFramework(qianxun.New(c.BotWxId, c.Framework.ApiUrl, c.Framework.ApiToken))
-		if ipPort, err := net.CheckoutIpPort(c.Framework.ApiUrl); err == nil {
-			if ping := net.PingConn(ipPort, time.Second*10); !ping {
-				c.SetConnHookStatus(false)
-				log.Warn("[main] 无法连接到千寻框架，网络无法Ping通，请检查网络")
-			}
-		}
 	case "Dean":
 		f = robot.IFramework(dean.New(c.BotWxId, c.Framework.ApiUrl, c.Framework.ApiToken))
 		if ipPort, err := net.CheckoutIpPort(c.Framework.ApiUrl); err == nil {

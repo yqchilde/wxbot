@@ -37,7 +37,7 @@ func init() {
 		}
 
 		switch ctx.Bot.GetConfig().Framework.Name {
-		case "千寻", "qianxun", "Dean":
+		case "Dean":
 			original, thumbnail, err := featureImage(imageUrl, "", engine.GetCacheFolder())
 			if err != nil {
 				log.Errorf("获取表情原图失败: %v", err)
