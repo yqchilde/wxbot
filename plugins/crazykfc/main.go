@@ -43,7 +43,7 @@ type apiResponse struct {
 
 func getCrazyKFCSentence() {
 	var data []apiResponse
-	api := "https://raw.fastgit.org/Nthily/KFC-Crazy-Thursday/main/kfc.json"
+	api := "https://jsdelivr.b-cdn.net/gh/whitescent/KFC-Crazy-Thursday@main/kfc.json"
 	if err := req.C().Get(api).Do().Into(&data); err != nil {
 		log.Errorf("kfc骚话获取失败: %v", err)
 		return
